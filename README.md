@@ -45,8 +45,8 @@ dopaPal uses a desktop runtime client to register system-level interactions and 
 │   └──────────┬────────────┘        └──────────────────┬────────────────────┘        │
 │              │  global hotkeys (voice / highlight)    │                             │
 └──────────────┼────────────────────────────────────────┼─────────────────────────────┘
-│ HTTPS + WebSocket                                     │
-▼                                                       ▼
+               │ HTTPS + WebSocket                      │
+               ▼                                        ▼
 ┌────────────────────────────────────── BACKEND (FastAPI) ─────────────────────────────┐
 │  Auth Service │ Task Service │ Scheduling/Pacing Engine │ State Engine │ Reward Svc  │
 │  Realtime Gateway (WebSocket, Redis pub/sub) │ Integration Service (Google OAuth)    │
