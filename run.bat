@@ -16,13 +16,15 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-:: 3. Clean environment slate (Prevents cached volume/path bleeding)
-echo Clean-purging old volume cache entries...
-docker compose down --volumes >nul 2>&1
+:: 3. Hard Reset: Drop containers, networks, and anonymous volume configurations
+echo 🧹 Purging old container structures and volume caches...
+docker compose down --volumes --remove-orphans >nul 2>&1
 
-:: 4. Boot and force an isolated rebuild of the backend service
-echo Building and launching containers...
-docker compose up --build -d
+:: 4. Build and Launch: Force clear cache and pull fresh base layers
+echo 🔨 Executing cold build from root definitions...
+docker compose build --no-cache backend
+echo 🚀 Booting up service dependencies...
+docker compose up -d
 
 if %errorlevel% equ 0 (
     echo.
