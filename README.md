@@ -362,8 +362,8 @@ GOOGLE_CLIENT_SECRET=google-oauth-client-secret
 #### 2. Run with Docker Compose
 If you have Docker Desktop installed, you can launch the backend, postgres, and redis services together in background mode, automatically streaming backend logs:
 - **On PowerShell**:
-  ```powershell
-  .\run.ps1
+  ```shell
+  .\run.sh
   ```
 - **On CMD**:
   ```cmd
