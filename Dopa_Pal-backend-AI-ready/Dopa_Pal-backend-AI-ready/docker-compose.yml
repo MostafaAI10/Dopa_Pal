@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .                           # Use the project root as context
+      dockerfile: server/Dockerfile        # Look inside server for the Dockerfile
+    container_name: dopapal-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://dopapal_user:dopapal_password@db:5432/dopapal_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=supersecretjwtkeyforauthenticatingclients
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - .:/app                             # Mount the root directory cleanly
+      - /app/.venv/                        # Protect the container's environment layer                  # Protect the container's virtual environment
+
+  db:
+    image: postgres:16-alpine
+    container_name: dopapal-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=dopapal_user
+      - POSTGRES_PASSWORD=dopapal_password
+      - POSTGRES_DB=dopapal_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dopapal_user -d dopapal_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dopapal-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

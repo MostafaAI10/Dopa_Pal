@@ -15,15 +15,18 @@ from app.models.integration import IntegrationToken
 # Import routers
 from app.api.v1.tasks import router as tasks_router
 from app.api.v1.state import router as state_router
+from app.api.v1.users import router as users_router
 from app.api.v1.rewards import router as rewards_router
 from app.api.v1.integrations import router as integrations_router
 
+from app.services.websocket_manager import manager as ws_manager
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Automatically create database tables if they do not exist
-    # This acts as an automated migration for local compose setups
     Base.metadata.create_all(bind=engine)
+    await ws_manager.startup()
     yield
+    await ws_manager.shutdown()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -44,6 +47,7 @@ app.add_middleware(
 # Include API Routers
 app.include_router(tasks_router, prefix=settings.API_V1_STR)
 app.include_router(state_router, prefix=settings.API_V1_STR)
+app.include_router(users_router, prefix=settings.API_V1_STR)
 app.include_router(rewards_router, prefix=settings.API_V1_STR)
 app.include_router(integrations_router, prefix=settings.API_V1_STR)
 

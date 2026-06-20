@@ -1,0 +1,10 @@
+node_modules/
+client/
+.venv/
+venv/
+.git/
+postgres_data/
+redis_data/
+__pycache__/
+*.pyc
+.env
