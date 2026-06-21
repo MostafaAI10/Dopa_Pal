@@ -16,7 +16,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(255))
-    language: Mapped[str] = mapped_column(String(10), default="ar")
+    language: Mapped[str] = mapped_column(String(10), default="en")
     wake_time_pref: Mapped[datetime.time] = mapped_column(Time)
 
     # Relationships
