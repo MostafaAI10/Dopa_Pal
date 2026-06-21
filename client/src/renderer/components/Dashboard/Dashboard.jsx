@@ -324,6 +324,7 @@ export default function Dashboard() {
   });
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState('');
+  const [settingsSection, setSettingsSection] = useState('account');
 
   // Streak & gamification state
   const [streak, setStreak] = useState(0);
@@ -858,6 +859,16 @@ export default function Dashboard() {
 
           <div className="d-sidebar-tools">
             <button
+              className={`d-profile-nav${tab === 'profile' ? ' active' : ''}`}
+              onClick={() => {
+                setTab('profile');
+              }}
+              title="Profile"
+              aria-label="Profile"
+            >
+              <span className="d-profile-nav-avatar">{USER.avatar}</span>
+            </button>
+            <button
               className={`d-icon-nav${tab === 'shop' ? ' active' : ''}`}
               onClick={() => setTab('shop')}
               title="Shop"
@@ -972,6 +983,78 @@ export default function Dashboard() {
           )}
 
           {/* ══ ACCOUNT TAB ══ */}
+          {tab === 'profile' && (
+            <div className="d-section fade-in">
+              <div className="d-card">
+                <div className="d-card-header"><IconUser /><span>Profile</span></div>
+                <p className="d-field-help">This is your personal summary page. Use Account in Settings to edit the profile details that appear here.</p>
+
+                <div className="d-profile-hero">
+                  <div className="d-profile-hero-avatar">{USER.avatar}</div>
+                  <div className="d-profile-hero-copy">
+                    <h2 className="d-card-title">{userName}</h2>
+                    <p className="d-card-reason">{USER.email}</p>
+                    <div className="d-profile-tags">
+                      <span className="d-badge d-badge--accent">{USER.level}</span>
+                      <span className="d-badge">Language: {languageDraft.primary.toUpperCase()}</span>
+                      <span className="d-badge">Theme: {activeTheme}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="d-profile-stats">
+                  <div className="d-profile-stat">
+                    <span className="d-field-label">Day streak</span>
+                    <strong>{streak}</strong>
+                    <p className="d-field-help">Consecutive days with completed progress.</p>
+                  </div>
+                  <div className="d-profile-stat">
+                    <span className="d-field-label">XP</span>
+                    <strong>{userXp}</strong>
+                    <p className="d-field-help">Your accumulated progress currency for themes and customization.</p>
+                  </div>
+                  <div className="d-profile-stat">
+                    <span className="d-field-label">Completed tasks</span>
+                    <strong>{done.length}</strong>
+                    <p className="d-field-help">Tasks you have already finished and archived.</p>
+                  </div>
+                  <div className="d-profile-stat">
+                    <span className="d-field-label">Remaining tasks</span>
+                    <strong>{pending.length}</strong>
+                    <p className="d-field-help">Tasks still waiting for your attention.</p>
+                  </div>
+                  <div className="d-profile-stat">
+                    <span className="d-field-label">Themes unlocked</span>
+                    <strong>{unlockedThemes.length}</strong>
+                    <p className="d-field-help">How many visual themes you have already earned.</p>
+                  </div>
+                  <div className="d-profile-stat">
+                    <span className="d-field-label">Sync connections</span>
+                    <strong>{integrationStatuses.filter(status => status.connected).length}</strong>
+                    <p className="d-field-help">Connected services currently available for sync.</p>
+                  </div>
+                </div>
+
+                <div className="d-settings-grid">
+                  <div>
+                    <span className="d-field-label">Active music</span>
+                    <p className="d-field-help">The currently selected background sound profile, or none if nothing is active.</p>
+                    <div className="d-integration-summary">
+                      <div><span className="d-integration-label">Music</span><strong>{activeMusic}</strong></div>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="d-field-label">Active visual</span>
+                    <p className="d-field-help">The visual customization currently applied to the app shell.</p>
+                    <div className="d-integration-summary">
+                      <div><span className="d-integration-label">Visual</span><strong>{activeVisual}</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {tab === 'account' && (
             <div className="d-section fade-in">
               <h1 className="d-h1">Account</h1>
@@ -1034,185 +1117,290 @@ export default function Dashboard() {
               <div className="d-greeting" style={{ alignItems: 'center' }}>
                 <div>
                   <h1 className="d-h1">Settings</h1>
-                  <p className="d-sub">Account, language, notifications, sync, and privacy all live here.</p>
+                  <p className="d-sub">Pick a section, then adjust only the settings for that area.</p>
                 </div>
                 {settingsMessage && <span className="d-badge d-badge--accent">{settingsMessage}</span>}
               </div>
 
-              <div className="d-card">
-                <div className="d-card-header"><IconUser /><span>Account</span></div>
-                <div className="d-settings-grid">
-                  <input className="d-input" value={accountForm.name} onChange={e => setAccountForm({ ...accountForm, name: e.target.value })} placeholder="Display name" />
-                  <input className="d-input" type="time" value={accountForm.wakeTimePref} onChange={e => setAccountForm({ ...accountForm, wakeTimePref: e.target.value })} />
-                </div>
-                <div className="d-integration-summary">
-                  <div><span className="d-integration-label">Primary account</span><strong>{USER.email}</strong></div>
-                  <div><span className="d-integration-label">Wake time</span><strong>{accountForm.wakeTimePref || '07:30'}</strong></div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button className="d-btn d-btn--primary" onClick={saveAccountSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Account'}</button>
-                </div>
-              </div>
-
-              <div className="d-card">
-                <div className="d-card-header"><span>🌐</span><span>{t('dashboard.language')}</span></div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))', gap: 10 }}>
-                  {LANGUAGE_OPTIONS.map(option => (
+              <div className="d-settings-shell">
+                <aside className="d-settings-nav">
+                  {[
+                    { id: 'account', title: 'Account', desc: 'Name, wake time, and profile details.' },
+                    { id: 'language', title: 'Language', desc: 'Locale, formatting, and text behavior.' },
+                    { id: 'notifications', title: 'Notifications', desc: 'Delivery, intensity, and quiet hours.' },
+                    { id: 'sync', title: 'Sync', desc: 'Connected services and provider settings.' },
+                    { id: 'privacy', title: 'Privacy', desc: 'Storage and data-sharing preferences.' },
+                  ].map(section => (
                     <button
-                      key={option.code}
-                      className="d-btn d-btn--secondary"
-                      onClick={() => {
-                        setLanguageDraft(prev => ({ ...prev, primary: option.code }));
-                        changeLanguage(option.code);
-                      }}
-                      style={{
-                        justifyContent: 'flex-start',
-                        padding: '12px',
-                        borderColor: languageDraft.primary === option.code ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
-                        background: languageDraft.primary === option.code ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
-                        color: languageDraft.primary === option.code ? 'var(--accent)' : 'var(--text)',
-                        flexDirection: 'column',
-                        alignItems: 'flex-start',
-                        gap: '4px',
-                      }}
+                      key={section.id}
+                      className={`d-settings-nav-item${settingsSection === section.id ? ' active' : ''}`}
+                      onClick={() => setSettingsSection(section.id)}
                     >
-                      <strong>{option.native}</strong>
-                      <span style={{ fontSize: 12, color: 'inherit', opacity: 0.8 }}>{option.label}</span>
-                      <span style={{ fontSize: 11, opacity: 0.7 }}>{option.region}</span>
+                      <strong>{section.title}</strong>
+                      <span>{section.desc}</span>
                     </button>
                   ))}
-                </div>
-                <div className="d-settings-grid">
-                  <select className="d-input" value={languageDraft.secondary} onChange={e => setLanguageDraft({ ...languageDraft, secondary: e.target.value })}>
-                    {LANGUAGE_OPTIONS.filter(option => option.code !== languageDraft.primary).map(option => <option key={option.code} value={option.code}>{option.label}</option>)}
-                  </select>
-                  <select className="d-input" value={languageDraft.contentMode} onChange={e => setLanguageDraft({ ...languageDraft, contentMode: e.target.value })}>
-                    <option value="auto">Auto detect content</option>
-                    <option value="primary">Primary language only</option>
-                    <option value="bilingual">Bilingual mode</option>
-                  </select>
-                  <select className="d-input" value={languageDraft.dateFormat} onChange={e => setLanguageDraft({ ...languageDraft, dateFormat: e.target.value })}>
-                    <option value="locale">Locale dates</option>
-                    <option value="iso">ISO dates</option>
-                  </select>
-                  <select className="d-input" value={languageDraft.numberFormat} onChange={e => setLanguageDraft({ ...languageDraft, numberFormat: e.target.value })}>
-                    <option value="locale">Locale numbers</option>
-                    <option value="compact">Compact numbers</option>
-                    <option value="plain">Plain numbers</option>
-                  </select>
-                </div>
-                <label className="d-toggle-row"><span>Transliterate borrowed content</span><input type="checkbox" checked={languageDraft.transliteration} onChange={e => setLanguageDraft({ ...languageDraft, transliteration: e.target.checked })} /></label>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button className="d-btn d-btn--primary" onClick={saveLanguageSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Language'}</button>
-                </div>
-              </div>
+                </aside>
 
-              <div className="d-card">
-                <div className="d-card-header"><span>Notifications</span></div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 }}>
-                  {NOTIFICATION_LEVELS.map(level => (
-                    <button
-                      key={level.id}
-                      className="d-btn d-btn--secondary"
-                      onClick={() => setNotificationDraft({ ...notificationDraft, level: level.id })}
-                      style={{
-                        justifyContent: 'flex-start',
-                        padding: '12px',
-                        borderColor: notificationDraft.level === level.id ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
-                        background: notificationDraft.level === level.id ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
-                        color: notificationDraft.level === level.id ? 'var(--accent)' : 'var(--text)',
-                        flexDirection: 'column',
-                        alignItems: 'flex-start',
-                        gap: '4px',
-                      }}
-                    >
-                      <strong>{level.label}</strong>
-                      <span style={{ fontSize: 12, opacity: 0.8 }}>{level.detail}</span>
-                    </button>
-                  ))}
-                </div>
-                <div className="d-settings-pills">
-                  {NOTIFICATION_CHANNELS.map(channel => (
-                    <button key={channel.id} className={`d-pill${notificationDraft.channels.includes(channel.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, channels: toggleListValue(notificationDraft.channels, channel.id) })}>{channel.label}</button>
-                  ))}
-                </div>
-                <div className="d-settings-pills">
-                  {NOTIFICATION_CATEGORIES.map(category => (
-                    <button key={category.id} className={`d-pill${notificationDraft.categories.includes(category.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, categories: toggleListValue(notificationDraft.categories, category.id) })}>{category.label}</button>
-                  ))}
-                </div>
-                <div className="d-settings-grid">
-                  <select className="d-input" value={notificationDraft.digest} onChange={e => setNotificationDraft({ ...notificationDraft, digest: e.target.value })}>
-                    {NOTIFICATION_DIGESTS.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
-                  </select>
-                  <select className="d-input" value={notificationDraft.soundProfile} onChange={e => setNotificationDraft({ ...notificationDraft, soundProfile: e.target.value })}>
-                    <option value="soft">Soft</option>
-                    <option value="balanced">Balanced</option>
-                    <option value="sharp">Sharp</option>
-                    <option value="silent">Silent</option>
-                  </select>
-                  <input className="d-input" type="time" value={notificationDraft.quietStart} onChange={e => setNotificationDraft({ ...notificationDraft, quietStart: e.target.value })} />
-                  <input className="d-input" type="time" value={notificationDraft.quietEnd} onChange={e => setNotificationDraft({ ...notificationDraft, quietEnd: e.target.value })} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button className="d-btn d-btn--primary" onClick={saveNotificationSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Notifications'}</button>
-                </div>
-              </div>
+                <div className="d-settings-panel">
+                  {settingsSection === 'account' && (
+                    <div className="d-card">
+                      <div className="d-card-header"><IconUser /><span>Account</span></div>
+                      <p className="d-field-help">This controls your display name in the app and the wake-up time used for scheduling and prompts.</p>
+                      <div className="d-settings-grid">
+                        <label>
+                          <span className="d-field-label">Display name</span>
+                          <p className="d-field-help">Shown in the sidebar greeting, profile area, and task ownership.</p>
+                          <input className="d-input" value={accountForm.name} onChange={e => setAccountForm({ ...accountForm, name: e.target.value })} placeholder="Display name" />
+                        </label>
+                        <label>
+                          <span className="d-field-label">Wake time</span>
+                          <p className="d-field-help">The time the assistant should treat as your usual morning start.</p>
+                          <input className="d-input" type="time" value={accountForm.wakeTimePref} onChange={e => setAccountForm({ ...accountForm, wakeTimePref: e.target.value })} />
+                        </label>
+                      </div>
+                      <div className="d-integration-summary">
+                        <div><span className="d-integration-label">Primary account</span><strong>{USER.email}</strong></div>
+                        <div><span className="d-integration-label">Wake time</span><strong>{accountForm.wakeTimePref || '07:30'}</strong></div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <button className="d-btn d-btn--primary" onClick={saveAccountSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Account'}</button>
+                      </div>
+                    </div>
+                  )}
 
-              <div className="d-card">
-                <div className="d-card-header"><IconSync /><span>Sync</span></div>
-                <div className="d-integrations-layout" style={{ padding: 0, gridTemplateColumns: 'minmax(220px, 280px) 1fr' }}>
-                  <div className="d-card d-integrations-list" style={{ padding: 16 }}>
-                    {INTEGRATION_PROVIDERS.map(provider => {
-                      const status = getIntegrationStatus(provider.id);
-                      return (
-                        <button key={provider.id} className={`d-integration-provider${selectedProvider === provider.id ? ' active' : ''}`} onClick={() => { setSelectedProvider(provider.id); setIntegrationMessage(''); }}>
-                          <span className="d-integration-dot" style={{ background: status.connected ? '#34d399' : 'rgba(255,255,255,0.25)' }} />
-                          <span>{provider.name}</span>
-                          <span className={`d-integration-status ${status.connected ? 'connected' : ''}`}>{status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Off'}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="d-card d-integrations-detail" style={{ padding: 18 }}>
-                    {(() => {
-                      const provider = INTEGRATION_PROVIDERS.find(p => p.id === selectedProvider) || INTEGRATION_PROVIDERS[0];
-                      const status = getIntegrationStatus(provider.id);
-                      const expiresAt = status.expires_at ? new Date(status.expires_at).toLocaleString() : 'Not connected';
-                      return (
-                        <>
-                          <div className="d-card-header">
-                            <IconLink />
-                            <span>{provider.name}</span>
-                            <span className={`d-chip ${status.connected ? '' : 'd-chip--muted'}`}>{status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Disconnected'}</span>
-                          </div>
-                          <div className="d-integration-summary">
-                            <div><span className="d-integration-label">Expires</span><strong>{expiresAt}</strong></div>
-                            <div><span className="d-integration-label">{provider.settingLabel}</span><strong>{status.settings?.[provider.settingKey] || 'None'}</strong></div>
-                          </div>
-                          <form className="d-modal-form" onSubmit={submitIntegration}>
-                            <input className="d-input" type="password" placeholder={provider.tokenLabel} value={integrationForm.accessToken} onChange={e => setIntegrationForm({ ...integrationForm, accessToken: e.target.value })} />
-                            <input className="d-input" type="password" placeholder="Refresh token (optional)" value={integrationForm.refreshToken} onChange={e => setIntegrationForm({ ...integrationForm, refreshToken: e.target.value })} />
-                            <div className="d-integration-form-grid">
-                              <input className="d-input" placeholder={provider.settingLabel} value={integrationForm.settingValue} onChange={e => setIntegrationForm({ ...integrationForm, settingValue: e.target.value })} />
-                              <input className="d-input" type="number" min="60" step="60" value={integrationForm.expiresInSeconds} onChange={e => setIntegrationForm({ ...integrationForm, expiresInSeconds: e.target.value })} />
-                            </div>
-                            <button className="d-btn d-btn--primary" disabled={integrationSaving || !integrationForm.accessToken.trim()} style={{ alignSelf: 'stretch' }}>{integrationSaving ? 'Saving...' : `Connect ${provider.name}`}</button>
-                          </form>
-                          {integrationMessage && <div className="d-integration-message">{integrationMessage}</div>}
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
+                  {settingsSection === 'language' && (
+                    <div className="d-card">
+                      <div className="d-card-header"><span>🌐</span><span>{t('dashboard.language')}</span></div>
+                      <p className="d-field-help">Choose how the interface reads, formats dates and numbers, and handles mixed-language content.</p>
+                      <div className="d-field-block">
+                        <span className="d-field-label">Primary language</span>
+                        <p className="d-field-help">This is the app language used for menus, labels, and helper text.</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))', gap: 10 }}>
+                          {LANGUAGE_OPTIONS.map(option => (
+                            <button
+                              key={option.code}
+                              className="d-btn d-btn--secondary"
+                              onClick={() => {
+                                setLanguageDraft(prev => ({ ...prev, primary: option.code }));
+                                changeLanguage(option.code);
+                              }}
+                              style={{
+                                justifyContent: 'flex-start',
+                                padding: '12px',
+                                borderColor: languageDraft.primary === option.code ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
+                                background: languageDraft.primary === option.code ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
+                                color: languageDraft.primary === option.code ? 'var(--accent)' : 'var(--text)',
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                gap: '4px',
+                              }}
+                            >
+                              <strong>{option.native}</strong>
+                              <span style={{ fontSize: 12, color: 'inherit', opacity: 0.8 }}>{option.label}</span>
+                              <span style={{ fontSize: 11, opacity: 0.7 }}>{option.region}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="d-settings-grid">
+                        <label>
+                          <span className="d-field-label">Secondary language</span>
+                          <p className="d-field-help">Use this as the fallback language for bilingual prompts and overlays.</p>
+                          <select className="d-input" value={languageDraft.secondary} onChange={e => setLanguageDraft({ ...languageDraft, secondary: e.target.value })}>
+                            {LANGUAGE_OPTIONS.filter(option => option.code !== languageDraft.primary).map(option => <option key={option.code} value={option.code}>{option.label}</option>)}
+                          </select>
+                        </label>
+                        <label>
+                          <span className="d-field-label">Content mode</span>
+                          <p className="d-field-help">Controls whether the app keeps one language, blends two, or auto-detects content.</p>
+                          <select className="d-input" value={languageDraft.contentMode} onChange={e => setLanguageDraft({ ...languageDraft, contentMode: e.target.value })}>
+                            <option value="auto">Auto detect content</option>
+                            <option value="primary">Primary language only</option>
+                            <option value="bilingual">Bilingual mode</option>
+                          </select>
+                        </label>
+                        <label>
+                          <span className="d-field-label">Date format</span>
+                          <p className="d-field-help">Affects how deadlines and reminders are displayed everywhere in the app.</p>
+                          <select className="d-input" value={languageDraft.dateFormat} onChange={e => setLanguageDraft({ ...languageDraft, dateFormat: e.target.value })}>
+                            <option value="locale">Locale dates</option>
+                            <option value="iso">ISO dates</option>
+                          </select>
+                        </label>
+                        <label>
+                          <span className="d-field-label">Number format</span>
+                          <p className="d-field-help">Controls whether values are shown plainly or in compact human-friendly form.</p>
+                          <select className="d-input" value={languageDraft.numberFormat} onChange={e => setLanguageDraft({ ...languageDraft, numberFormat: e.target.value })}>
+                            <option value="locale">Locale numbers</option>
+                            <option value="compact">Compact numbers</option>
+                            <option value="plain">Plain numbers</option>
+                          </select>
+                        </label>
+                      </div>
+                      <label className="d-toggle-row"><span>Transliterate borrowed content</span><input type="checkbox" checked={languageDraft.transliteration} onChange={e => setLanguageDraft({ ...languageDraft, transliteration: e.target.checked })} /></label>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <button className="d-btn d-btn--primary" onClick={saveLanguageSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Language'}</button>
+                      </div>
+                    </div>
+                  )}
 
-              <div className="d-card">
-                <div className="d-card-header"><span>Privacy</span></div>
-                <div className="d-settings-grid">
-                  <label className="d-toggle-row"><span>Share anonymous usage data</span><input type="checkbox" /></label>
-                  <label className="d-toggle-row"><span>Store task history locally</span><input type="checkbox" defaultChecked /></label>
-                  <label className="d-toggle-row"><span>Encrypt local sync cache</span><input type="checkbox" defaultChecked /></label>
+                  {settingsSection === 'notifications' && (
+                    <div className="d-card">
+                      <div className="d-card-header"><span>Notifications</span></div>
+                      <p className="d-field-help">Choose how intense alerts should be, which channels they use, and what kinds of events they should cover.</p>
+                      <div className="d-field-block">
+                        <span className="d-field-label">Notification level</span>
+                        <p className="d-field-help">Higher levels surface more nudges and summaries; lower levels keep the app quieter.</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 }}>
+                          {NOTIFICATION_LEVELS.map(level => (
+                            <button
+                              key={level.id}
+                              className="d-btn d-btn--secondary"
+                              onClick={() => setNotificationDraft({ ...notificationDraft, level: level.id })}
+                              style={{
+                                justifyContent: 'flex-start',
+                                padding: '12px',
+                                borderColor: notificationDraft.level === level.id ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
+                                background: notificationDraft.level === level.id ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
+                                color: notificationDraft.level === level.id ? 'var(--accent)' : 'var(--text)',
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                gap: '4px',
+                              }}
+                            >
+                              <strong>{level.label}</strong>
+                              <span style={{ fontSize: 12, opacity: 0.8 }}>{level.detail}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="d-field-block">
+                        <span className="d-field-label">Delivery channels</span>
+                        <p className="d-field-help">Pick where alerts are allowed to show up.</p>
+                        <div className="d-settings-pills">
+                          {NOTIFICATION_CHANNELS.map(channel => (
+                            <button key={channel.id} className={`d-pill${notificationDraft.channels.includes(channel.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, channels: toggleListValue(notificationDraft.channels, channel.id) })}>{channel.label}</button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="d-field-block">
+                        <span className="d-field-label">Categories</span>
+                        <p className="d-field-help">Decide which event types should trigger notifications.</p>
+                        <div className="d-settings-pills">
+                          {NOTIFICATION_CATEGORIES.map(category => (
+                            <button key={category.id} className={`d-pill${notificationDraft.categories.includes(category.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, categories: toggleListValue(notificationDraft.categories, category.id) })}>{category.label}</button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="d-settings-grid">
+                        <label>
+                          <span className="d-field-label">Digest cadence</span>
+                          <p className="d-field-help">How often the app should bundle summary notifications.</p>
+                          <select className="d-input" value={notificationDraft.digest} onChange={e => setNotificationDraft({ ...notificationDraft, digest: e.target.value })}>
+                            {NOTIFICATION_DIGESTS.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
+                          </select>
+                        </label>
+                        <label>
+                          <span className="d-field-label">Sound profile</span>
+                          <p className="d-field-help">Controls the style of sound cues when notifications are enabled.</p>
+                          <select className="d-input" value={notificationDraft.soundProfile} onChange={e => setNotificationDraft({ ...notificationDraft, soundProfile: e.target.value })}>
+                            <option value="soft">Soft</option>
+                            <option value="balanced">Balanced</option>
+                            <option value="sharp">Sharp</option>
+                            <option value="silent">Silent</option>
+                          </select>
+                        </label>
+                        <label>
+                          <span className="d-field-label">Quiet hours start</span>
+                          <p className="d-field-help">Alerts are muted or reduced after this time.</p>
+                          <input className="d-input" type="time" value={notificationDraft.quietStart} onChange={e => setNotificationDraft({ ...notificationDraft, quietStart: e.target.value })} />
+                        </label>
+                        <label>
+                          <span className="d-field-label">Quiet hours end</span>
+                          <p className="d-field-help">Notifications resume after this time.</p>
+                          <input className="d-input" type="time" value={notificationDraft.quietEnd} onChange={e => setNotificationDraft({ ...notificationDraft, quietEnd: e.target.value })} />
+                        </label>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <button className="d-btn d-btn--primary" onClick={saveNotificationSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Notifications'}</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {settingsSection === 'sync' && (
+                    <div className="d-card">
+                      <div className="d-card-header"><IconSync /><span>Sync</span></div>
+                      <p className="d-field-help">Each provider can be connected separately, and each connection carries its own token and provider-specific metadata.</p>
+                      <div className="d-integrations-layout" style={{ padding: 0, gridTemplateColumns: 'minmax(220px, 280px) 1fr' }}>
+                        <div className="d-card d-integrations-list" style={{ padding: 16 }}>
+                          {INTEGRATION_PROVIDERS.map(provider => {
+                            const status = getIntegrationStatus(provider.id);
+                            return (
+                              <button key={provider.id} className={`d-integration-provider${selectedProvider === provider.id ? ' active' : ''}`} onClick={() => { setSelectedProvider(provider.id); setIntegrationMessage(''); }}>
+                                <span className="d-integration-dot" style={{ background: status.connected ? '#34d399' : 'rgba(255,255,255,0.25)' }} />
+                                <span>{provider.name}</span>
+                                <span className={`d-integration-status ${status.connected ? 'connected' : ''}`}>{status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Off'}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="d-card d-integrations-detail" style={{ padding: 18 }}>
+                          {(() => {
+                            const provider = INTEGRATION_PROVIDERS.find(p => p.id === selectedProvider) || INTEGRATION_PROVIDERS[0];
+                            const status = getIntegrationStatus(provider.id);
+                            const expiresAt = status.expires_at ? new Date(status.expires_at).toLocaleString() : 'Not connected';
+                            return (
+                              <>
+                                <div className="d-card-header">
+                                  <IconLink />
+                                  <span>{provider.name}</span>
+                                  <span className={`d-chip ${status.connected ? '' : 'd-chip--muted'}`}>{status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Disconnected'}</span>
+                                </div>
+                                <div className="d-integration-summary">
+                                  <div><span className="d-integration-label">Expires</span><strong>{expiresAt}</strong></div>
+                                  <div><span className="d-integration-label">{provider.settingLabel}</span><strong>{status.settings?.[provider.settingKey] || 'None'}</strong></div>
+                                </div>
+                                <form className="d-modal-form" onSubmit={submitIntegration}>
+                                  <p className="d-field-help">Access token or API key used to authenticate this provider.</p>
+                                  <input className="d-input" type="password" placeholder={provider.tokenLabel} value={integrationForm.accessToken} onChange={e => setIntegrationForm({ ...integrationForm, accessToken: e.target.value })} />
+                                  <p className="d-field-help">Optional refresh token for OAuth-style connections.</p>
+                                  <input className="d-input" type="password" placeholder="Refresh token (optional)" value={integrationForm.refreshToken} onChange={e => setIntegrationForm({ ...integrationForm, refreshToken: e.target.value })} />
+                                  <div className="d-integration-form-grid">
+                                    <label>
+                                      <span className="d-field-label">{provider.settingLabel}</span>
+                                      <p className="d-field-help">Provider-specific metadata such as a course, database, or project reference.</p>
+                                      <input className="d-input" placeholder={provider.settingLabel} value={integrationForm.settingValue} onChange={e => setIntegrationForm({ ...integrationForm, settingValue: e.target.value })} />
+                                    </label>
+                                    <label>
+                                      <span className="d-field-label">Expires in seconds</span>
+                                      <p className="d-field-help">How long this token should be considered valid before expiring.</p>
+                                      <input className="d-input" type="number" min="60" step="60" value={integrationForm.expiresInSeconds} onChange={e => setIntegrationForm({ ...integrationForm, expiresInSeconds: e.target.value })} />
+                                    </label>
+                                  </div>
+                                  <button className="d-btn d-btn--primary" disabled={integrationSaving || !integrationForm.accessToken.trim()} style={{ alignSelf: 'stretch' }}>{integrationSaving ? 'Saving...' : `Connect ${provider.name}`}</button>
+                                </form>
+                                {integrationMessage && <div className="d-integration-message">{integrationMessage}</div>}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {settingsSection === 'privacy' && (
+                    <div className="d-card">
+                      <div className="d-card-header"><span>Privacy</span></div>
+                      <p className="d-field-help">These controls decide what the app stores locally and what kinds of usage data can leave the device.</p>
+                      <div className="d-settings-grid">
+                        <label className="d-toggle-row"><span>Share anonymous usage data</span><input type="checkbox" /></label>
+                        <label className="d-toggle-row"><span>Store task history locally</span><input type="checkbox" defaultChecked /></label>
+                        <label className="d-toggle-row"><span>Encrypt local sync cache</span><input type="checkbox" defaultChecked /></label>
+                        <label className="d-toggle-row"><span>Allow crash diagnostics</span><input type="checkbox" defaultChecked /></label>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

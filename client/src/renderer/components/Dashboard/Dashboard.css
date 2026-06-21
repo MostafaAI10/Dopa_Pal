@@ -125,6 +125,43 @@
   border-top: 1px solid rgba(255,255,255,.06);
 }
 
+.d-profile-nav {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.1);
+  background: linear-gradient(180deg, rgba(167,139,250,.18), rgba(255,255,255,.04));
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform .14s, background .14s, border-color .14s, box-shadow .14s;
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
+  flex-shrink: 0;
+}
+
+.d-profile-nav:hover,
+.d-profile-nav.active {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  box-shadow: 0 0 0 1px rgba(167,139,250,.2), 0 10px 22px rgba(0,0,0,.22);
+}
+
+.d-profile-nav-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  font-size: 18px;
+  line-height: 1;
+}
+
 .d-nav-btn {
   display: flex;
   align-items: center;
@@ -453,6 +490,135 @@
 
 /* ── Settings ──────────────────────────────────────────── */
 .d-settings-list { display: flex; flex-direction: column; }
+
+.d-settings-shell {
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.d-settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.d-settings-nav-item {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,.03);
+  color: var(--text2);
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.d-settings-nav-item strong {
+  color: var(--text);
+  font-size: 14px;
+}
+.d-settings-nav-item span {
+  font-size: 12px;
+  line-height: 1.35;
+}
+.d-settings-nav-item.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+.d-settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.d-profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+}
+
+.d-profile-hero-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  background: linear-gradient(180deg, rgba(167,139,250,.22), rgba(255,255,255,.06));
+  border: 2px solid rgba(167,139,250,.35);
+  flex-shrink: 0;
+}
+
+.d-profile-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.d-profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.d-profile-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.d-profile-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+}
+
+.d-profile-stat strong {
+  font-size: 28px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.d-profile-stat .d-field-help {
+  margin-top: 0;
+}
+
+.d-field-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.d-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text2);
+}
+
+.d-field-help {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text3);
+  margin-top: 4px;
+}
 
 .d-settings-grid {
   display: grid;
@@ -897,6 +1063,10 @@
 [dir="rtl"] .d-profile-card { flex-direction: row-reverse; }
 [dir="rtl"] .d-profile-info { text-align: right; align-items: flex-end; }
 [dir="rtl"] .d-profile-name { justify-content: flex-end; }
+[dir="rtl"] .d-profile-hero { flex-direction: row-reverse; }
+[dir="rtl"] .d-profile-hero-copy { text-align: right; }
+[dir="rtl"] .d-profile-tags { justify-content: flex-end; }
+[dir="rtl"] .d-profile-stat { text-align: right; align-items: flex-end; }
 
 /* XP bar */
 [dir="rtl"] .d-xp-row { flex-direction: row-reverse; }
@@ -931,5 +1101,17 @@
 
   .d-settings-grid {
     grid-template-columns: 1fr;
+  }
+
+  .d-settings-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .d-profile-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .d-profile-hero {
+    align-items: flex-start;
   }
 }
