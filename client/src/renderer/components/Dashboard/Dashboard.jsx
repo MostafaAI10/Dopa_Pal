@@ -55,6 +55,9 @@ const IconKeyboard = () => <Svg><rect width="20" height="16" x="2" y="4" rx="2" 
 const IconFire     = () => <Svg><path d="M12 2c0 0-5 5-5 10a5 5 0 0 0 10 0C17 7 12 2 12 2z"/></Svg>;
 const IconSettings = () => <Svg><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></Svg>;
 const IconLink     = () => <Svg><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3A5 5 0 0 0 11 21.07l1.71-1.71"/></Svg>;
+const IconShop     = () => <Svg><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></Svg>;
+const IconSync     = () => <Svg><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/><path d="M3 12A9 9 0 0 1 18.5 5.7L21 8"/><path d="M21 3v5h-5"/></Svg>;
+const IconMusic    = () => <Svg><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></Svg>;
 
 /* ─── Themes Store ──────────────────────────────────────── */
 const THEMES = [
@@ -63,6 +66,57 @@ const THEMES = [
   { id: 'sunset', name: 'Sunset Flare', cost: 1500, accent: '#f97316', glow: 'rgba(249,115,22,.35)', dim: 'rgba(249,115,22,.12)' },
   { id: 'cyber', name: 'Neon Cyberpunk', cost: 3000, accent: '#ec4899', glow: 'rgba(236,72,153,.35)', dim: 'rgba(236,72,153,.12)' },
   { id: 'gold', name: 'Midnight Gold', cost: 10000, accent: '#fbbf24', glow: 'rgba(251,191,36,.35)', dim: 'rgba(251,191,36,.12)' },
+];
+
+const SHOP_ITEMS = [
+  { id: 'music-lofi', type: 'Music', name: 'Lo-fi Focus Loop', cost: 800, accent: '#38bdf8', description: 'Soft study ambience for deep work sessions.' },
+  { id: 'music-rain', type: 'Music', name: 'Rain Desk', cost: 1200, accent: '#34d399', description: 'Gentle rain bed for the bubble and dashboard.' },
+  { id: 'visual-glass', type: 'Visual', name: 'Frosted Panels', cost: 900, accent: '#f472b6', description: 'Adds a brighter glass treatment to panels.' },
+  { id: 'visual-compact', type: 'Visual', name: 'Compact Mode', cost: 600, accent: '#fbbf24', description: 'Tighter spacing for dense planning days.' },
+];
+
+const LANGUAGE_OPTIONS = [
+  { code: 'ar', label: 'Arabic', native: 'العربية', dir: 'rtl', region: 'MENA' },
+  { code: 'en', label: 'English', native: 'English', dir: 'ltr', region: 'Global' },
+  { code: 'fr', label: 'French', native: 'Français', dir: 'ltr', region: 'Europe' },
+  { code: 'es', label: 'Spanish', native: 'Español', dir: 'ltr', region: 'LatAm / Europe' },
+  { code: 'de', label: 'German', native: 'Deutsch', dir: 'ltr', region: 'Europe' },
+  { code: 'tr', label: 'Turkish', native: 'Türkçe', dir: 'ltr', region: 'Turkey' },
+  { code: 'fa', label: 'Persian', native: 'فارسی', dir: 'rtl', region: 'Iran' },
+  { code: 'ur', label: 'Urdu', native: 'اردو', dir: 'rtl', region: 'Pakistan' },
+  { code: 'hi', label: 'Hindi', native: 'हिन्दी', dir: 'ltr', region: 'India' },
+  { code: 'ja', label: 'Japanese', native: '日本語', dir: 'ltr', region: 'Japan' },
+  { code: 'zh', label: 'Chinese', native: '中文', dir: 'ltr', region: 'China' },
+];
+
+const NOTIFICATION_LEVELS = [
+  { id: 'off', label: 'Off', detail: 'No proactive alerts' },
+  { id: 'essentials', label: 'Essentials', detail: 'Deadlines, completions, critical sync' },
+  { id: 'balanced', label: 'Balanced', detail: 'Essential plus reminders and summaries' },
+  { id: 'high-touch', label: 'High Touch', detail: 'Frequent prompts, nudges, and digest' },
+];
+
+const NOTIFICATION_CHANNELS = [
+  { id: 'in_app', label: 'In-app' },
+  { id: 'push', label: 'Push' },
+  { id: 'email', label: 'Email' },
+  { id: 'sound', label: 'Sound' },
+];
+
+const NOTIFICATION_CATEGORIES = [
+  { id: 'deadlines', label: 'Deadlines' },
+  { id: 'streaks', label: 'Streaks' },
+  { id: 'sync', label: 'Sync updates' },
+  { id: 'rewards', label: 'Rewards' },
+  { id: 'daily_digest', label: 'Daily digest' },
+  { id: 'focus_bursts', label: 'Focus bursts' },
+];
+
+const NOTIFICATION_DIGESTS = [
+  { id: 'none', label: 'Never' },
+  { id: 'daily', label: 'Daily' },
+  { id: 'weekdays', label: 'Weekdays' },
+  { id: 'weekly', label: 'Weekly' },
 ];
 
 const INTEGRATION_PROVIDERS = [
@@ -194,9 +248,6 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask }) => {
   );
 };
 
-/* ─── Tabs (built dynamically in component) ─────────── */
-const TAB_IDS = ['home', 'tasks', 'account', 'settings'];
-
 /* ══════════════════════════════════════════════════════════
    DASHBOARD COMPONENT
    ══════════════════════════════════════════════════════════ */
@@ -208,7 +259,6 @@ export default function Dashboard() {
   const [bubbleTask, setBubbleTask] = useState(null);
 
   // Chat state
-  const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { sender: 'ai', text: 'Hello! I am DopaPal, your personal AI focus assistant. How can I help you today?' }
   ]);
@@ -218,6 +268,10 @@ export default function Dashboard() {
   // Profile state
   const [userName, setUserName] = useState('Anchor User');
   const [isEditingName, setIsEditingName] = useState(false);
+  const [accountForm, setAccountForm] = useState({
+    name: 'Anchor User',
+    wakeTimePref: '07:30',
+  });
 
   // Add Task Modal State
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
@@ -230,14 +284,15 @@ export default function Dashboard() {
   const audioChunks = useRef([]);
 
   // Theme state
-  const [showThemes, setShowThemes] = useState(false);
   const [userXp, setUserXp] = useState(0);
   const [unlockedThemes, setUnlockedThemes] = useState(['default']);
+  const [unlockedShopItems, setUnlockedShopItems] = useState([]);
   const [activeTheme, setActiveTheme] = useState('default');
+  const [activeMusic, setActiveMusic] = useState('none');
+  const [activeVisual, setActiveVisual] = useState('default');
   const [purchaseError, setPurchaseError] = useState(null);
 
   // Integration state
-  const [showIntegrations, setShowIntegrations] = useState(false);
   const [integrationStatuses, setIntegrationStatuses] = useState([]);
   const [selectedProvider, setSelectedProvider] = useState('google');
   const [integrationForm, setIntegrationForm] = useState({
@@ -248,6 +303,27 @@ export default function Dashboard() {
   });
   const [integrationSaving, setIntegrationSaving] = useState(false);
   const [integrationMessage, setIntegrationMessage] = useState('');
+
+  // Settings state
+  const [languageDraft, setLanguageDraft] = useState({
+    primary: 'ar',
+    secondary: 'en',
+    contentMode: 'auto',
+    transliteration: false,
+    dateFormat: 'locale',
+    numberFormat: 'locale',
+  });
+  const [notificationDraft, setNotificationDraft] = useState({
+    level: 'balanced',
+    channels: ['in_app', 'sound'],
+    categories: ['deadlines', 'streaks', 'rewards'],
+    digest: 'daily',
+    quietStart: '21:00',
+    quietEnd: '08:00',
+    soundProfile: 'soft',
+  });
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsMessage, setSettingsMessage] = useState('');
 
   // Streak & gamification state
   const [streak, setStreak] = useState(0);
@@ -263,14 +339,46 @@ export default function Dashboard() {
     const savedUnlocked = localStorage.getItem('dopapal_themes_v3');
     if (savedUnlocked) setUnlockedThemes(JSON.parse(savedUnlocked));
 
+    const savedShopItems = localStorage.getItem('dopapal_shop_items_v1');
+    if (savedShopItems) setUnlockedShopItems(JSON.parse(savedShopItems));
+
     const savedActive = localStorage.getItem('dopapal_active_theme_v3');
     if (savedActive) setActiveTheme(savedActive);
+
+    const savedMusic = localStorage.getItem('dopapal_active_music_v1');
+    if (savedMusic) setActiveMusic(savedMusic);
+
+    const savedVisual = localStorage.getItem('dopapal_active_visual_v1');
+    if (savedVisual) setActiveVisual(savedVisual);
     
     const savedStreak = localStorage.getItem('dopapal_streak_v3');
     if (savedStreak) setStreak(parseInt(savedStreak, 10));
 
     const savedName = localStorage.getItem('dopapal_username');
     if (savedName) setUserName(savedName);
+
+    const savedLanguageDraft = localStorage.getItem('dopapal_language_prefs_v1');
+    if (savedLanguageDraft) {
+      try {
+        setLanguageDraft(prev => ({ ...prev, ...JSON.parse(savedLanguageDraft) }));
+      } catch {
+        // ignore malformed local draft
+      }
+    }
+
+    const savedNotificationDraft = localStorage.getItem('dopapal_notification_prefs_v1');
+    if (savedNotificationDraft) {
+      try {
+        setNotificationDraft(prev => ({ ...prev, ...JSON.parse(savedNotificationDraft) }));
+      } catch {
+        // ignore malformed local draft
+      }
+    }
+
+    const savedWake = localStorage.getItem('dopapal_wake_time_v1');
+    if (savedWake) {
+      setAccountForm(prev => ({ ...prev, wakeTimePref: savedWake }));
+    }
   }, []);
 
   useEffect(() => {
@@ -295,9 +403,34 @@ export default function Dashboard() {
     }
   };
 
+  const buyShopItem = (itemId, cost) => {
+    if (userXp >= cost && !unlockedShopItems.includes(itemId)) {
+      const newXp = userXp - cost;
+      const newUnlocked = [...unlockedShopItems, itemId];
+      setUserXp(newXp);
+      setUnlockedShopItems(newUnlocked);
+      localStorage.setItem('dopapal_xp_v3', newXp);
+      localStorage.setItem('dopapal_shop_items_v1', JSON.stringify(newUnlocked));
+      setPurchaseError(null);
+    } else if (userXp < cost) {
+      setPurchaseError('Not enough XP to unlock this customization.');
+      setTimeout(() => setPurchaseError(null), 3000);
+    }
+  };
+
   const equipTheme = (themeId) => {
     setActiveTheme(themeId);
     localStorage.setItem('dopapal_active_theme_v3', themeId);
+  };
+
+  const equipShopItem = (item) => {
+    if (item.type === 'Music') {
+      setActiveMusic(item.id);
+      localStorage.setItem('dopapal_active_music_v1', item.id);
+    } else {
+      setActiveVisual(item.id);
+      localStorage.setItem('dopapal_active_visual_v1', item.id);
+    }
   };
 
   const handleSendChat = () => {
@@ -334,6 +467,22 @@ export default function Dashboard() {
   useEffect(() => {
     if (tab === 'settings') {
       fetchIntegrations();
+      api.getUserSettings()
+        .then(data => {
+          if (data?.name) {
+            setUserName(data.name);
+            setAccountForm(prev => ({ ...prev, name: data.name }));
+          }
+          if (data?.wake_time_pref) {
+            const wake = data.wake_time_pref.slice(0, 5);
+            setAccountForm(prev => ({ ...prev, wakeTimePref: wake }));
+            localStorage.setItem('dopapal_wake_time_v1', wake);
+          }
+          if (data?.language) {
+            setLanguageDraft(prev => ({ ...prev, primary: data.language }));
+          }
+        })
+        .catch(() => {});
     }
   }, [tab]);
 
@@ -341,10 +490,59 @@ export default function Dashboard() {
     integrationStatuses.find(status => status.provider === providerId) || { provider: providerId, connected: false }
   );
 
-  const openIntegrations = () => {
-    setShowIntegrations(true);
-    setIntegrationMessage('');
-    fetchIntegrations();
+  const toggleListValue = (list, value) => (
+    list.includes(value) ? list.filter(item => item !== value) : [...list, value]
+  );
+
+  const saveAccountSettings = async () => {
+    setSettingsSaving(true);
+    setSettingsMessage('');
+    try {
+      const payload = {
+        name: accountForm.name.trim(),
+        wake_time_pref: accountForm.wakeTimePref,
+        language: languageDraft.primary,
+      };
+      await api.updateUserSettings(payload);
+      setUserName(accountForm.name.trim() || 'Anchor User');
+      localStorage.setItem('dopapal_username', accountForm.name.trim() || 'Anchor User');
+      localStorage.setItem('dopapal_wake_time_v1', accountForm.wakeTimePref);
+      setSettingsMessage('Account settings saved.');
+    } catch (err) {
+      console.error('Error saving account settings:', err);
+      setSettingsMessage('Could not save account settings.');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  const saveLanguageSettings = async () => {
+    setSettingsSaving(true);
+    setSettingsMessage('');
+    try {
+      await changeLanguage(languageDraft.primary);
+      localStorage.setItem('dopapal_language_prefs_v1', JSON.stringify(languageDraft));
+      setSettingsMessage('Language preferences saved.');
+    } catch (err) {
+      console.error('Error saving language settings:', err);
+      setSettingsMessage('Could not save language preferences.');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  const saveNotificationSettings = async () => {
+    setSettingsSaving(true);
+    setSettingsMessage('');
+    try {
+      localStorage.setItem('dopapal_notification_prefs_v1', JSON.stringify(notificationDraft));
+      setSettingsMessage('Notification preferences saved.');
+    } catch (err) {
+      console.error('Error saving notification settings:', err);
+      setSettingsMessage('Could not save notification preferences.');
+    } finally {
+      setSettingsSaving(false);
+    }
   };
 
   const submitIntegration = async (e) => {
@@ -412,7 +610,7 @@ export default function Dashboard() {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [chatMessages, isTyping, showChat]);
+  }, [chatMessages, isTyping, tab]);
 
   const triggerFloatingEmoji = (emoji, type = 'good', e) => {
     // try to get mouse position, otherwise default to center
@@ -641,21 +839,41 @@ export default function Dashboard() {
       {/* ── Sidebar ─────────────────────────────────────── */}
       <div className="d-layout">
         <aside className="d-sidebar">
-          {[
-            { id: 'home',     label: t('dashboard.home'),      Icon: IconHome },
-            { id: 'tasks',    label: t('dashboard.allTasks'),  Icon: IconTask },
-            { id: 'account',  label: t('dashboard.account'),   Icon: IconUser },
-            { id: 'settings', label: t('dashboard.settings'), Icon: IconSettings },
-          ].map(({ id, label, Icon }) => (
+          <div className="d-sidebar-main">
+            {[
+              { id: 'home',      label: t('dashboard.home'),     Icon: IconHome },
+              { id: 'tasks',     label: t('dashboard.allTasks'), Icon: IconTask },
+              { id: 'assistant', label: 'Assistant',             Icon: IconSparkle },
+            ].map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                className={`d-nav-btn${tab === id ? ' active' : ''}`}
+                onClick={() => setTab(id)}
+              >
+                <Icon />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="d-sidebar-tools">
             <button
-              key={id}
-              className={`d-nav-btn${tab === id ? ' active' : ''}`}
-              onClick={() => setTab(id)}
+              className={`d-icon-nav${tab === 'shop' ? ' active' : ''}`}
+              onClick={() => setTab('shop')}
+              title="Shop"
+              aria-label="Shop"
             >
-              <Icon />
-              <span>{label}</span>
+              <IconShop />
             </button>
-          ))}
+            <button
+              className={`d-icon-nav${tab === 'settings' ? ' active' : ''}`}
+              onClick={() => setTab('settings')}
+              title={t('dashboard.settings')}
+              aria-label={t('dashboard.settings')}
+            >
+              <IconSettings />
+            </button>
+          </div>
         </aside>
 
         {/* ── Main content ──────────────────────────────── */}
@@ -811,7 +1029,195 @@ export default function Dashboard() {
           )}
 
           {/* ══ SETTINGS TAB ══ */}
-          {tab === 'settings' && !showChat && !showThemes && !showIntegrations && (
+          {tab === 'settings' && (
+            <div className="d-section fade-in">
+              <div className="d-greeting" style={{ alignItems: 'center' }}>
+                <div>
+                  <h1 className="d-h1">Settings</h1>
+                  <p className="d-sub">Account, language, notifications, sync, and privacy all live here.</p>
+                </div>
+                {settingsMessage && <span className="d-badge d-badge--accent">{settingsMessage}</span>}
+              </div>
+
+              <div className="d-card">
+                <div className="d-card-header"><IconUser /><span>Account</span></div>
+                <div className="d-settings-grid">
+                  <input className="d-input" value={accountForm.name} onChange={e => setAccountForm({ ...accountForm, name: e.target.value })} placeholder="Display name" />
+                  <input className="d-input" type="time" value={accountForm.wakeTimePref} onChange={e => setAccountForm({ ...accountForm, wakeTimePref: e.target.value })} />
+                </div>
+                <div className="d-integration-summary">
+                  <div><span className="d-integration-label">Primary account</span><strong>{USER.email}</strong></div>
+                  <div><span className="d-integration-label">Wake time</span><strong>{accountForm.wakeTimePref || '07:30'}</strong></div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="d-btn d-btn--primary" onClick={saveAccountSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Account'}</button>
+                </div>
+              </div>
+
+              <div className="d-card">
+                <div className="d-card-header"><span>🌐</span><span>{t('dashboard.language')}</span></div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))', gap: 10 }}>
+                  {LANGUAGE_OPTIONS.map(option => (
+                    <button
+                      key={option.code}
+                      className="d-btn d-btn--secondary"
+                      onClick={() => {
+                        setLanguageDraft(prev => ({ ...prev, primary: option.code }));
+                        changeLanguage(option.code);
+                      }}
+                      style={{
+                        justifyContent: 'flex-start',
+                        padding: '12px',
+                        borderColor: languageDraft.primary === option.code ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
+                        background: languageDraft.primary === option.code ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
+                        color: languageDraft.primary === option.code ? 'var(--accent)' : 'var(--text)',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        gap: '4px',
+                      }}
+                    >
+                      <strong>{option.native}</strong>
+                      <span style={{ fontSize: 12, color: 'inherit', opacity: 0.8 }}>{option.label}</span>
+                      <span style={{ fontSize: 11, opacity: 0.7 }}>{option.region}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="d-settings-grid">
+                  <select className="d-input" value={languageDraft.secondary} onChange={e => setLanguageDraft({ ...languageDraft, secondary: e.target.value })}>
+                    {LANGUAGE_OPTIONS.filter(option => option.code !== languageDraft.primary).map(option => <option key={option.code} value={option.code}>{option.label}</option>)}
+                  </select>
+                  <select className="d-input" value={languageDraft.contentMode} onChange={e => setLanguageDraft({ ...languageDraft, contentMode: e.target.value })}>
+                    <option value="auto">Auto detect content</option>
+                    <option value="primary">Primary language only</option>
+                    <option value="bilingual">Bilingual mode</option>
+                  </select>
+                  <select className="d-input" value={languageDraft.dateFormat} onChange={e => setLanguageDraft({ ...languageDraft, dateFormat: e.target.value })}>
+                    <option value="locale">Locale dates</option>
+                    <option value="iso">ISO dates</option>
+                  </select>
+                  <select className="d-input" value={languageDraft.numberFormat} onChange={e => setLanguageDraft({ ...languageDraft, numberFormat: e.target.value })}>
+                    <option value="locale">Locale numbers</option>
+                    <option value="compact">Compact numbers</option>
+                    <option value="plain">Plain numbers</option>
+                  </select>
+                </div>
+                <label className="d-toggle-row"><span>Transliterate borrowed content</span><input type="checkbox" checked={languageDraft.transliteration} onChange={e => setLanguageDraft({ ...languageDraft, transliteration: e.target.checked })} /></label>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="d-btn d-btn--primary" onClick={saveLanguageSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Language'}</button>
+                </div>
+              </div>
+
+              <div className="d-card">
+                <div className="d-card-header"><span>Notifications</span></div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 }}>
+                  {NOTIFICATION_LEVELS.map(level => (
+                    <button
+                      key={level.id}
+                      className="d-btn d-btn--secondary"
+                      onClick={() => setNotificationDraft({ ...notificationDraft, level: level.id })}
+                      style={{
+                        justifyContent: 'flex-start',
+                        padding: '12px',
+                        borderColor: notificationDraft.level === level.id ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
+                        background: notificationDraft.level === level.id ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
+                        color: notificationDraft.level === level.id ? 'var(--accent)' : 'var(--text)',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        gap: '4px',
+                      }}
+                    >
+                      <strong>{level.label}</strong>
+                      <span style={{ fontSize: 12, opacity: 0.8 }}>{level.detail}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="d-settings-pills">
+                  {NOTIFICATION_CHANNELS.map(channel => (
+                    <button key={channel.id} className={`d-pill${notificationDraft.channels.includes(channel.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, channels: toggleListValue(notificationDraft.channels, channel.id) })}>{channel.label}</button>
+                  ))}
+                </div>
+                <div className="d-settings-pills">
+                  {NOTIFICATION_CATEGORIES.map(category => (
+                    <button key={category.id} className={`d-pill${notificationDraft.categories.includes(category.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, categories: toggleListValue(notificationDraft.categories, category.id) })}>{category.label}</button>
+                  ))}
+                </div>
+                <div className="d-settings-grid">
+                  <select className="d-input" value={notificationDraft.digest} onChange={e => setNotificationDraft({ ...notificationDraft, digest: e.target.value })}>
+                    {NOTIFICATION_DIGESTS.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
+                  </select>
+                  <select className="d-input" value={notificationDraft.soundProfile} onChange={e => setNotificationDraft({ ...notificationDraft, soundProfile: e.target.value })}>
+                    <option value="soft">Soft</option>
+                    <option value="balanced">Balanced</option>
+                    <option value="sharp">Sharp</option>
+                    <option value="silent">Silent</option>
+                  </select>
+                  <input className="d-input" type="time" value={notificationDraft.quietStart} onChange={e => setNotificationDraft({ ...notificationDraft, quietStart: e.target.value })} />
+                  <input className="d-input" type="time" value={notificationDraft.quietEnd} onChange={e => setNotificationDraft({ ...notificationDraft, quietEnd: e.target.value })} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="d-btn d-btn--primary" onClick={saveNotificationSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Notifications'}</button>
+                </div>
+              </div>
+
+              <div className="d-card">
+                <div className="d-card-header"><IconSync /><span>Sync</span></div>
+                <div className="d-integrations-layout" style={{ padding: 0, gridTemplateColumns: 'minmax(220px, 280px) 1fr' }}>
+                  <div className="d-card d-integrations-list" style={{ padding: 16 }}>
+                    {INTEGRATION_PROVIDERS.map(provider => {
+                      const status = getIntegrationStatus(provider.id);
+                      return (
+                        <button key={provider.id} className={`d-integration-provider${selectedProvider === provider.id ? ' active' : ''}`} onClick={() => { setSelectedProvider(provider.id); setIntegrationMessage(''); }}>
+                          <span className="d-integration-dot" style={{ background: status.connected ? '#34d399' : 'rgba(255,255,255,0.25)' }} />
+                          <span>{provider.name}</span>
+                          <span className={`d-integration-status ${status.connected ? 'connected' : ''}`}>{status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Off'}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="d-card d-integrations-detail" style={{ padding: 18 }}>
+                    {(() => {
+                      const provider = INTEGRATION_PROVIDERS.find(p => p.id === selectedProvider) || INTEGRATION_PROVIDERS[0];
+                      const status = getIntegrationStatus(provider.id);
+                      const expiresAt = status.expires_at ? new Date(status.expires_at).toLocaleString() : 'Not connected';
+                      return (
+                        <>
+                          <div className="d-card-header">
+                            <IconLink />
+                            <span>{provider.name}</span>
+                            <span className={`d-chip ${status.connected ? '' : 'd-chip--muted'}`}>{status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Disconnected'}</span>
+                          </div>
+                          <div className="d-integration-summary">
+                            <div><span className="d-integration-label">Expires</span><strong>{expiresAt}</strong></div>
+                            <div><span className="d-integration-label">{provider.settingLabel}</span><strong>{status.settings?.[provider.settingKey] || 'None'}</strong></div>
+                          </div>
+                          <form className="d-modal-form" onSubmit={submitIntegration}>
+                            <input className="d-input" type="password" placeholder={provider.tokenLabel} value={integrationForm.accessToken} onChange={e => setIntegrationForm({ ...integrationForm, accessToken: e.target.value })} />
+                            <input className="d-input" type="password" placeholder="Refresh token (optional)" value={integrationForm.refreshToken} onChange={e => setIntegrationForm({ ...integrationForm, refreshToken: e.target.value })} />
+                            <div className="d-integration-form-grid">
+                              <input className="d-input" placeholder={provider.settingLabel} value={integrationForm.settingValue} onChange={e => setIntegrationForm({ ...integrationForm, settingValue: e.target.value })} />
+                              <input className="d-input" type="number" min="60" step="60" value={integrationForm.expiresInSeconds} onChange={e => setIntegrationForm({ ...integrationForm, expiresInSeconds: e.target.value })} />
+                            </div>
+                            <button className="d-btn d-btn--primary" disabled={integrationSaving || !integrationForm.accessToken.trim()} style={{ alignSelf: 'stretch' }}>{integrationSaving ? 'Saving...' : `Connect ${provider.name}`}</button>
+                          </form>
+                          {integrationMessage && <div className="d-integration-message">{integrationMessage}</div>}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-card">
+                <div className="d-card-header"><span>Privacy</span></div>
+                <div className="d-settings-grid">
+                  <label className="d-toggle-row"><span>Share anonymous usage data</span><input type="checkbox" /></label>
+                  <label className="d-toggle-row"><span>Store task history locally</span><input type="checkbox" defaultChecked /></label>
+                  <label className="d-toggle-row"><span>Encrypt local sync cache</span><input type="checkbox" defaultChecked /></label>
+                </div>
+              </div>
+            </div>
+          )}
+          {tab === 'settings' && false && (
             <div className="d-section fade-in">
               <h1 className="d-h1">Settings</h1>
               
@@ -841,26 +1247,17 @@ export default function Dashboard() {
               <div className="d-card">
                 <div className="d-card-header"><span>App Settings</span></div>
                 <div className="d-settings-list">
-                  {['Notifications', 'AI Model', 'Theme', 'Integrations', 'Sync', 'Privacy'].map(s => (
+                  {['Notifications', 'Privacy'].map(s => (
                     <div 
                       key={s} 
                       className="d-setting-row" 
-                      style={{ display: 'flex', justifyContent: 'space-between', cursor: (s === 'AI Model' || s === 'Theme' || s === 'Integrations') ? 'pointer' : 'default' }}
-                      onClick={() => {
-                          if (s === 'AI Model') setShowChat(true);
-                          if (s === 'Theme') setShowThemes(true);
-                          if (s === 'Integrations') openIntegrations();
-                      }}
+                      style={{ display: 'flex', justifyContent: 'space-between' }}
                     >
                       <span>{s}</span>
                       {s === 'Notifications' ? (
                         <div style={{ width: 36, height: 20, background: '#8b5cf6', borderRadius: 10, position: 'relative' }}>
                           <div style={{ position: 'absolute', right: 2, top: 2, width: 16, height: 16, background: 'white', borderRadius: '50%' }}></div>
                         </div>
-                      ) : s === 'Integrations' ? (
-                        <span className="d-badge d-badge--accent">
-                          {integrationStatuses.filter(status => status.connected).length}/{INTEGRATION_PROVIDERS.length}
-                        </span>
                       ) : (
                         <span className="d-setting-arrow">›</span>
                       )}
@@ -871,13 +1268,10 @@ export default function Dashboard() {
             </div>
           )}
 
-          {tab === 'settings' && showChat && (
+          {tab === 'assistant' && (
             <div className="d-section fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 0' }}>
               <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '0' }}>
-                <button className="d-btn d-btn--secondary" onClick={() => setShowChat(false)} style={{ padding: '6px 12px', minWidth: 'auto', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}>
-                  &lt; Back
-                </button>
-                <h1 className="d-h1" style={{ margin: 0, marginLeft: '12px', fontSize: '18px' }}>DopaPal AI Model</h1>
+                <h1 className="d-h1" style={{ margin: 0, fontSize: '18px' }}>DopaPal Assistant</h1>
               </div>
               
               <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -919,13 +1313,13 @@ export default function Dashboard() {
             </div>
           )}
 
-          {tab === 'settings' && showIntegrations && (
+          {tab === 'sync' && (
             <div className="d-section fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 0' }}>
               <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '0' }}>
-                <button className="d-btn d-btn--secondary" onClick={() => setShowIntegrations(false)} style={{ padding: '6px 12px', minWidth: 'auto', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}>
-                  &lt; Back
-                </button>
-                <h1 className="d-h1" style={{ margin: 0, marginLeft: '12px', fontSize: '18px' }}>Tool Integrations</h1>
+                <h1 className="d-h1" style={{ margin: 0, fontSize: '18px' }}>Sync</h1>
+                <span className="d-badge d-badge--accent">
+                  {integrationStatuses.filter(status => status.connected).length}/{INTEGRATION_PROVIDERS.length} connected
+                </span>
               </div>
 
               <div className="d-integrations-layout">
@@ -1026,14 +1420,11 @@ export default function Dashboard() {
             </div>
           )}
 
-          {tab === 'settings' && showThemes && (
+          {tab === 'shop' && (
             <div className="d-section fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 0' }}>
               <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '0' }}>
-                <button className="d-btn d-btn--secondary" onClick={() => setShowThemes(false)} style={{ padding: '6px 12px', minWidth: 'auto', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}>
-                  &lt; Back
-                </button>
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                  <h1 className="d-h1" style={{ margin: 0, marginLeft: '12px', fontSize: '18px' }}>Theme Shop</h1>
+                  <h1 className="d-h1" style={{ margin: 0, fontSize: '18px' }}>Shop</h1>
                   <div className="d-streak" style={{ background: 'rgba(251,191,36,0.1)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)', padding: '4px 12px', borderRadius: '16px' }}>
                     <IconSparkle /> <span style={{ fontWeight: 600 }}>{userXp} XP</span>
                   </div>
@@ -1050,7 +1441,6 @@ export default function Dashboard() {
                 {THEMES.map(t => {
                   const isUnlocked = unlockedThemes.includes(t.id);
                   const isActive = activeTheme === t.id;
-                  const canBuy = userXp >= t.cost;
                   return (
                     <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--surface2)', borderRadius: '12px', border: isActive ? `2px solid ${t.accent}` : '1px solid rgba(255,255,255,0.05)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -1073,6 +1463,46 @@ export default function Dashboard() {
                         ) : (
                           <button className="d-btn" onClick={() => buyTheme(t.id, t.cost)} style={{ background: '#fbbf24', color: 'black' }}>
                             Buy Theme
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="d-shop-section-title">
+                  <IconMusic />
+                  <span>Music & Visuals</span>
+                </div>
+
+                {SHOP_ITEMS.map(item => {
+                  const isUnlocked = unlockedShopItems.includes(item.id);
+                  const isActive = item.type === 'Music' ? activeMusic === item.id : activeVisual === item.id;
+                  return (
+                    <div key={item.id} className="d-shop-item" style={{ borderColor: isActive ? item.accent : 'rgba(255,255,255,0.05)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
+                        <div className="d-shop-item-icon" style={{ color: item.accent, background: `${item.accent}22` }}>
+                          {item.type === 'Music' ? <IconMusic /> : <IconSparkle />}
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div className="d-shop-item-title">{item.name}</div>
+                          <div className="d-shop-item-desc">{item.description}</div>
+                          {!isUnlocked && (
+                            <div className="d-shop-price">
+                              <IconSparkle size={12} /> {item.cost} XP
+                            </div>
+                          )}
+                          {isUnlocked && <div className="d-shop-owned">Unlocked</div>}
+                        </div>
+                      </div>
+                      <div>
+                        {isActive ? (
+                          <button className="d-btn d-btn--secondary" disabled style={{ background: 'transparent', border: `1px solid ${item.accent}`, color: item.accent }}>Active</button>
+                        ) : isUnlocked ? (
+                          <button className="d-btn" onClick={() => equipShopItem(item)} style={{ background: item.accent, color: item.accent === '#fbbf24' ? '#111' : '#fff' }}>Use</button>
+                        ) : (
+                          <button className="d-btn" onClick={() => buyShopItem(item.id, item.cost)} style={{ background: '#fbbf24', color: 'black' }}>
+                            Buy
                           </button>
                         )}
                       </div>

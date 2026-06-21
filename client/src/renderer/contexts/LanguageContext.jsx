@@ -3,6 +3,7 @@ import api from '../services/api';
 import { translations } from '../locales';
 
 const LanguageContext = createContext();
+const RTL_LANGS = new Set(['ar', 'fa', 'ur', 'he']);
 
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(() => {
@@ -26,7 +27,7 @@ export function LanguageProvider({ children }) {
 
   // Apply dir attribute + font on lang change
   useEffect(() => {
-    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('dir', RTL_LANGS.has(lang) ? 'rtl' : 'ltr');
     document.documentElement.setAttribute('lang', lang);
   }, [lang]);
 
@@ -47,9 +48,9 @@ export function LanguageProvider({ children }) {
   }, [lang]);
 
   return (
-    <LanguageContext.Provider value={{ lang, changeLanguage, t, isRTL: lang === 'ar' }}>
-      {children}
-    </LanguageContext.Provider>
+      <LanguageContext.Provider value={{ lang, changeLanguage, t, isRTL: RTL_LANGS.has(lang) }}>
+        {children}
+      </LanguageContext.Provider>
   );
 }
 
