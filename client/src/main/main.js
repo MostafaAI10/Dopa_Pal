@@ -1,7 +1,6 @@
 import { app, BrowserWindow, ipcMain, screen, globalShortcut, clipboard, Notification } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { enhanced_notification_service } from './enhanced_notification_service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
