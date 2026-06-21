@@ -32,7 +32,7 @@ class FocusModeService:
     def __init__(self):
         self._focus_state: FocusModeState = FocusModeState()
     
-    def toggle_focus_mode(self, is_active: bool, duration_minutes: Optional[int] = None) -> FocusModeModeState:
+    def toggle_focus_mode(self, is_active: bool, duration_minutes: Optional[int] = None) -> FocusModeState:
         """
         Toggle focus mode on or off.
         
@@ -97,6 +97,8 @@ class FocusModeService:
             List of (sub_block, score) tuples ranked by priority
         """
         ai = get_ai_service()
+        from datetime import datetime, timezone
+        now_dt = datetime.now(timezone.utc)
         now = self._get_current_timestamp()
         
         # Fetch pending sub-blocks for the user
@@ -122,8 +124,8 @@ class FocusModeService:
             task = block.task
             block_map[block.id] = block
             
-            # Determine created_at — use task.created_at if available, else now
-            created_at = task.created_at if task.created_at else now
+            # Determine created_at — use task.created_at if available, else now_dt
+            created_at = task.created_at if task.created_at else now_dt
             
             candidates[block.id] = PinchInput(
                 deadline=task.deadline,
@@ -144,7 +146,7 @@ class FocusModeService:
         ranked = ai.score_for_bubble(
             candidates=candidates,
             state_score=state_score,
-            now=now,
+            now=now_dt,
         )
         
         # Apply focus mode multiplier to scores

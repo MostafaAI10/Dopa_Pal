@@ -20,8 +20,9 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
 
     # AI / NLP Module Configuration
-    OLLAMA_URL: str = "http://localhost:11434"
-    OLLAMA_MODEL: str = "llama3.1"
+    NVIDIA_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
+    NVIDIA_API_KEY: str = ""
+    NVIDIA_MODEL: str = "nvidia/nemotron-3-super-120b-a12b"
     AI_USE_LLM: bool = False  # Deterministic-first: LLM enrichment is opt-in
     
     # Optional local file system path for configuration fallback

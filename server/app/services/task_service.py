@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.state import StateLog
 from app.models.task import Task, SubBlock
-from app.services.ai.llm.ollama_client import OllamaConfig
+from app.services.ai.llm.nvidia_client import NvidiaConfig
 from app.services.ai.schemas import IngestResult, PinchInput, SourceType
 from app.services.ai.service import AIService, IngestOptions
 from app.services.speech_to_text import convert_audio_to_text
@@ -33,15 +33,16 @@ logger = logging.getLogger(__name__)
 
 def _build_ai_service() -> AIService:
     """Construct the AIService with settings from the app config."""
-    ollama_cfg = OllamaConfig(
-        base_url=settings.OLLAMA_URL,
-        model=settings.OLLAMA_MODEL,
+    nvidia_cfg = NvidiaConfig(
+        api_key=settings.NVIDIA_API_KEY,
+        base_url=settings.NVIDIA_BASE_URL,
+        model=settings.NVIDIA_MODEL,
     )
     options = IngestOptions(
         use_llm=settings.AI_USE_LLM,
         block_minutes=120,
     )
-    return AIService(options=options, ollama_config=ollama_cfg)
+    return AIService(options=options, nvidia_config=nvidia_cfg)
 
 
 _ai_service: AIService | None = None

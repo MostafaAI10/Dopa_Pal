@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisco
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from datetime import datetime, date
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from app.core.database import get_db
 from app.models.user import User
 from app.models.task import Task, SubBlock
@@ -404,12 +404,12 @@ def get_focus_mode_state_endpoint(db: Session = Depends(get_db)):
 # ---------- Enhanced Notification Endpoint ----------
 
 class EnhancedNotificationRequest(BaseModel):
-    type: str = Field(..., description="Type of notification")
+    type: enhanced_notification.NotificationType = Field(..., description="Type of notification")
     title: str = Field(..., description="Notification title")
     body: str = Field(..., description="Notification body")
     icon: Optional[str] = Field(None, description="Notification icon")
     actions: Optional[List[Dict[str, Any]]] = Field(None, description="Notification actions")
-    audio_file: Optional[str] = Field(None, description="Audio file for notification")
+    audio_type: Optional[str] = Field(None, description="Audio type for feedback")
     priority: str = Field("normal", description="Notification priority")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Notification metadata")
 
@@ -427,14 +427,19 @@ def create_enhanced_notification_endpoint(request: EnhancedNotificationRequest, 
     """
     user = get_or_create_default_user(db)
     
+    # Parse actions
+    parsed_actions = None
+    if request.actions:
+        parsed_actions = [enhanced_notification.NotificationAction(**a) for a in request.actions]
+    
     # Create enhanced notification
     notification = enhanced_notification.create_enhanced_notification(
         notification_type=request.type,
         title=request.title,
         body=request.body,
         icon=request.icon,
-        actions=request.actions,
-        audio_file=request.audio_file,
+        actions=parsed_actions,
+        audio_type=request.audio_type,
         priority=request.priority,
         metadata=request.metadata
     )

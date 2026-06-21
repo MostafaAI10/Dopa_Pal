@@ -56,10 +56,10 @@ def test_llm_enrichment_overrides_title_when_enabled(fixed_now, mocker):
 
 
 def test_llm_failure_falls_back_to_deterministic_title(fixed_now, mocker):
-    from app.services.ai.llm.ollama_client import OllamaUnavailableError
-
-    mock_client = mocker.Mock()
-    mock_client.enrich_task.side_effect = OllamaUnavailableError("connection refused")
+    from app.services.ai.llm.nvidia_client import NvidiaUnavailableError
+    
+    mock_client = mocker.MagicMock()
+    mock_client.enrich_task.side_effect = NvidiaUnavailableError("connection refused")
     pipeline = IngestionPipeline(reference_time=fixed_now, llm_client=mock_client, use_llm=True)
 
     result = pipeline.parse("write the report by friday", SourceType.MANUAL)

@@ -7,7 +7,7 @@ from datetime import datetime
 import logging
 from typing import Optional
 
-from app.services.ai.llm.ollama_client import OllamaClient, OllamaUnavailableError
+from app.services.ai.llm.nvidia_client import NvidiaClient, NvidiaUnavailableError
 from app.services.ai.parsers.challenge_estimator import estimate_challenge
 from app.services.ai.parsers.date_parser import parse_deadline, default_deadline
 from app.services.ai.parsers.effort_parser import parse_effort
@@ -39,11 +39,11 @@ class IngestionPipeline:
     def __init__(
         self,
         reference_time: datetime | None = None,
-        llm_client: Optional[OllamaClient] = None,
+        llm_client: Optional[NvidiaClient] = None,
         use_llm: bool = False,
     ):
         self._reference_time = reference_time
-        self._llm_client = llm_client or (OllamaClient() if use_llm else None)
+        self._llm_client = llm_client or (NvidiaClient(config=None) if use_llm else None)  # Note: config is required, but usually passed via service.py
         self._use_llm = use_llm
 
     def parse(self, raw_text: str, source_type: SourceType | str) -> ParsedTask:
@@ -89,8 +89,6 @@ class IngestionPipeline:
         # Enhanced LLM integration for more comprehensive parsing
         if self._use_llm and self._llm_client is not None:
             parsed = self._try_enrich(parsed, title, challenge.hint)
-            # LLM can also refine estimated_hours and interest_tag for better accuracy
-            parsed = self._try_refine_estimates(parsed)
 
         return parsed
 
@@ -100,12 +98,15 @@ class IngestionPipeline:
         is caught and logged — the deterministic ParsedTask is returned
         unchanged. Never let an LLM hiccup break task capture.
         """
+        if self._llm_client is None:
+            return parsed
+
         try:
             enrichment = self._llm_client.enrich_task(
                 raw_text=parsed.raw_source_text, deterministic_title=deterministic_title
             )
-        except OllamaUnavailableError as exc:
-            logger.warning("Ollama enrichment skipped (unavailable): %s", exc)
+        except NvidiaUnavailableError as exc:
+            logger.warning("Nvidia enrichment skipped (unavailable): %s", exc)
             return parsed
 
         updates: dict = {}
@@ -119,28 +120,6 @@ class IngestionPipeline:
         if difficulty:
             logger.info("LLM difficulty assessment for %r: %s (deterministic: %s)",
                          parsed.title[:60], difficulty, challenge_hint)
-
-        if updates:
-            parsed = parsed.model_copy(update=updates)
-
-        return parsed
-
-    def _try_refine_estimates(self, parsed: ParsedTask) -> ParsedTask:
-        """
-        Best-effort LLM pass to refine estimated_hours and interest_tag.
-        This provides more nuanced parsing than deterministic regex patterns.
-        Any failure is caught and logged — the deterministic ParsedTask is returned
-        unchanged. Never let an LLM hiccup break task capture.
-        """
-        try:
-            enrichment = self._llm_client.enrich_task(
-                raw_text=parsed.raw_source_text, deterministic_title=parsed.title
-            )
-        except OllamaUnavailableError as exc:
-            logger.warning("Ollama estimate refinement skipped (unavailable): %s", exc)
-            return parsed
-
-        updates: dict = {}
 
         # Refine estimated_hours with LLM's better understanding of context
         estimated_hours = enrichment.get("estimated_hours")

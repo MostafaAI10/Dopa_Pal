@@ -6,7 +6,7 @@ from typing import Optional
 
 from app.services.ai.chunking import ChunkingEngine
 from app.services.ai.ingestion import IngestionPipeline
-from app.services.ai.llm.ollama_client import OllamaClient, OllamaConfig, OllamaUnavailableError
+from app.services.ai.llm.nvidia_client import NvidiaClient, NvidiaConfig, NvidiaUnavailableError
 from app.services.ai.parsers.challenge_estimator import estimate_challenge
 from app.services.ai.pinch import PinchEngine, PinchScoreBreakdown
 from app.services.ai.schemas import IngestResult, ParsedTask, PinchInput, SourceType
@@ -32,11 +32,22 @@ class AIService:
     def __init__(
         self,
         options: Optional[IngestOptions] = None,
-        ollama_config: Optional[OllamaConfig] = None,
+        nvidia_config: Optional[NvidiaConfig] = None,
     ):
         self._options = options or IngestOptions()
+        
+        # If no config is passed but use_llm is true, try to load from settings
+        if self._options.use_llm and not nvidia_config:
+            from app.core.config import settings
+            if settings.NVIDIA_API_KEY:
+                nvidia_config = NvidiaConfig(
+                    api_key=settings.NVIDIA_API_KEY,
+                    base_url=settings.NVIDIA_BASE_URL,
+                    model=settings.NVIDIA_MODEL
+                )
+                
         self._llm_client = (
-            OllamaClient(config=ollama_config) if self._options.use_llm else None
+            NvidiaClient(config=nvidia_config) if self._options.use_llm and nvidia_config else None
         )
         self._chunker = ChunkingEngine(block_minutes=self._options.block_minutes)
         self._pinch = PinchEngine()
@@ -134,5 +145,5 @@ class AIService:
                 raw_text=parsed.raw_source_text, deterministic_title=parsed.title
             )
             return enrichment.get("difficulty")
-        except OllamaUnavailableError:
+        except NvidiaUnavailableError:
             return None

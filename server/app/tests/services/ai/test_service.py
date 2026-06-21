@@ -17,9 +17,9 @@ def test_ingest_returns_full_payload_matching_api_contract(fixed_now):
     assert 0.0 <= result.pinch_score <= 100.0
 
 
-def test_ingest_without_llm_never_touches_ollama(fixed_now, mocker):
+def test_ingest_without_llm_never_touches_nvidia(fixed_now, mocker):
     service = AIService(IngestOptions(use_llm=False))
-    spy = mocker.patch("app.services.ai.service.OllamaClient")
+    spy = mocker.patch("app.services.ai.service.NvidiaClient")
     service.ingest("write the report by friday", SourceType.MANUAL, now=fixed_now)
     spy.assert_not_called()
 

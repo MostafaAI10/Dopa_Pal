@@ -1,14 +1,10 @@
 """
-Local LLM integration layer (Ollama).
+LLM Clients Module.
 
-Everything in the rest of the AI module works without this — see the
-deterministic parsers in services/ai/parsers/. This package exists purely
-as a clean seam for optional semantic enrichment (e.g. better title
-sanitization, smarter interest tagging, real difficulty assessment instead
-of the keyword heuristic) without touching ingestion.py, chunking.py, or
-pinch.py's public contracts.
+This module provides the clients for integrating with Large Language Models.
+It isolates the external API calls from the core ingestion pipeline.
 """
 
-from app.services.ai.llm.ollama_client import OllamaClient, OllamaConfig, OllamaUnavailableError
+from app.services.ai.llm.nvidia_client import NvidiaClient, NvidiaConfig, NvidiaUnavailableError
 
-__all__ = ["OllamaClient", "OllamaConfig", "OllamaUnavailableError"]
+__all__ = ["NvidiaClient", "NvidiaConfig", "NvidiaUnavailableError"]
