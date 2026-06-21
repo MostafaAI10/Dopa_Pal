@@ -1,9 +1,8 @@
 [project]
 name = "dopapal"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.14"
+description = "dopaPal FastAPI backend"
+requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.13.0",
     "dateparser>=1.2.0",
@@ -18,11 +17,14 @@ dependencies = [
     "python-multipart>=0.0.9",
     "redis>=5.0.0",
     "sqlalchemy>=2.0.0",
-    "uvicorn>=0.28.0",
-    "dateparser>=1.2.0",
-    "httpx>=0.27.0",
 ]
 
 [project.scripts]
 dopapal = "main:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-mock>=3.14.0",
+]
 

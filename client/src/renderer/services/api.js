@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// The FastAPI backend runs on 8000
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -12,8 +11,11 @@ const apiClient = axios.create({
 
 export const api = {
   // Tasks
-  ingestTask: async (rawText) => {
-    const response = await apiClient.post('/tasks/ingest', { raw_text: rawText });
+  ingestTask: async (sourceText, sourceType = 'manual') => {
+    const response = await apiClient.post('/tasks/ingest', {
+      source_text: sourceText,
+      source_type: sourceType,
+    });
     return response.data;
   },
   getTasks: async () => {
@@ -43,7 +45,7 @@ export const api = {
     return response.data;
   },
   completeSubBlock: async (subBlockId) => {
-    const response = await apiClient.post(`/sub_blocks/${subBlockId}/complete`);
+    const response = await apiClient.post(`/tasks/${subBlockId}/complete`);
     return response.data;
   },
   getAISummary: async () => {
@@ -53,7 +55,7 @@ export const api = {
 
   // State / Morning routine
   submitMood: async (moodScore) => {
-    const response = await apiClient.post('/state/mood', { score: moodScore });
+    const response = await apiClient.post('/state/log', { mood_score: moodScore });
     return response.data;
   },
 

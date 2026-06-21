@@ -1,6 +1,6 @@
 {
-  "extraPaths": ["server"],
-  "pythonVersion": "3.11",
+  "extraPaths": ["."],
+  "pythonVersion": "3.12",
   "reportMissingImports": true,
   "reportMissingModuleSource": false
 }

@@ -5,10 +5,23 @@ import pytest
 
 from app.services.ai.llm.ollama_client import OllamaClient, OllamaConfig, OllamaUnavailableError
 
+_HTTPX_CLIENT = httpx.Client
+
 
 def _client_with_transport(transport: httpx.MockTransport) -> OllamaClient:
     client = OllamaClient(OllamaConfig())
     return client, transport
+
+
+def _patch_client(monkeypatch, transport: httpx.MockTransport):
+    monkeypatch.setattr(
+        httpx,
+        "Client",
+        lambda *a, **kw: _HTTPX_CLIENT(
+            transport=transport,
+            **{k: v for k, v in kw.items() if k != "transport"},
+        ),
+    )
 
 
 def test_enrich_task_success(monkeypatch):
@@ -17,7 +30,7 @@ def test_enrich_task_success(monkeypatch):
         return httpx.Response(200, json=payload)
 
     transport = httpx.MockTransport(handler)
-    monkeypatch.setattr(httpx, "Client", lambda *a, **kw: httpx.Client(transport=transport, **{k: v for k, v in kw.items() if k != "transport"}))
+    _patch_client(monkeypatch, transport)
 
     client = OllamaClient()
     result = client.enrich_task("write the proposal", "Write the proposal")
@@ -31,7 +44,7 @@ def test_enrich_task_unreachable_raises(monkeypatch):
         raise httpx.ConnectError("connection refused", request=request)
 
     transport = httpx.MockTransport(handler)
-    monkeypatch.setattr(httpx, "Client", lambda *a, **kw: httpx.Client(transport=transport, **{k: v for k, v in kw.items() if k != "transport"}))
+    _patch_client(monkeypatch, transport)
 
     client = OllamaClient()
     with pytest.raises(OllamaUnavailableError):
@@ -43,7 +56,7 @@ def test_enrich_task_bad_json_raises(monkeypatch):
         return httpx.Response(200, json={"response": "not valid json"})
 
     transport = httpx.MockTransport(handler)
-    monkeypatch.setattr(httpx, "Client", lambda *a, **kw: httpx.Client(transport=transport, **{k: v for k, v in kw.items() if k != "transport"}))
+    _patch_client(monkeypatch, transport)
 
     client = OllamaClient()
     with pytest.raises(OllamaUnavailableError):
@@ -56,7 +69,7 @@ def test_enrich_task_strips_unexpected_keys(monkeypatch):
         return httpx.Response(200, json=payload)
 
     transport = httpx.MockTransport(handler)
-    monkeypatch.setattr(httpx, "Client", lambda *a, **kw: httpx.Client(transport=transport, **{k: v for k, v in kw.items() if k != "transport"}))
+    _patch_client(monkeypatch, transport)
 
     client = OllamaClient()
     result = client.enrich_task("x", "x")
@@ -68,7 +81,7 @@ def test_is_available_false_on_connection_error(monkeypatch):
         raise httpx.ConnectError("refused", request=request)
 
     transport = httpx.MockTransport(handler)
-    monkeypatch.setattr(httpx, "Client", lambda *a, **kw: httpx.Client(transport=transport, **{k: v for k, v in kw.items() if k != "transport"}))
+    _patch_client(monkeypatch, transport)
 
     client = OllamaClient()
     assert client.is_available() is False

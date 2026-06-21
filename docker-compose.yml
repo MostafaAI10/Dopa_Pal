@@ -3,8 +3,8 @@ version: '3.8'
 services:
   backend:
     build:
-      context: .                           # Use the project root as context
-      dockerfile: server/Dockerfile        # Look inside server for the Dockerfile
+      context: ./server
+      dockerfile: Dockerfile
     container_name: dopapal-backend
     ports:
       - "8000:8000"
@@ -19,8 +19,8 @@ services:
       redis:
         condition: service_started
     volumes:
-      - .:/app                             # Mount the root directory cleanly
-      - /app/.venv/                        # Protect the container's environment layer                  # Protect the container's virtual environment
+      - ./server:/app
+      - /app/.venv/
 
   db:
     image: postgres:16-alpine

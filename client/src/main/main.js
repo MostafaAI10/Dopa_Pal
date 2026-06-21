@@ -1,5 +1,4 @@
 import { app, BrowserWindow, ipcMain, screen, globalShortcut, clipboard, Notification } from 'electron';
-import { exec } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -10,8 +9,8 @@ const __dirname  = path.dirname(__filename);
 let bubbleWin    = null;
 let dashboardWin = null;
 
-const ICON_W = 80;
-const ICON_H = 80;
+const API_BASE_URL = process.env.DOPAPAL_API_BASE_URL || 'http://localhost:8000/api/v1';
+const apiUrl = (route) => `${API_BASE_URL}${route}`;
 
 /* ── Bubble window ─────────────────────────────────────── */
 const createBubble = () => {
@@ -115,7 +114,7 @@ ipcMain.on('minimize-dashboard', () => {
 /* ── IPC: Tasks ────────────────────────────────────────── */
 ipcMain.handle('create-task', async (_e, payload) => {
   try {
-    const response = await fetch("http://localhost:8000/api/v1/tasks/create", {
+    const response = await fetch(apiUrl('/tasks/create'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -138,7 +137,7 @@ ipcMain.handle('create-task', async (_e, payload) => {
 
 ipcMain.handle('ingest-task', async (_e, payload) => {
   try {
-    const response = await fetch("http://localhost:8000/api/v1/tasks/ingest", {
+    const response = await fetch(apiUrl('/tasks/ingest'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -158,7 +157,7 @@ ipcMain.handle('ingest-task', async (_e, payload) => {
 
 ipcMain.handle('update-task', async (_e, id, payload) => {
   try {
-    const response = await fetch(`http://localhost:8000/api/v1/tasks/${id}`, {
+    const response = await fetch(apiUrl(`/tasks/${id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -205,7 +204,7 @@ const startNotificationSystem = () => {
   // Run every 1 minute for testing purposes
   setInterval(async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/tasks");
+      const response = await fetch(apiUrl('/tasks'));
       if (!response.ok) return;
       const tasks = await response.json();
       
@@ -270,7 +269,7 @@ const registerGlobalShortcuts = () => {
 
     try {
       // 2. Process with AI via Backend
-      const response = await fetch("http://localhost:8000/api/v1/tasks/ingest", {
+      const response = await fetch(apiUrl('/tasks/ingest'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

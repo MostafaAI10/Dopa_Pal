@@ -7,7 +7,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:renderer": "vite --host 127.0.0.1",
+    "build:bundle": "vite build",
     "build": "vite build && electron-builder",
+    "package": "electron-builder",
     "preview": "vite preview"
   },
   "dependencies": {

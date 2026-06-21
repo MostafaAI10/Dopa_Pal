@@ -8,7 +8,7 @@ export default defineConfig({
     electron([
       {
         // Main process — vite-plugin-electron will launch electron once
-        entry: 'electron/main.js',
+        entry: 'src/main/main.js',
         vite: {
           build: {
             rollupOptions: {
@@ -23,7 +23,7 @@ export default defineConfig({
       },
       {
         // Preload — just reload on change, don't launch again
-        entry: 'electron/preload.js',
+        entry: 'src/main/preload.js',
         onstart(options) {
           options.reload();
         },

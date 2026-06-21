@@ -50,22 +50,41 @@ def parse_deadline(text: str, reference: datetime | None = None) -> DateParseRes
     """
     reference = reference or datetime.now()
     settings = {**_DATEPARSER_SETTINGS, "RELATIVE_BASE": reference}
+    if re.search(r"\btonight\b", text, re.IGNORECASE):
+        return DateParseResult(
+            deadline=reference.replace(hour=23, minute=59, second=59, microsecond=0),
+            confidence=0.75,
+            matched_text="tonight",
+        )
 
     clause_match = _DEADLINE_CLAUSE_RE.search(text)
     if clause_match:
         clause = clause_match.group("clause").strip()
-        parsed = dateparser.parse(clause, settings=settings)
+        parsed = _parse_date_text(clause, settings)
         if parsed:
             parsed = _apply_end_of_day_if_hinted(parsed, clause)
             return DateParseResult(deadline=parsed, confidence=0.9, matched_text=clause)
 
     # Fallback: scan the full sentence for any date-like span.
-    parsed = dateparser.parse(text, settings=settings)
+    parsed = _parse_date_text(text, settings)
     if parsed:
         parsed = _apply_end_of_day_if_hinted(parsed, text)
         return DateParseResult(deadline=parsed, confidence=0.55, matched_text=text)
 
     return DateParseResult(deadline=None, confidence=0.0, matched_text=None)
+
+
+def _parse_date_text(text: str, settings: dict) -> datetime | None:
+    parsed = dateparser.parse(text, settings=settings)
+    if parsed:
+        return parsed
+
+    normalized = re.sub(r"\b(night|midnight|end of day|eod)\b", "", text, flags=re.IGNORECASE)
+    normalized = re.sub(r"\s+", " ", normalized).strip(" ,")
+    if normalized and normalized != text:
+        return dateparser.parse(normalized, settings=settings)
+
+    return None
 
 
 def _apply_end_of_day_if_hinted(parsed: datetime, source_text: str) -> datetime:
