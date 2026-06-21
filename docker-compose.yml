@@ -19,8 +19,8 @@ services:
       redis:
         condition: service_started
     volumes:
-      - ./server:/app
-      - /app/.venv/
+      - ./server:/server
+      - /server/.venv/
 
   db:
     image: postgres:16-alpine
