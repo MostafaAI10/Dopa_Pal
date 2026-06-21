@@ -54,6 +54,7 @@ const IconMic      = () => <Svg><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3
 const IconKeyboard = () => <Svg><rect width="20" height="16" x="2" y="4" rx="2" ry="2"/><line x1="6" x2="6.01" y1="8" y2="8"/><line x1="10" x2="10.01" y1="8" y2="8"/><line x1="14" x2="14.01" y1="8" y2="8"/><line x1="18" x2="18.01" y1="8" y2="8"/><line x1="8" x2="16" y1="12" y2="12"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/><line x1="14" x2="14.01" y1="16" y2="16"/><line x1="18" x2="18.01" y1="16" y2="16"/></Svg>;
 const IconFire     = () => <Svg><path d="M12 2c0 0-5 5-5 10a5 5 0 0 0 10 0C17 7 12 2 12 2z"/></Svg>;
 const IconSettings = () => <Svg><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></Svg>;
+const IconLink     = () => <Svg><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3A5 5 0 0 0 11 21.07l1.71-1.71"/></Svg>;
 
 /* ─── Themes Store ──────────────────────────────────────── */
 const THEMES = [
@@ -62,6 +63,13 @@ const THEMES = [
   { id: 'sunset', name: 'Sunset Flare', cost: 1500, accent: '#f97316', glow: 'rgba(249,115,22,.35)', dim: 'rgba(249,115,22,.12)' },
   { id: 'cyber', name: 'Neon Cyberpunk', cost: 3000, accent: '#ec4899', glow: 'rgba(236,72,153,.35)', dim: 'rgba(236,72,153,.12)' },
   { id: 'gold', name: 'Midnight Gold', cost: 10000, accent: '#fbbf24', glow: 'rgba(251,191,36,.35)', dim: 'rgba(251,191,36,.12)' },
+];
+
+const INTEGRATION_PROVIDERS = [
+  { id: 'google', name: 'Google Calendar', accent: '#38bdf8', tokenLabel: 'OAuth access token', settingLabel: 'Calendar ID', settingKey: 'calendar_id' },
+  { id: 'notion', name: 'Notion', accent: '#f8fafc', tokenLabel: 'Integration token', settingLabel: 'Database ID', settingKey: 'database_id' },
+  { id: 'jira', name: 'Jira', accent: '#60a5fa', tokenLabel: 'API token', settingLabel: 'Project key', settingKey: 'project_key' },
+  { id: 'canvas', name: 'Canvas LMS', accent: '#fb7185', tokenLabel: 'Access token', settingLabel: 'Course ID', settingKey: 'course_id' },
 ];
 
 /* ─── Priority badge ────────────────────────────────────── */
@@ -228,6 +236,19 @@ export default function Dashboard() {
   const [activeTheme, setActiveTheme] = useState('default');
   const [purchaseError, setPurchaseError] = useState(null);
 
+  // Integration state
+  const [showIntegrations, setShowIntegrations] = useState(false);
+  const [integrationStatuses, setIntegrationStatuses] = useState([]);
+  const [selectedProvider, setSelectedProvider] = useState('google');
+  const [integrationForm, setIntegrationForm] = useState({
+    accessToken: '',
+    refreshToken: '',
+    expiresInSeconds: 3600,
+    settingValue: '',
+  });
+  const [integrationSaving, setIntegrationSaving] = useState(false);
+  const [integrationMessage, setIntegrationMessage] = useState('');
+
   // Streak & gamification state
   const [streak, setStreak] = useState(0);
   const [streakEmoji, setStreakEmoji] = useState('🔥');
@@ -298,6 +319,60 @@ export default function Dashboard() {
         setChatMessages(prev => [...prev, { sender: 'ai', text: randomResp }]);
         setIsTyping(false);
     }, 1500);
+  };
+
+  const fetchIntegrations = async () => {
+    try {
+      const statuses = await api.getIntegrationsStatus();
+      setIntegrationStatuses(statuses);
+    } catch (err) {
+      console.error('Error fetching integrations:', err);
+      setIntegrationMessage('Could not load integration status. Check that the backend is running.');
+    }
+  };
+
+  useEffect(() => {
+    if (tab === 'settings') {
+      fetchIntegrations();
+    }
+  }, [tab]);
+
+  const getIntegrationStatus = (providerId) => (
+    integrationStatuses.find(status => status.provider === providerId) || { provider: providerId, connected: false }
+  );
+
+  const openIntegrations = () => {
+    setShowIntegrations(true);
+    setIntegrationMessage('');
+    fetchIntegrations();
+  };
+
+  const submitIntegration = async (e) => {
+    e.preventDefault();
+    const provider = INTEGRATION_PROVIDERS.find(p => p.id === selectedProvider);
+    if (!provider || !integrationForm.accessToken.trim()) return;
+
+    setIntegrationSaving(true);
+    setIntegrationMessage('');
+    try {
+      await api.configureIntegration({
+        provider: provider.id,
+        accessToken: integrationForm.accessToken.trim(),
+        refreshToken: integrationForm.refreshToken.trim(),
+        expiresInSeconds: Number(integrationForm.expiresInSeconds) || 3600,
+        settings: integrationForm.settingValue.trim()
+          ? { [provider.settingKey]: integrationForm.settingValue.trim() }
+          : {},
+      });
+      setIntegrationForm({ accessToken: '', refreshToken: '', expiresInSeconds: 3600, settingValue: '' });
+      setIntegrationMessage(`${provider.name} connected.`);
+      await fetchIntegrations();
+    } catch (err) {
+      console.error('Error saving integration:', err);
+      setIntegrationMessage('Could not save integration. Check the token fields and backend logs.');
+    } finally {
+      setIntegrationSaving(false);
+    }
   };
 
   const fetchTasksAndBubble = async () => {
@@ -373,18 +448,30 @@ export default function Dashboard() {
           }
         }
 
-        await window.electronAPI.createTask({
+        const payload = {
           title: taskData.title,
           deadline: taskData.due ? new Date(taskData.due).toISOString() : new Date(Date.now() + 86400000 * 7).toISOString(),
           estimatedHours: hours,
           sourceType: 'manual',
           interestTag: null
-        });
+        };
+
+        if (IS_ELECTRON) {
+          await window.electronAPI.createTask(payload);
+        } else {
+          await api.createTask(payload);
+        }
       } else if (source === 'ai') {
-        await window.electronAPI.ingestTask({
+        const payload = {
           source_text: aiText,
           source_type: 'highlight'
-        });
+        };
+
+        if (IS_ELECTRON) {
+          await window.electronAPI.ingestTask(payload);
+        } else {
+          await api.ingestTask(payload.source_text, payload.source_type);
+        }
       } else if (source === 'voice' && extraData) {
         const arrayBuffer = await extraData.arrayBuffer();
         await window.electronAPI.ingestVoiceTask(arrayBuffer);
@@ -724,7 +811,7 @@ export default function Dashboard() {
           )}
 
           {/* ══ SETTINGS TAB ══ */}
-          {tab === 'settings' && !showChat && !showThemes && (
+          {tab === 'settings' && !showChat && !showThemes && !showIntegrations && (
             <div className="d-section fade-in">
               <h1 className="d-h1">Settings</h1>
               
@@ -754,14 +841,15 @@ export default function Dashboard() {
               <div className="d-card">
                 <div className="d-card-header"><span>App Settings</span></div>
                 <div className="d-settings-list">
-                  {['Notifications', 'AI Model', 'Theme', 'Sync', 'Privacy'].map(s => (
+                  {['Notifications', 'AI Model', 'Theme', 'Integrations', 'Sync', 'Privacy'].map(s => (
                     <div 
                       key={s} 
                       className="d-setting-row" 
-                      style={{ display: 'flex', justifyContent: 'space-between', cursor: (s === 'AI Model' || s === 'Theme') ? 'pointer' : 'default' }}
+                      style={{ display: 'flex', justifyContent: 'space-between', cursor: (s === 'AI Model' || s === 'Theme' || s === 'Integrations') ? 'pointer' : 'default' }}
                       onClick={() => {
                           if (s === 'AI Model') setShowChat(true);
                           if (s === 'Theme') setShowThemes(true);
+                          if (s === 'Integrations') openIntegrations();
                       }}
                     >
                       <span>{s}</span>
@@ -769,6 +857,10 @@ export default function Dashboard() {
                         <div style={{ width: 36, height: 20, background: '#8b5cf6', borderRadius: 10, position: 'relative' }}>
                           <div style={{ position: 'absolute', right: 2, top: 2, width: 16, height: 16, background: 'white', borderRadius: '50%' }}></div>
                         </div>
+                      ) : s === 'Integrations' ? (
+                        <span className="d-badge d-badge--accent">
+                          {integrationStatuses.filter(status => status.connected).length}/{INTEGRATION_PROVIDERS.length}
+                        </span>
                       ) : (
                         <span className="d-setting-arrow">›</span>
                       )}
@@ -823,6 +915,113 @@ export default function Dashboard() {
                   style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px', color: 'white', outline: 'none', fontSize: '14px' }} 
                 />
                 <button className="d-btn d-btn--primary" onClick={handleSendChat} style={{ borderRadius: '12px', padding: '0 20px' }}>Send</button>
+              </div>
+            </div>
+          )}
+
+          {tab === 'settings' && showIntegrations && (
+            <div className="d-section fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 0' }}>
+              <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '0' }}>
+                <button className="d-btn d-btn--secondary" onClick={() => setShowIntegrations(false)} style={{ padding: '6px 12px', minWidth: 'auto', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}>
+                  &lt; Back
+                </button>
+                <h1 className="d-h1" style={{ margin: 0, marginLeft: '12px', fontSize: '18px' }}>Tool Integrations</h1>
+              </div>
+
+              <div className="d-integrations-layout">
+                <div className="d-card d-integrations-list">
+                  <div className="d-card-header"><IconLink /><span>Providers</span></div>
+                  {INTEGRATION_PROVIDERS.map(provider => {
+                    const status = getIntegrationStatus(provider.id);
+                    return (
+                      <button
+                        key={provider.id}
+                        className={`d-integration-provider${selectedProvider === provider.id ? ' active' : ''}`}
+                        onClick={() => {
+                          setSelectedProvider(provider.id);
+                          setIntegrationMessage('');
+                        }}
+                      >
+                        <span className="d-integration-dot" style={{ background: status.connected ? '#34d399' : 'rgba(255,255,255,0.25)' }} />
+                        <span>{provider.name}</span>
+                        <span className={`d-integration-status ${status.connected ? 'connected' : ''}`}>
+                          {status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Off'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="d-card d-integrations-detail">
+                  {(() => {
+                    const provider = INTEGRATION_PROVIDERS.find(p => p.id === selectedProvider) || INTEGRATION_PROVIDERS[0];
+                    const status = getIntegrationStatus(provider.id);
+                    const expiresAt = status.expires_at ? new Date(status.expires_at).toLocaleString() : 'Not connected';
+                    return (
+                      <>
+                        <div className="d-card-header">
+                          <IconLink />
+                          <span>{provider.name}</span>
+                          <span className={`d-chip ${status.connected ? '' : 'd-chip--muted'}`}>
+                            {status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Disconnected'}
+                          </span>
+                        </div>
+
+                        <div className="d-integration-summary">
+                          <div>
+                            <span className="d-integration-label">Expires</span>
+                            <strong>{expiresAt}</strong>
+                          </div>
+                          <div>
+                            <span className="d-integration-label">{provider.settingLabel}</span>
+                            <strong>{status.settings?.[provider.settingKey] || 'None'}</strong>
+                          </div>
+                        </div>
+
+                        <form className="d-modal-form" onSubmit={submitIntegration}>
+                          <input
+                            className="d-input"
+                            type="password"
+                            placeholder={provider.tokenLabel}
+                            value={integrationForm.accessToken}
+                            onChange={e => setIntegrationForm({ ...integrationForm, accessToken: e.target.value })}
+                          />
+                          <input
+                            className="d-input"
+                            type="password"
+                            placeholder="Refresh token (optional)"
+                            value={integrationForm.refreshToken}
+                            onChange={e => setIntegrationForm({ ...integrationForm, refreshToken: e.target.value })}
+                          />
+                          <div className="d-integration-form-grid">
+                            <input
+                              className="d-input"
+                              placeholder={provider.settingLabel}
+                              value={integrationForm.settingValue}
+                              onChange={e => setIntegrationForm({ ...integrationForm, settingValue: e.target.value })}
+                            />
+                            <input
+                              className="d-input"
+                              type="number"
+                              min="60"
+                              step="60"
+                              value={integrationForm.expiresInSeconds}
+                              onChange={e => setIntegrationForm({ ...integrationForm, expiresInSeconds: e.target.value })}
+                              title="Token lifetime in seconds"
+                            />
+                          </div>
+                          <button className="d-btn d-btn--primary" disabled={integrationSaving || !integrationForm.accessToken.trim()} style={{ alignSelf: 'stretch' }}>
+                            {integrationSaving ? 'Saving...' : `Connect ${provider.name}`}
+                          </button>
+                        </form>
+
+                        {integrationMessage && (
+                          <div className="d-integration-message">{integrationMessage}</div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           )}

@@ -18,12 +18,22 @@ export const api = {
     });
     return response.data;
   },
+  createTask: async ({ title, deadline, estimatedHours = 2.0, interestTag = null, sourceType = 'manual' }) => {
+    const response = await apiClient.post('/tasks/create', {
+      title,
+      deadline,
+      estimated_hours: estimatedHours,
+      interest_tag: interestTag,
+      source_type: sourceType,
+    });
+    return response.data;
+  },
   getTasks: async () => {
     const response = await apiClient.get('/tasks');
     return response.data;
   },
   updatePacing: async (taskId, date) => {
-    const response = await apiClient.patch(`/tasks/${taskId}/pacing`, { target_date: date });
+    const response = await apiClient.patch(`/tasks/${taskId}`, { deadline: date });
     return response.data;
   },
   completeTask: async (taskId) => {
@@ -45,7 +55,7 @@ export const api = {
     return response.data;
   },
   completeSubBlock: async (subBlockId) => {
-    const response = await apiClient.post(`/tasks/${subBlockId}/complete`);
+    const response = await apiClient.post(`/sub-blocks/${subBlockId}/complete`);
     return response.data;
   },
   getAISummary: async () => {
@@ -66,6 +76,26 @@ export const api = {
   },
   updateUserSettings: async (settings) => {
     const response = await apiClient.patch('/user/settings', settings);
+    return response.data;
+  },
+
+  // Integrations
+  getIntegrationsStatus: async () => {
+    const response = await apiClient.get('/integrations/status');
+    return response.data;
+  },
+  getIntegrationStatus: async (provider) => {
+    const response = await apiClient.get(`/integrations/status/${provider}`);
+    return response.data;
+  },
+  configureIntegration: async ({ provider, accessToken, refreshToken, expiresInSeconds = 3600, settings = {} }) => {
+    const response = await apiClient.post('/integrations/config', {
+      provider,
+      access_token: accessToken,
+      refresh_token: refreshToken || null,
+      expires_in_seconds: expiresInSeconds,
+      settings,
+    });
     return response.data;
   }
 };

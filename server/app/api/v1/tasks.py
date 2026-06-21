@@ -200,7 +200,7 @@ def api_update_task(task_id: int, payload: TaskUpdateRequest, db: Session = Depe
     return task
 
 
-@router.post("/tasks/{sub_block_id}/complete")
+@router.post("/sub-blocks/{sub_block_id}/complete")
 async def api_complete_sub_block(sub_block_id: int, db: Session = Depends(get_db)):
     user = get_or_create_default_user(db)
     result = reward_service.complete_sub_block(db, user.id, sub_block_id)
