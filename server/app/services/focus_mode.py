@@ -11,7 +11,8 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from app.models.state import StateLog
 from app.models.task import Task, SubBlock
-from app.services.ai.service import AIService, get_ai_service
+from app.services.ai.service import AIService
+from app.services.task_service import get_ai_service
 from app.services.ai.schemas import PinchInput
 from app.services.state_service import calculate_state_score_from_metrics
 
