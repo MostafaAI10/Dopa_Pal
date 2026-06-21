@@ -70,6 +70,7 @@ class PinchInput(BaseModel):
     created_at: datetime
     interest_tag: Optional[str]
     user_interest_tags: list[str] = Field(default_factory=list)
+    user_passion_tags: list[str] = Field(default_factory=list)  # For distinguishing passion vs interest
     is_novel: bool = False
     challenge_hint: Optional[str] = None 
     estimated_hours: float = Field(default=2.0, gt=0)

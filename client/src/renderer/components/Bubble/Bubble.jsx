@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import './Bubble.css';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { api as serverApi } from '../../services/api';
 
 /* ─── Detect Electron ───────────────────────────────────── */
 const IS_ELECTRON = typeof window !== 'undefined' && !!window.electronAPI;
@@ -20,6 +21,94 @@ const SIZES = {
 const ORB_SIZE        = 68;
 const ROOT_PAD_BOTTOM = 6;
 const DRAG_PX         = 5;
+
+/* ─── Duration parser utility ────────────────────────────── */
+function parseDuration(durationInput) {
+  if (!durationInput || !durationInput.trim()) return 2.0;
+  
+  const input = durationInput.trim().toLowerCase();
+  
+  // Common duration patterns and their hour equivalents
+  const durationPatterns = {
+    '15m': 0.25,
+    '15 minutes': 0.25,
+    '30m': 0.5,
+    '30 minutes': 0.5,
+    '45m': 0.75,
+    '45 minutes': 0.75,
+    '1h': 1.0,
+    '1 hour': 1.0,
+    '2h': 2.0,
+    '2 hours': 2.0,
+    'half day': 4.0,
+    'half-day': 4.0,
+    'half a day': 4.0,
+    'full day': 8.0,
+    'full-day': 8.0,
+    'full a day': 8.0,
+    'quick': 0.5,
+    'short': 1.0,
+    'small': 1.0,
+    'big': 6.0,
+    'huge': 10.0,
+    'massive': 12.0,
+    'q': 0.5,
+    's': 1.0,
+    'b': 6.0,
+    'h': 10.0,
+  };
+  
+  // Check for exact matches first
+  if (input in durationPatterns) {
+    return durationPatterns[input];
+  }
+  
+  // Parse hours pattern (e.g., "1.5 hours", "2 hours")
+  const hoursMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)/);
+  if (hoursMatch) {
+    return parseFloat(hoursMatch[1]);
+  }
+  
+  // Parse minutes pattern (e.g., "90 minutes", "45 mins")
+  const minutesMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:minutes?|mins?)/);
+  if (minutesMatch) {
+    return parseFloat(minutesMatch[1]) / 60.0;
+  }
+  
+  // Parse number with unit (e.g., "1.5h", "90m")
+  const numberMatch = input.match(/^(\d+(?:\.\d+)?)(h|m|hour|min)?$/);
+  if (numberMatch) {
+    const val = parseFloat(numberMatch[1]);
+    const unit = numberMatch[2];
+    if (unit && unit.startsWith('m')) {
+      return val / 60.0;
+    } else if (unit && unit.startsWith('h')) {
+      return val;
+    } else {
+      // No unit: assume minutes if > 10, else hours
+      return val > 10 ? val / 60.0 : val;
+    }
+  }
+  
+  // Check for fractional durations (e.g., "half hour", "quarter day")
+  const fractionalPatterns = [
+    { regex: /half hour/i, value: 0.5 },
+    { regex: /quarter hour/i, value: 0.25 },
+    { regex: /half day/i, value: 4.0 },
+    { regex: /quarter day/i, value: 1.0 },
+    { regex: /third day/i, value: 8.0 / 3 },
+    { regex: /tenth day/i, value: 0.8 },
+  ];
+  
+  for (const pattern of fractionalPatterns) {
+    if (pattern.regex.test(input)) {
+      return pattern.value;
+    }
+  }
+  
+  // If all parsing attempts fail, return default
+  return 2.0;
+}
 
 /* ─── Priority auto-calc from due date ──────────────────── */
 function calcPriority(dueDateStr) {
@@ -163,28 +252,29 @@ export default function Bubble() {
     setIsLoading(true);
     try {
       if (source === 'manual') {
+        // Use the server's duration parser for consistent parsing
         let hours = 2.0;
-        const dStr = task.duration.trim().toLowerCase();
-        if (dStr === '15m' || dStr === '15 minutes') hours = 0.25;
-        else if (dStr === '30m' || dStr === '30 minutes') hours = 0.5;
-        else if (dStr === '45m' || dStr === '45 minutes') hours = 0.75;
-        else if (dStr === '1h' || dStr === '1 hour') hours = 1.0;
-        else if (dStr === '2h' || dStr === '2 hours') hours = 2.0;
-        else if (dStr === 'half-day') hours = 4.0;
-        else if (dStr === 'full-day') hours = 8.0;
-        else if (dStr) {
-          const match = dStr.match(/^([\d.]+)\s*(h|m|hour|min)?/);
-          if (match) {
-            const val = parseFloat(match[1]);
-            const unit = match[2];
-            if (unit && unit.startsWith('m')) {
-              hours = val / 60.0;
-            } else if (unit && unit.startsWith('h')) {
-              hours = val;
+        
+        if (task.duration && task.duration.trim()) {
+          try {
+            // Call the server's duration parser API
+            const response = await fetch('/api/v1/parse-duration', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ duration: task.duration })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              hours = result.hours;
             } else {
-              // no unit: assume minutes if > 10, else hours
-              hours = val > 10 ? val / 60.0 : val;
+              // Fallback to client-side parsing if server API fails
+              hours = parseDuration(task.duration);
             }
+          } catch (error) {
+            console.error("Failed to parse duration:", error);
+            // Fallback to client-side parsing
+            hours = parseDuration(task.duration);
           }
         }
 
@@ -357,28 +447,74 @@ export default function Bubble() {
       )}
 
       {/* ━━━━━━━━ AI SUMMARY DISPLAY ━━━━━━━━ */}
-      {view === 'aiSummaryDisplay' && (
-        <div className={`b-panel b-panel--tall b-panel--${panelAnim}`} style={{ flexDirection:'column', gap:12 }}>
-          <button className="b-back" onClick={() => goTo('panel')}><BackIcon /></button>
-          <button className="b-close" onClick={() => goTo('icon')}><CloseIcon /></button>
+       {view === 'aiSummaryDisplay' && (
+         <div className={`b-panel b-panel--tall b-panel--${panelAnim}`} style={{ flexDirection:'column', gap:12 }}>
+           <button className="b-back" onClick={() => goTo('panel')}><BackIcon /></button>
+           <button className="b-close" onClick={() => goTo('icon')}><CloseIcon /></button>
 
-          <div className="b-menu-title" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-             <SparkleIcon /> AI Summary
-          </div>
-          
-          <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0', color: 'var(--text2)', fontSize: '14px', lineHeight: '1.6' }}>
-             {isLoading ? (
-               <div style={{ display:'flex', justifyContent:'center', padding:'20px' }}>
-                 <div style={{ animation:'pulse 1.5s infinite', color:'var(--accent)' }}>Generating summary... 🧠</div>
-               </div>
-             ) : (
-               <div style={{ background:'rgba(255,255,255,0.05)', padding:'15px', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.1)' }}>
-                 {summaryData?.text}
-               </div>
-             )}
-          </div>
-        </div>
-      )}
+           <div className="b-menu-title" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+              <SparkleIcon /> AI Summary
+           </div>
+           
+           <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0', color: 'var(--text2)', fontSize: '14px', lineHeight: '1.6' }}>
+              {isLoading ? (
+                <div style={{ display:'flex', justifyContent:'center', padding:'20px' }}>
+                  <div style={{ animation:'pulse 1.5s infinite', color:'var(--accent)' }}>Generating summary... 🧠</div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ background:'rgba(255,255,255,0.05)', padding:'15px', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.1)', marginBottom:'12px' }}>
+                    {summaryData?.text}
+                  </div>
+                  
+                  {/* Action suggestions based on summary */}
+                  <div style={{ background:'rgba(167,139,250,0.1)', padding:'12px', borderRadius:'8px', border:'1px solid rgba(167,139,250,0.3)' }}>
+                    <div style={{ fontSize:'13px', fontWeight:'600', color:'var(--accent)', marginBottom:'8px' }}>
+                      💡 Suggested Actions:
+                    </div>
+                    <div style={{ fontSize:'12px', color:'rgba(255,255,255,0.8)', lineHeight:'1.5' }}>
+                      • Review your high-priority tasks from the dashboard
+                      • Set up a focused work session for complex tasks
+                      • Use voice input to capture spontaneous ideas
+                      • Check your PINCH-categorized task lists
+                    </div>
+                  </div>
+                  
+                  {/* Quick stats */}
+                  <div style={{ display:'flex', gap:'8px', marginTop:'12px' }}>
+                    <div style={{ 
+                      padding:'8px 12px', 
+                      background:'rgba(255,255,255,0.05)', 
+                      borderRadius:'6px', 
+                      fontSize:'11px', 
+                      color:'rgba(255,255,255,0.6)'
+                    }}>
+                      Next: Focus on Passion tasks
+                    </div>
+                    <div style={{ 
+                      padding:'8px 12px', 
+                      background:'rgba(255,255,255,0.05)', 
+                      borderRadius:'6px', 
+                      fontSize:'11px', 
+                      color:'rgba(255,255,255,0.6)'
+                    }}>
+                      Energy: High
+                    </div>
+                    <div style={{ 
+                      padding:'8px 12px', 
+                      background:'rgba(255,255,255,0.05)', 
+                      borderRadius:'6px', 
+                      fontSize:'11px', 
+                      color:'rgba(255,255,255,0.6)'
+                    }}>
+                      Priority: Balance
+                    </div>
+                  </div>
+                </div>
+              )}
+           </div>
+         </div>
+       )}
 
       {/* ━━━━━━━━ AI SMART INPUT VIEW ━━━━━━━━ */}
       {view === 'aiSummary' && (
@@ -425,21 +561,60 @@ export default function Bubble() {
             {/* Duration */}
             <div className="b-field">
               <label className="b-label">Duration</label>
-              <input className="b-input"
-                list="duration-options"
-                placeholder="Select or type (e.g. 45m, 1.5h)"
-                value={task.duration}
-                onChange={e => setTask(t => ({...t, duration: e.target.value}))}
-              />
-              <datalist id="duration-options">
-                <option value="15m" />
-                <option value="30m" />
-                <option value="45m" />
-                <option value="1h" />
-                <option value="2h" />
-                <option value="half-day" />
-                <option value="full-day" />
-              </datalist>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  className="b-input" 
+                  style={{ flex: 1 }}
+                  placeholder="e.g. 45m, 1.5h, 30 minutes"
+                  value={task.duration}
+                  onChange={e => setTask(t => ({...t, duration: e.target.value}))}
+                />
+                <button
+                  onClick={() => setTask(t => ({...t, duration: '30m'}))}
+                  style={{ 
+                    padding: '6px 12px', 
+                    background: 'var(--accent)', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '6px', 
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  30m
+                </button>
+                <button
+                  onClick={() => setTask(t => ({...t, duration: '1h'}))}
+                  style={{ 
+                    padding: '6px 12px', 
+                    background: 'var(--accent)', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '6px', 
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  1h
+                </button>
+                <button
+                  onClick={() => setTask(t => ({...t, duration: '2h'}))}
+                  style={{ 
+                    padding: '6px 12px', 
+                    background: 'var(--accent)', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '6px', 
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  2h
+                </button>
+              </div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>
+                Try: 15m, 30m, 45m, 1h, 2h, half-day, full-day
+              </div>
             </div>
 
             {/* Due date */}

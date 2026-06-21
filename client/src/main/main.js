@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain, screen, globalShortcut, clipboard, Notification } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import enhancedElectronNotificationService from './enhanced_notification_service.js';
+import { enhanced_notification_service } from './enhanced_notification_service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -174,10 +176,31 @@ ipcMain.handle('update-task', async (_e, id, payload) => {
 
 ipcMain.handle('ingest-voice-task', async (_e, audioBuffer) => {
   try {
-    // Note: If you have a specific voice ingest endpoint, call it here.
-    // For now, mapping voice to ingest if it's text, or if audio processing is elsewhere.
-    // Assuming the backend has a /tasks/ingest that handles voice or it's not implemented yet.
-    throw new Error("Voice ingest to backend not fully implemented in this hackathon version.");
+    // Convert audioBuffer to base64 string for transmission
+    const audioData = audioBuffer.toString('base64');
+    
+    // Send to backend voice ingestion endpoint
+    const response = await fetch(apiUrl('/tasks/ingest'), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source_text: audioData,  // Backend should decode this
+        source_type: 'voice'
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Backend API error: ${response.statusText}`);
+    }
+    
+    const json = await response.json();
+    
+    // Refresh dashboard if open
+    if (dashboardWin) {
+      dashboardWin.webContents.send('dashboard-refresh');
+    }
+    
+    return json;
   } catch (error) {
     console.error('Error ingesting voice task:', error);
     throw error;
@@ -214,10 +237,19 @@ const startNotificationSystem = () => {
       const highPriority = pendingTasks.filter(t => t.priority === 'high');
       for (const t of highPriority) {
         if (!lastNotifiedTasks.has(t.id)) {
-          new Notification({
+          // Use enhanced notification service
+          await enhancedElectronNotificationService.createEnhancedNotification({
             title: '⚠️ High Priority Task Pending!',
-            body: `Don't forget: "${t.title}" needs your attention. Estimated time: ${t.duration_minutes || 15} min.`
-          }).show();
+            body: `Don't forget: "${t.title}" needs your attention. Estimated time: ${t.duration_minutes || 15} min.`,
+            icon: '⚠️',
+            audio_file: 'warning',
+            priority: 'high',
+            metadata: {
+              task_id: t.id,
+              task_title: t.title,
+              duration_minutes: t.duration_minutes || 15
+            }
+          });
           lastNotifiedTasks.add(t.id);
         }
       }
@@ -225,10 +257,18 @@ const startNotificationSystem = () => {
       // 2. Daily reminder logic (cooldown: 10 minutes for demo)
       const now = Date.now();
       if (pendingTasks.length > 0 && now - lastDailyReminder > 600000) { 
-        new Notification({
+        // Use enhanced notification service
+        await enhancedElectronNotificationService.createEnhancedNotification({
           title: '👋 DopaPal Reminder',
-          body: `You have ${pendingTasks.length} pending tasks. Don't forget to follow up on your goals today!`
-        }).show();
+          body: `You have ${pendingTasks.length} pending tasks. Don't forget to follow up on your goals today!`,
+          icon: '👋',
+          audio_file: 'notification',
+          priority: 'normal',
+          metadata: {
+            task_count: pendingTasks.length,
+            reminder_type: 'daily'
+          }
+        });
         lastDailyReminder = now;
       }
     } catch (e) {

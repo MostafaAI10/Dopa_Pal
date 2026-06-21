@@ -6,6 +6,94 @@ import { useLanguage } from '../../contexts/LanguageContext';
 /* ─── Helpers ───────────────────────────────────────────── */
 const IS_ELECTRON = typeof window !== 'undefined' && !!window.electronAPI;
 
+/* ─── Duration parser utility ────────────────────────────── */
+function parseDuration(durationInput) {
+  if (!durationInput || !durationInput.trim()) return 2.0;
+  
+  const input = durationInput.trim().toLowerCase();
+  
+  // Common duration patterns and their hour equivalents
+  const durationPatterns = {
+    '15m': 0.25,
+    '15 minutes': 0.25,
+    '30m': 0.5,
+    '30 minutes': 0.5,
+    '45m': 0.75,
+    '45 minutes': 0.75,
+    '1h': 1.0,
+    '1 hour': 1.0,
+    '2h': 2.0,
+    '2 hours': 2.0,
+    'half day': 4.0,
+    'half-day': 4.0,
+    'half a day': 4.0,
+    'full day': 8.0,
+    'full-day': 8.0,
+    'full a day': 8.0,
+    'quick': 0.5,
+    'short': 1.0,
+    'small': 1.0,
+    'big': 6.0,
+    'huge': 10.0,
+    'massive': 12.0,
+    'q': 0.5,
+    's': 1.0,
+    'b': 6.0,
+    'h': 10.0,
+  };
+  
+  // Check for exact matches first
+  if (input in durationPatterns) {
+    return durationPatterns[input];
+  }
+  
+  // Parse hours pattern (e.g., "1.5 hours", "2 hours")
+  const hoursMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)/);
+  if (hoursMatch) {
+    return parseFloat(hoursMatch[1]);
+  }
+  
+  // Parse minutes pattern (e.g., "90 minutes", "45 mins")
+  const minutesMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:minutes?|mins?)/);
+  if (minutesMatch) {
+    return parseFloat(minutesMatch[1]) / 60.0;
+  }
+  
+  // Parse number with unit (e.g., "1.5h", "90m")
+  const numberMatch = input.match(/^(\d+(?:\.\d+)?)(h|m|hour|min)?$/);
+  if (numberMatch) {
+    const val = parseFloat(numberMatch[1]);
+    const unit = numberMatch[2];
+    if (unit && unit.startsWith('m')) {
+      return val / 60.0;
+    } else if (unit && unit.startsWith('h')) {
+      return val;
+    } else {
+      // No unit: assume minutes if > 10, else hours
+      return val > 10 ? val / 60.0 : val;
+    }
+  }
+  
+  // Check for fractional durations (e.g., "half hour", "quarter day")
+  const fractionalPatterns = [
+    { regex: /half hour/i, value: 0.5 },
+    { regex: /quarter hour/i, value: 0.25 },
+    { regex: /half day/i, value: 4.0 },
+    { regex: /quarter day/i, value: 1.0 },
+    { regex: /third day/i, value: 8.0 / 3 },
+    { regex: /tenth day/i, value: 0.8 },
+  ];
+  
+  for (const pattern of fractionalPatterns) {
+    if (pattern.regex.test(input)) {
+      return pattern.value;
+    }
+  }
+  
+  // If all parsing attempts fail, return default
+  return 2.0;
+}
+
 /* ─── Mock data (replace with real API later) ───────────── */
 const USER = {
   name  : 'Anchor User',
@@ -233,7 +321,33 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask }) => {
           {task.estimatedHours != null && (
             <span className="d-task-due">⏱️ {task.estimatedHours}h</span>
           )}
+          {task.interestTag && (
+            <span className="d-task-interest">🏷️ {task.interestTag}</span>
+          )}
+          {task.pinchScore && (
+            <span className="d-task-pinch">🧠 {task.pinchScore}</span>
+          )}
         </div>
+        {/* Sub-blocks display */}
+        {task.subBlocks && task.subBlocks.length > 0 && !task.done && (
+          <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', marginBottom: '4px', fontWeight: 600 }}>SUB-TASKS:</div>
+            {task.subBlocks.map((block, index) => (
+              <div key={block.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: block.status === 'completed' ? '#10b981' : '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {block.status === 'completed' && <span style={{ color: 'white', fontSize: '10px' }}>✓</span>}
+                  {block.status !== 'completed' && <span style={{ color: 'white', fontSize: '10px' }}>{block.sequence}</span>}
+                </div>
+                <span style={{ fontSize: '12px', color: block.status === 'completed' ? 'rgba(255,255,255,0.5)' : 'white' }}>
+                  {block.duration_minutes}min - {new Date(block.scheduled_date).toLocaleDateString()}
+                </span>
+                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>
+                  ({block.status})
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <PriorityBadge level={task.priority} />
       {!task.done && (
@@ -257,6 +371,7 @@ export default function Dashboard() {
   const [tab,   setTab]   = useState('home');
   const [tasks, setTasks] = useState([]);
   const [bubbleTask, setBubbleTask] = useState(null);
+  const [pinchFilter, setPinchFilter] = useState('all'); // 'all', 'passion', 'interest', 'novelty', 'challenge', 'hurry'
 
   // Chat state
   const [chatMessages, setChatMessages] = useState([
@@ -574,6 +689,7 @@ export default function Dashboard() {
     }
   };
 
+  
   const fetchTasksAndBubble = async () => {
     try {
       const data = await api.getTasks();
@@ -584,7 +700,10 @@ export default function Dashboard() {
         deadlineRaw: t.deadline,
         estimatedHours: t.estimated_hours ?? null,
         priority: t.pinch_score >= 80 ? 'high' : (t.pinch_score < 40 ? 'low' : 'medium'),
-        done: t.status === 'completed'
+        done: t.status === 'completed',
+        interestTag: t.interest_tag,
+        pinchScore: t.pinch_score,
+        subBlocks: t.sub_blocks || []
       }));
       setTasks(mapped);
 
@@ -629,21 +748,29 @@ export default function Dashboard() {
     setIsSubmittingTask(true);
     try {
       if (source === 'manual') {
+        // Use the server's duration parser for consistent parsing
         let hours = 2.0;
-        const dStr = taskData.duration.trim().toLowerCase();
-        if (dStr === '15m' || dStr === '15 minutes') hours = 0.25;
-        else if (dStr === '30m' || dStr === '30 minutes') hours = 0.5;
-        else if (dStr === '45m' || dStr === '45 minutes') hours = 0.75;
-        else if (dStr === '1h' || dStr === '1 hour') hours = 1.0;
-        else if (dStr === '2h' || dStr === '2 hours') hours = 2.0;
-        else if (dStr) {
-          const match = dStr.match(/^([\d.]+)\s*(h|m|hour|min)?/);
-          if (match) {
-            const val = parseFloat(match[1]);
-            const unit = match[2];
-            if (unit && unit.startsWith('m')) hours = val / 60.0;
-            else if (unit && unit.startsWith('h')) hours = val;
-            else hours = val > 10 ? val / 60.0 : val;
+        
+        if (taskData.duration && taskData.duration.trim()) {
+          try {
+            // Call the server's duration parser API
+            const response = await fetch('/api/v1/parse-duration', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ duration: taskData.duration })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              hours = result.hours;
+            } else {
+              // Fallback to client-side parsing if server API fails
+              hours = parseDuration(taskData.duration);
+            }
+          } catch (error) {
+            console.error("Failed to parse duration:", error);
+            // Fallback to client-side parsing
+            hours = parseDuration(taskData.duration);
           }
         }
 
@@ -940,8 +1067,128 @@ export default function Dashboard() {
                   <span>{t('dashboard.allTasks')}</span>
                   <span className="d-chip">{pending.filter(t => t.due === 'Today').length} {t('dashboard.upNext')}</span>
                 </div>
+                {/* PINCH Filter */}
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>Filter by PINCH:</span>
+                  <button
+                    onClick={() => setPinchFilter('all')}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      border: pinchFilter === 'all' ? 'none' : '1px solid rgba(167,139,250,0.5)',
+                      background: pinchFilter === 'all' ? 'var(--accent)' : 'transparent',
+                      color: 'white',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setPinchFilter('passion')}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      border: pinchFilter === 'passion' ? 'none' : '1px solid rgba(236,72,153,0.5)',
+                      background: pinchFilter === 'passion' ? 'rgba(236,72,153,0.3)' : 'transparent',
+                      color: 'white',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    💖 Passion
+                  </button>
+                  <button
+                    onClick={() => setPinchFilter('interest')}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      border: pinchFilter === 'interest' ? 'none' : '1px solid rgba(56,189,248,0.5)',
+                      background: pinchFilter === 'interest' ? 'rgba(56,189,248,0.3)' : 'transparent',
+                      color: 'white',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    🔍 Interest
+                  </button>
+                  <button
+                    onClick={() => setPinchFilter('novelty')}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      border: pinchFilter === 'novelty' ? 'none' : '1px solid rgba(251,146,60,0.5)',
+                      background: pinchFilter === 'novelty' ? 'rgba(251,146,60,0.3)' : 'transparent',
+                      color: 'white',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    ✨ Novelty
+                  </button>
+                  <button
+                    onClick={() => setPinchFilter('challenge')}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      border: pinchFilter === 'challenge' ? 'none' : '1px solid rgba(34,197,94,0.5)',
+                      background: pinchFilter === 'challenge' ? 'rgba(34,197,94,0.3)' : 'transparent',
+                      color: 'white',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    🎯 Challenge
+                  </button>
+                  <button
+                    onClick={() => setPinchFilter('hurry')}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      border: pinchFilter === 'hurry' ? 'none' : '1px solid rgba(239,68,68,0.5)',
+                      background: pinchFilter === 'hurry' ? 'rgba(239,68,68,0.3)' : 'transparent',
+                      color: 'white',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    ⏰ Hurry
+                  </button>
+                </div>
                 <div className="d-task-list">
-                  {tasks.filter(t => t.due === 'Today').map(t => (
+                  {tasks.filter(t => {
+                    if (pinchFilter === 'all') return true;
+                    if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
+                    if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
+                    if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
+                    if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
+                    if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
+                    return true;
+                  }).length === 0 ? (
+                    <div style={{ 
+                      padding: '40px 20px', 
+                      textAlign: 'center', 
+                      color: 'rgba(255,255,255,0.6)',
+                      fontSize: '14px',
+                      fontStyle: 'italic'
+                    }}>
+                      No tasks match the current filter. Try selecting a different PINCH category or reset to "All".
+                    </div>
+                  ) : tasks.filter(t => {
+                    if (pinchFilter === 'all') return true;
+                    if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
+                    if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
+                    if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
+                    if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
+                    if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
+                    return true;
+                  }).map(t => (
                     <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} />
                   ))}
                 </div>
@@ -964,18 +1211,86 @@ export default function Dashboard() {
 
               {pending.length > 0 && (
                 <div className="d-card">
-                  <div className="d-card-header"><span>Pending</span><span className="d-chip">{pending.length}</span></div>
+                  <div className="d-card-header"><span>Pending</span><span className="d-chip">{pending.filter(t => {
+                    if (pinchFilter === 'all') return true;
+                    if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
+                    if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
+                    if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
+                    if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
+                    if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
+                    return true;
+                  }).length}</span></div>
                   <div className="d-task-list">
-                    {pending.map(t => <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} onUpdateTask={updateTaskDetails} />)}
+                    {pending.filter(t => {
+                      if (pinchFilter === 'all') return true;
+                      if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
+                      if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
+                      if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
+                      if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
+                      if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
+                      return true;
+                    }).length === 0 ? (
+                      <div style={{ 
+                        padding: '40px 20px', 
+                        textAlign: 'center', 
+                        color: 'rgba(255,255,255,0.6)',
+                        fontSize: '14px',
+                        fontStyle: 'italic'
+                      }}>
+                        No pending tasks. Add a task to get started!
+                      </div>
+                    ) : pending.filter(t => {
+                      if (pinchFilter === 'all') return true;
+                      if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
+                      if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
+                      if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
+                      if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
+                      if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
+                      return true;
+                    }).map(t => <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} onUpdateTask={updateTaskDetails} />)}
                   </div>
                 </div>
               )}
 
               {done.length > 0 && (
                 <div className="d-card" style={{ opacity: .7 }}>
-                  <div className="d-card-header"><span>Completed</span><span className="d-chip">{done.length}</span></div>
+                  <div className="d-card-header"><span>Completed</span><span className="d-chip">{done.filter(t => {
+                    if (pinchFilter === 'all') return true;
+                    if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
+                    if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
+                    if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
+                    if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
+                    if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
+                    return true;
+                  }).length}</span></div>
                   <div className="d-task-list">
-                    {done.map(t => <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} onUpdateTask={updateTaskDetails} />)}
+                    {done.filter(t => {
+                      if (pinchFilter === 'all') return true;
+                      if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
+                      if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
+                      if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
+                      if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
+                      if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
+                      return true;
+                    }).length === 0 ? (
+                      <div style={{ 
+                        padding: '40px 20px', 
+                        textAlign: 'center', 
+                        color: 'rgba(255,255,255,0.5)',
+                        fontSize: '14px',
+                        fontStyle: 'italic'
+                      }}>
+                        No completed tasks yet. Complete a task to see it here!
+                      </div>
+                    ) : done.filter(t => {
+                      if (pinchFilter === 'all') return true;
+                      if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
+                      if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
+                      if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
+                      if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
+                      if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
+                      return true;
+                    }).map(t => <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} onUpdateTask={updateTaskDetails} />)}
                   </div>
                 </div>
               )}
@@ -1764,7 +2079,60 @@ export default function Dashboard() {
             {addTaskView === 'manual' && (
               <div className="d-modal-form">
                 <input className="d-input" placeholder={t('bubble.taskPlaceholder')} value={taskData.title} onChange={e => setTaskData({...taskData, title: e.target.value})} autoFocus />
-                <input className="d-input" placeholder={t('bubble.durationPlaceholder')} value={taskData.duration} onChange={e => setTaskData({...taskData, duration: e.target.value})} />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input 
+                    className="d-input" 
+                    placeholder={t('bubble.durationPlaceholder')} 
+                    value={taskData.duration}
+                    onChange={e => setTaskData({...taskData, duration: e.target.value})}
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    onClick={() => setTaskData({...taskData, duration: '30m'})}
+                    style={{ 
+                      padding: '8px 16px', 
+                      background: 'var(--accent)', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '6px', 
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      alignSelf: 'stretch'
+                    }}
+                  >
+                    30m
+                  </button>
+                  <button
+                    onClick={() => setTaskData({...taskData, duration: '1h'})}
+                    style={{ 
+                      padding: '8px 16px', 
+                      background: 'var(--accent)', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '6px', 
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      alignSelf: 'stretch'
+                    }}
+                  >
+                    1h
+                  </button>
+                  <button
+                    onClick={() => setTaskData({...taskData, duration: '2h'})}
+                    style={{ 
+                      padding: '8px 16px', 
+                      background: 'var(--accent)', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '6px', 
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      alignSelf: 'stretch'
+                    }}
+                  >
+                    2h
+                  </button>
+                </div>
                 <input className="d-input" placeholder={t('bubble.dueDatePlaceholder')} value={taskData.due} onChange={e => setTaskData({...taskData, due: e.target.value})} />
                 <textarea className="d-input" placeholder={t('bubble.notesPlaceholder')} value={taskData.notes} onChange={e => setTaskData({...taskData, notes: e.target.value})} />
                 <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>

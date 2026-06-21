@@ -60,12 +60,14 @@ class PinchEngine:
         novelty = self._novelty(task, now)
         challenge = self._challenge(task)
         interest = self._interest_alignment(task)
+        passion = self._passion_alignment(task)
 
         total = (
             urgency * weights.urgency
             + novelty * weights.novelty
             + challenge * weights.challenge
             + interest * weights.interest
+            + passion * weights.interest  # Passion shares interest weight in this model
         ) * 100.0
 
         return PinchScoreBreakdown(
@@ -120,4 +122,37 @@ class PinchEngine:
             return 0.0
         if task.interest_tag in task.user_interest_tags:
             return 1.0  
-        return 0.3  
+        return 0.3
+
+    def _passion_alignment(self, task: PinchInput) -> float:
+        """
+        Passion is distinct from Interest - it's about long-term personal projects/hobbies
+        vs curiosity-driven tasks. This should be based on user profile data or
+        more sophisticated analysis than just interest_tag.
+        """
+        if not task.interest_tag:
+            return 0.0
+        
+        # For now, use a more nuanced approach:
+        # - High passion for technical/creative domains
+        # - Medium passion for general productivity
+        # - Low passion for generic tasks
+        passion_keywords = [
+            "programming", "coding", "development", "software", "hardware",
+            "architecture", "design", "creative", "art", "music", "writing",
+            "research", "learning", "skill", "project", "hobby", "passion"
+        ]
+        
+        interest_lower = task.interest_tag.lower()
+        passion_score = 0.0
+        
+        for kw in passion_keywords:
+            if kw in interest_lower:
+                passion_score += 0.2
+        
+        # If user has specific passion tags (from user profile), check those
+        if hasattr(task, 'user_passion_tags') and task.user_passion_tags:
+            if task.interest_tag in task.user_passion_tags:
+                passion_score = min(1.0, passion_score + 0.5)
+        
+        return min(1.0, passion_score)  

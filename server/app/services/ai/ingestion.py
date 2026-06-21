@@ -86,8 +86,11 @@ class IngestionPipeline:
             confidence=combined_confidence,
         )
 
+        # Enhanced LLM integration for more comprehensive parsing
         if self._use_llm and self._llm_client is not None:
             parsed = self._try_enrich(parsed, title, challenge.hint)
+            # LLM can also refine estimated_hours and interest_tag for better accuracy
+            parsed = self._try_refine_estimates(parsed)
 
         return parsed
 
@@ -116,6 +119,46 @@ class IngestionPipeline:
         if difficulty:
             logger.info("LLM difficulty assessment for %r: %s (deterministic: %s)",
                          parsed.title[:60], difficulty, challenge_hint)
+
+        if updates:
+            parsed = parsed.model_copy(update=updates)
+
+        return parsed
+
+    def _try_refine_estimates(self, parsed: ParsedTask) -> ParsedTask:
+        """
+        Best-effort LLM pass to refine estimated_hours and interest_tag.
+        This provides more nuanced parsing than deterministic regex patterns.
+        Any failure is caught and logged — the deterministic ParsedTask is returned
+        unchanged. Never let an LLM hiccup break task capture.
+        """
+        try:
+            enrichment = self._llm_client.enrich_task(
+                raw_text=parsed.raw_source_text, deterministic_title=parsed.title
+            )
+        except OllamaUnavailableError as exc:
+            logger.warning("Ollama estimate refinement skipped (unavailable): %s", exc)
+            return parsed
+
+        updates: dict = {}
+
+        # Refine estimated_hours with LLM's better understanding of context
+        estimated_hours = enrichment.get("estimated_hours")
+        if estimated_hours and isinstance(estimated_hours, (int, float)) and estimated_hours > 0:
+            # Validate reasonable range (0.25 to 200 hours)
+            if 0.25 <= estimated_hours <= 200:
+                updates["estimated_hours"] = round(float(estimated_hours), 2)
+                logger.info("LLM refined estimated_hours for %r: %.2f (deterministic: %.2f)",
+                           parsed.title[:60], updates["estimated_hours"], parsed.estimated_hours)
+
+        # Refine interest_tag with LLM's semantic understanding
+        interest_tag = enrichment.get("interest_tag")
+        if interest_tag and isinstance(interest_tag, str) and interest_tag.strip():
+            # Validate reasonable length
+            if 1 <= len(interest_tag.strip()) <= 100:
+                updates["interest_tag"] = interest_tag.strip()[:100]
+                logger.info("LLM refined interest_tag for %r: %s (deterministic: %s)",
+                           parsed.title[:60], updates["interest_tag"], parsed.interest_tag or "None")
 
         if updates:
             parsed = parsed.model_copy(update=updates)

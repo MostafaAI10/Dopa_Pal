@@ -15,8 +15,9 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.task import Task, SubBlock
 from app.models.state import StateLog
-from app.services import task_service, reward_service
+from app.services import task_service, reward_service, focus_mode, enhanced_notification
 from app.services.websocket_manager import manager as ws_manager
+from app.services.duration_parser import parse_duration, format_duration
 
 router = APIRouter()
 
@@ -305,6 +306,149 @@ def api_get_ai_summary(db: Session = Depends(get_db)):
     
     import random
     return {"text": random.choice(messages)}
+
+# ---------- Duration Parser Endpoint ----------
+
+class DurationParseRequest(BaseModel):
+    duration: str = Field(..., description="Duration string to parse (e.g., '1.5 hours', '45 minutes', 'quick')")
+
+class DurationParseResponse(BaseModel):
+    hours: float = Field(..., description="Duration in hours")
+    formatted: str = Field(..., description="Human-readable formatted duration")
+
+@router.post("/parse-duration", response_model=DurationParseResponse)
+def parse_duration_endpoint(request: DurationParseRequest):
+    """
+    Parse a duration string and convert it to hours.
+    
+    This endpoint provides a robust duration parser that can handle various
+    natural language inputs for task duration estimation, making it much
+    more flexible and user-friendly than the rigid string-matching approach
+    used in the current implementation.
+    
+    Args:
+        request: Duration string to parse
+        
+    Returns:
+        Parsed duration in hours and formatted human-readable string
+    """
+    hours = parse_duration(request.duration)
+    
+    # Format the duration for display
+    formatted = format_duration(hours)
+    
+    return DurationParseResponse(hours=hours, formatted=formatted)
+
+# ---------- Focus Mode Endpoint ----------
+
+class FocusModeToggleRequest(BaseModel):
+    is_active: bool = Field(..., description="Whether to activate focus mode")
+    duration_minutes: Optional[int] = Field(None, description="Optional duration in minutes for focus mode")
+
+class FocusModeStateResponse(BaseModel):
+    is_active: bool = Field(..., description="Whether focus mode is active")
+    start_time: Optional[float] = Field(None, description="Focus mode start timestamp")
+    end_time: Optional[float] = Field(None, description="Focus mode end timestamp")
+    priority_boost: float = Field(..., description="Priority boost multiplier during focus mode")
+
+@router.post("/focus-mode/toggle", response_model=FocusModeStateResponse)
+def toggle_focus_mode_endpoint(request: FocusModeToggleRequest, db: Session = Depends(get_db)):
+    """
+    Toggle focus mode on or off.
+    
+    Args:
+        request: Focus mode toggle request
+        db: Database session
+        
+    Returns:
+        Updated focus mode state
+    """
+    user = get_or_create_default_user(db)
+    
+    # Toggle focus mode
+    focus_state = focus_mode.toggle_focus_mode(
+        is_active=request.is_active,
+        duration_minutes=request.duration_minutes
+    )
+    
+    return FocusModeStateResponse(
+        is_active=focus_state.is_active,
+        start_time=focus_state.start_time,
+        end_time=focus_state.end_time,
+        priority_boost=focus_state.priority_boost
+    )
+
+@router.get("/focus-mode/state", response_model=FocusModeStateResponse)
+def get_focus_mode_state_endpoint(db: Session = Depends(get_db)):
+    """
+    Get the current focus mode state.
+    
+    Args:
+        db: Database session
+        
+    Returns:
+        Current focus mode state
+    """
+    user = get_or_create_default_user(db)
+    
+    # Get current focus mode state
+    focus_state = focus_mode.focus_mode_service._focus_state
+    
+    return FocusModeStateResponse(
+        is_active=focus_state.is_active,
+        start_time=focus_state.start_time,
+        end_time=focus_state.end_time,
+        priority_boost=focus_state.priority_boost
+    )
+
+# ---------- Enhanced Notification Endpoint ----------
+
+class EnhancedNotificationRequest(BaseModel):
+    type: str = Field(..., description="Type of notification")
+    title: str = Field(..., description="Notification title")
+    body: str = Field(..., description="Notification body")
+    icon: Optional[str] = Field(None, description="Notification icon")
+    actions: Optional[List[Dict[str, Any]]] = Field(None, description="Notification actions")
+    audio_file: Optional[str] = Field(None, description="Audio file for notification")
+    priority: str = Field("normal", description="Notification priority")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Notification metadata")
+
+@router.post("/notifications/enhanced", response_model=dict)
+def create_enhanced_notification_endpoint(request: EnhancedNotificationRequest, db: Session = Depends(get_db)):
+    """
+    Create an enhanced notification with audio feedback.
+    
+    Args:
+        request: Enhanced notification request
+        db: Database session
+        
+    Returns:
+        Created notification
+    """
+    user = get_or_create_default_user(db)
+    
+    # Create enhanced notification
+    notification = enhanced_notification.create_enhanced_notification(
+        notification_type=request.type,
+        title=request.title,
+        body=request.body,
+        icon=request.icon,
+        actions=request.actions,
+        audio_file=request.audio_file,
+        priority=request.priority,
+        metadata=request.metadata
+    )
+    
+    return {
+        "id": notification.id,
+        "title": notification.title,
+        "body": notification.body,
+        "icon": notification.icon,
+        "audio_file": notification.audio_file,
+        "priority": notification.priority,
+        "timestamp": notification.timestamp,
+        "metadata": notification.metadata
+    }
 
 # ---------- WebSocket Endpoint ----------
 

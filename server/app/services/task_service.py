@@ -21,6 +21,8 @@ from app.models.task import Task, SubBlock
 from app.services.ai.llm.ollama_client import OllamaConfig
 from app.services.ai.schemas import IngestResult, PinchInput, SourceType
 from app.services.ai.service import AIService, IngestOptions
+from app.services.speech_to_text import convert_audio_to_text
+from app.services.duration_parser import parse_duration
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +70,12 @@ def ingest_from_raw_text(
     then persist the resulting task and sub-blocks to the database.
     """
     ai = get_ai_service()
+    
+    # For voice source_type, convert audio data to text first
+    if source_type == 'voice':
+        # raw_text is expected to be base64 encoded audio data
+        raw_text = convert_audio_to_text(raw_text, source_type)
+    
     ingest_result = ai.ingest(raw_text=raw_text, source_type=source_type)
     return persist_ingested_task(
         db=db,
@@ -226,6 +234,7 @@ def get_ranked_pending_blocks(
             created_at=created_at,
             interest_tag=task.interest_tag,
             user_interest_tags=[],  # TODO: load from user profile when implemented
+            user_passion_tags=[],   # TODO: load from user profile when implemented
             is_novel=False,
             challenge_hint=None,
             estimated_hours=task.estimated_hours,

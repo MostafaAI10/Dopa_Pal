@@ -94,16 +94,37 @@ class OllamaClient:
             "You refine task descriptions for an ADHD productivity app. "
             "Respond ONLY with JSON, no prose, matching exactly this shape: "
             '{"refined_title": string or null, "difficulty": "low"|"medium"|"high" or null, '
-            '"difficulty_reason": string or null}\n\n'
+            '"difficulty_reason": string or null, "estimated_hours": number or null, '
+            '"interest_tag": string or null}\n\n'
             f"Deterministically-parsed title (for reference, may already be good): {deterministic_title!r}\n"
             f"Original task text: {raw_text!r}\n"
+            f"Deterministic estimated_hours: {deterministic_title!r}\n"
         )
 
     def _validate_enrichment(self, parsed: dict[str, Any]) -> dict[str, Any]:
-        allowed_keys = {"refined_title", "difficulty", "difficulty_reason"}
+        allowed_keys = {"refined_title", "difficulty", "difficulty_reason", "estimated_hours", "interest_tag"}
         cleaned = {k: v for k, v in parsed.items() if k in allowed_keys}
 
         if "difficulty" in cleaned and cleaned["difficulty"] not in {"low", "medium", "high", None}:
             cleaned.pop("difficulty")
+
+        # Validate estimated_hours if present
+        if "estimated_hours" in cleaned:
+            try:
+                val = float(cleaned["estimated_hours"])
+                if not (0.25 <= val <= 200):
+                    cleaned.pop("estimated_hours")
+                else:
+                    cleaned["estimated_hours"] = val
+            except (ValueError, TypeError):
+                cleaned.pop("estimated_hours")
+
+        # Validate interest_tag if present
+        if "interest_tag" in cleaned:
+            val = str(cleaned["interest_tag"]).strip()
+            if not val or len(val) > 100:
+                cleaned.pop("interest_tag")
+            else:
+                cleaned["interest_tag"] = val
 
         return cleaned

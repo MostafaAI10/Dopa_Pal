@@ -66,6 +66,9 @@ class AIService:
             estimated_hours=parsed.estimated_hours,
             deadline=parsed.deadline,
             reference_time=now,
+            title=parsed.title,
+            interest_tag=parsed.interest_tag or "",
+            raw_source_text=parsed.raw_source_text,
         )
 
         pinch_input = PinchInput(
@@ -73,13 +76,24 @@ class AIService:
             created_at=now,
             interest_tag=parsed.interest_tag,
             user_interest_tags=[],  # caller can re-score later once user profile is loaded
+            user_passion_tags=[],   # caller can re-score later once user profile is loaded
             is_novel=True,           # freshly ingested task is novel by definition
             challenge_hint=llm_challenge_hint,
             estimated_hours=parsed.estimated_hours,
             raw_source_text=parsed.raw_source_text,
         )
         
-        breakdown = self._pinch.score(pinch_input, state_score=60.0, now=now)
+        # Use a more dynamic default state score based on task characteristics
+        # Higher complexity tasks get higher initial scores to ensure they don't get buried
+        default_state_score = 60.0
+        if parsed.interest_tag:
+            # Tasks with interest tags might be more engaging, give them a boost
+            default_state_score = min(75.0, default_state_score + 10.0)
+        if parsed.estimated_hours >= 8.0:
+            # Complex, long tasks need more initial priority
+            default_state_score = min(80.0, default_state_score + 15.0)
+        
+        breakdown = self._pinch.score(pinch_input, state_score=default_state_score, now=now)
 
         return IngestResult(
             title=parsed.title,
