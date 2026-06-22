@@ -97,6 +97,12 @@ export const api = {
       settings,
     });
     return response.data;
+  },
+
+  // Assistant Chat
+  sendChatMessage: async (messages) => {
+    const response = await apiClient.post('/chat', { messages });
+    return response.data;
   }
 };
 

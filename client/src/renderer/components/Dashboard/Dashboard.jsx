@@ -9,9 +9,9 @@ const IS_ELECTRON = typeof window !== 'undefined' && !!window.electronAPI;
 /* ─── Duration parser utility ────────────────────────────── */
 function parseDuration(durationInput) {
   if (!durationInput || !durationInput.trim()) return 2.0;
-  
+
   const input = durationInput.trim().toLowerCase();
-  
+
   // Common duration patterns and their hour equivalents
   const durationPatterns = {
     '15m': 0.25,
@@ -41,24 +41,24 @@ function parseDuration(durationInput) {
     'b': 6.0,
     'h': 10.0,
   };
-  
+
   // Check for exact matches first
   if (input in durationPatterns) {
     return durationPatterns[input];
   }
-  
+
   // Parse hours pattern (e.g., "1.5 hours", "2 hours")
   const hoursMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)/);
   if (hoursMatch) {
     return parseFloat(hoursMatch[1]);
   }
-  
+
   // Parse minutes pattern (e.g., "90 minutes", "45 mins")
   const minutesMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:minutes?|mins?)/);
   if (minutesMatch) {
     return parseFloat(minutesMatch[1]) / 60.0;
   }
-  
+
   // Parse number with unit (e.g., "1.5h", "90m")
   const numberMatch = input.match(/^(\d+(?:\.\d+)?)(h|m|hour|min)?$/);
   if (numberMatch) {
@@ -73,7 +73,7 @@ function parseDuration(durationInput) {
       return val > 10 ? val / 60.0 : val;
     }
   }
-  
+
   // Check for fractional durations (e.g., "half hour", "quarter day")
   const fractionalPatterns = [
     { regex: /half hour/i, value: 0.5 },
@@ -83,41 +83,41 @@ function parseDuration(durationInput) {
     { regex: /third day/i, value: 8.0 / 3 },
     { regex: /tenth day/i, value: 0.8 },
   ];
-  
+
   for (const pattern of fractionalPatterns) {
     if (pattern.regex.test(input)) {
       return pattern.value;
     }
   }
-  
+
   // If all parsing attempts fail, return default
   return 2.0;
 }
 
 /* ─── Mock data (replace with real API later) ───────────── */
 const USER = {
-  name  : 'Anchor User',
-  email : 'user@anchor.app',
+  name: 'Anchor User',
+  email: 'user@anchor.app',
   avatar: '🧠',
   streak: 7,
-  level : 'Focus Apprentice',
-  xp    : 340,
-  xpMax : 500,
+  level: 'Focus Apprentice',
+  xp: 340,
+  xpMax: 500,
 };
 
 const TASKS = [
-  { id: 1, title: 'Review project proposal', due: 'Today',    priority: 'high',   done: false },
-  { id: 2, title: 'Reply to team emails',     due: 'Today',    priority: 'medium', done: false },
-  { id: 3, title: 'Read chapter 3 of book',  due: 'Tomorrow', priority: 'low',    done: false },
-  { id: 4, title: 'Weekly planning session',  due: 'Today',    priority: 'high',   done: true  },
-  { id: 5, title: 'Update progress tracker',  due: 'This week',priority: 'medium', done: true  },
+  { id: 1, title: 'Review project proposal', due: 'Today', priority: 'high', done: false },
+  { id: 2, title: 'Reply to team emails', due: 'Today', priority: 'medium', done: false },
+  { id: 3, title: 'Read chapter 3 of book', due: 'Tomorrow', priority: 'low', done: false },
+  { id: 4, title: 'Weekly planning session', due: 'Today', priority: 'high', done: true },
+  { id: 5, title: 'Update progress tracker', due: 'This week', priority: 'medium', done: true },
 ];
 
 const RECOMMEND = {
-  title  : 'Reply to team emails',
-  reason : 'You tend to work best on communication tasks in the evening. This has been waiting 2 days.',
-  energy : 'Low',
-  time   : '15 min',
+  title: 'Reply to team emails',
+  reason: 'You tend to work best on communication tasks in the evening. This has been waiting 2 days.',
+  energy: 'Low',
+  time: '15 min',
 };
 
 /* ─── Icons ─────────────────────────────────────────────── */
@@ -127,25 +127,26 @@ const Svg = ({ children, size = 20 }) => (
     {children}
   </svg>
 );
-const IconHome     = () => <Svg><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Svg>;
-const IconTask     = () => <Svg><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></Svg>;
-const IconUser     = () => <Svg><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></Svg>;
-const IconSparkle  = () => <Svg><path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5z"/></Svg>;
-const IconMaximize = () => <Svg><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></Svg>;
-const IconClose    = () => <Svg><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Svg>;
-const IconCheck    = () => <Svg size={16}><polyline points="20 6 9 17 4 12"/></Svg>;
-const IconEdit     = () => <Svg size={16}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></Svg>;
-const IconTrash    = () => <Svg size={16}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></Svg>;
-const IconPlus     = () => <Svg><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></Svg>;
-const IconMinus    = () => <Svg><line x1="5" y1="12" x2="19" y2="12"/></Svg>;
-const IconMic      = () => <Svg><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></Svg>;
-const IconKeyboard = () => <Svg><rect width="20" height="16" x="2" y="4" rx="2" ry="2"/><line x1="6" x2="6.01" y1="8" y2="8"/><line x1="10" x2="10.01" y1="8" y2="8"/><line x1="14" x2="14.01" y1="8" y2="8"/><line x1="18" x2="18.01" y1="8" y2="8"/><line x1="8" x2="16" y1="12" y2="12"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/><line x1="14" x2="14.01" y1="16" y2="16"/><line x1="18" x2="18.01" y1="16" y2="16"/></Svg>;
-const IconFire     = () => <Svg><path d="M12 2c0 0-5 5-5 10a5 5 0 0 0 10 0C17 7 12 2 12 2z"/></Svg>;
-const IconSettings = () => <Svg><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></Svg>;
-const IconLink     = () => <Svg><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3A5 5 0 0 0 11 21.07l1.71-1.71"/></Svg>;
-const IconShop     = () => <Svg><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></Svg>;
-const IconSync     = () => <Svg><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/><path d="M3 12A9 9 0 0 1 18.5 5.7L21 8"/><path d="M21 3v5h-5"/></Svg>;
-const IconMusic    = () => <Svg><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></Svg>;
+const IconHome = () => <Svg><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></Svg>;
+const IconTask = () => <Svg><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></Svg>;
+const IconUser = () => <Svg><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></Svg>;
+const IconSparkle = () => <Svg><path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5z" /></Svg>;
+const IconMaximize = () => <Svg><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /></Svg>;
+const IconClose = () => <Svg><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Svg>;
+const IconCheck = () => <Svg size={16}><polyline points="20 6 9 17 4 12" /></Svg>;
+const IconEdit = () => <Svg size={16}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></Svg>;
+const IconTrash = () => <Svg size={16}><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></Svg>;
+const IconPlus = () => <Svg><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></Svg>;
+const IconMinus = () => <Svg><line x1="5" y1="12" x2="19" y2="12" /></Svg>;
+const IconMic = () => <Svg><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" /><line x1="8" y1="22" x2="16" y2="22" /></Svg>;
+const IconKeyboard = () => <Svg><rect width="20" height="16" x="2" y="4" rx="2" ry="2" /><line x1="6" x2="6.01" y1="8" y2="8" /><line x1="10" x2="10.01" y1="8" y2="8" /><line x1="14" x2="14.01" y1="8" y2="8" /><line x1="18" x2="18.01" y1="8" y2="8" /><line x1="8" x2="16" y1="12" y2="12" /><line x1="6" x2="6.01" y1="16" y2="16" /><line x1="10" x2="10.01" y1="16" y2="16" /><line x1="14" x2="14.01" y1="16" y2="16" /><line x1="18" x2="18.01" y1="16" y2="16" /></Svg>;
+const IconFire = () => <Svg><path d="M12 2c0 0-5 5-5 10a5 5 0 0 0 10 0C17 7 12 2 12 2z" /></Svg>;
+const IconSettings = () => <Svg><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></Svg>;
+const IconLink = () => <Svg><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.07 0l-3 3A5 5 0 0 0 11 21.07l1.71-1.71" /></Svg>;
+const IconShop = () => <Svg><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></Svg>;
+const IconSync = () => <Svg><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" /><path d="M3 21v-5h5" /><path d="M3 12A9 9 0 0 1 18.5 5.7L21 8" /><path d="M21 3v5h-5" /></Svg>;
+const IconMusic = () => <Svg><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></Svg>;
+const IconSend = () => <Svg size={18}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></Svg>;
 
 /* ─── Themes Store ──────────────────────────────────────── */
 const THEMES = [
@@ -216,11 +217,11 @@ const INTEGRATION_PROVIDERS = [
 
 /* ─── PINCH categories — single source of truth (no emojis) ── */
 const PINCH_CATEGORIES = [
-  { id: 'passion',   label: 'Passion',   color: '#ec4899' },
-  { id: 'interest',  label: 'Interest',  color: '#38bdf8' },
-  { id: 'novelty',   label: 'Novelty',   color: '#fb923c' },
+  { id: 'passion', label: 'Passion', color: '#ec4899' },
+  { id: 'interest', label: 'Interest', color: '#38bdf8' },
+  { id: 'novelty', label: 'Novelty', color: '#fb923c' },
   { id: 'challenge', label: 'Challenge', color: '#22c55e' },
-  { id: 'hurry',     label: 'Hurry',     color: '#ef4444' },
+  { id: 'hurry', label: 'Hurry', color: '#ef4444' },
 ];
 const PINCH_BY_ID = Object.fromEntries(PINCH_CATEGORIES.map(c => [c.id, c]));
 
@@ -342,9 +343,9 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
             className={`d-badge d-badge--${editPriority}`}
             style={{ cursor: 'pointer', outline: 'none', border: '1px solid rgba(255,255,255,0.2)', padding: '4px 10px', flexShrink: 0 }}
           >
-            <option style={{color: 'black'}} value="high">HIGH</option>
-            <option style={{color: 'black'}} value="medium">MEDIUM</option>
-            <option style={{color: 'black'}} value="low">LOW</option>
+            <option style={{ color: 'black' }} value="high">HIGH</option>
+            <option style={{ color: 'black' }} value="medium">MEDIUM</option>
+            <option style={{ color: 'black' }} value="low">LOW</option>
           </select>
         </div>
         {/* Row 2: Deadline + Duration */}
@@ -456,13 +457,71 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
   );
 };
 
+const MarkdownRenderer = ({ content }) => {
+  if (!content) return null;
+  const blocks = content.split('\n');
+
+  return (
+    <div className="d-chat-msg-text">
+      {blocks.map((line, idx) => {
+        // Headers
+        if (line.startsWith('### ')) {
+          return <h4 key={idx} style={{ color: 'var(--accent)', marginTop: '8px', marginBottom: '4px', fontSize: '15px' }}>{line.replace('### ', '')}</h4>;
+        }
+        if (line.startsWith('## ')) {
+          return <h3 key={idx} style={{ color: '#fbbf24', marginTop: '12px', marginBottom: '6px', fontSize: '16px' }}>{line.replace('## ', '')}</h3>;
+        }
+        if (line.startsWith('# ')) {
+          return <h2 key={idx} style={{ color: '#34d399', marginTop: '16px', marginBottom: '8px', fontSize: '18px' }}>{line.replace('# ', '')}</h2>;
+        }
+
+        // Render bold text
+        const renderInline = (text) => {
+          const parts = text.split(/(\*\*.*?\*\*)/g);
+          return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={i} style={{ color: 'white' }}>{part.slice(2, -2)}</strong>;
+            }
+            return <span key={i} style={{ color: 'rgba(255,255,255,0.85)' }}>{part}</span>;
+          });
+        };
+
+        // Bullet points
+        if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+          return (
+            <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '4px', paddingLeft: '8px' }}>
+              <span style={{ color: 'var(--accent)' }}>•</span>
+              <span>{renderInline(line.replace(/^[-*]\s/, ''))}</span>
+            </div>
+          );
+        }
+
+        // Numbered lists
+        const numMatch = line.trim().match(/^(\d+\.)\s(.*)/);
+        if (numMatch) {
+          return (
+            <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '4px', paddingLeft: '8px' }}>
+              <strong style={{ color: 'var(--accent)' }}>{numMatch[1]}</strong>
+              <span>{renderInline(numMatch[2])}</span>
+            </div>
+          );
+        }
+
+        if (line.trim() === '') return <div key={idx} style={{ height: '8px' }} />;
+
+        return <div key={idx} style={{ marginBottom: '4px' }}>{renderInline(line)}</div>;
+      })}
+    </div>
+  );
+};
+
 /* ══════════════════════════════════════════════════════════
    DASHBOARD COMPONENT
    ══════════════════════════════════════════════════════════ */
 export default function Dashboard() {
   const { t, lang, changeLanguage, isRTL } = useLanguage();
   const chatEndRef = useRef(null);
-  const [tab,   setTab]   = useState('home');
+  const [tab, setTab] = useState('home');
   const [tasks, setTasks] = useState([]);
   const [bubbleTask, setBubbleTask] = useState(null);
   const [pinchFilter, setPinchFilter] = useState('all'); // 'all', 'passion', 'interest', 'novelty', 'challenge', 'hurry'
@@ -577,7 +636,7 @@ export default function Dashboard() {
 
     const savedVisual = localStorage.getItem('dopapal_active_visual_v1');
     if (savedVisual) setActiveVisual(savedVisual);
-    
+
     const savedStreak = localStorage.getItem('dopapal_streak_v3');
     if (savedStreak) setStreak(parseInt(savedStreak, 10));
 
@@ -617,16 +676,16 @@ export default function Dashboard() {
 
   const buyTheme = (themeId, cost) => {
     if (userXp >= cost && !unlockedThemes.includes(themeId)) {
-        const newXp = userXp - cost;
-        const newUnlocked = [...unlockedThemes, themeId];
-        setUserXp(newXp);
-        setUnlockedThemes(newUnlocked);
-        localStorage.setItem('dopapal_xp_v3', newXp);
-        localStorage.setItem('dopapal_themes_v3', JSON.stringify(newUnlocked));
-        setPurchaseError(null);
+      const newXp = userXp - cost;
+      const newUnlocked = [...unlockedThemes, themeId];
+      setUserXp(newXp);
+      setUnlockedThemes(newUnlocked);
+      localStorage.setItem('dopapal_xp_v3', newXp);
+      localStorage.setItem('dopapal_themes_v3', JSON.stringify(newUnlocked));
+      setPurchaseError(null);
     } else if (userXp < cost) {
-        setPurchaseError('Not enough XP to unlock this theme!');
-        setTimeout(() => setPurchaseError(null), 3000);
+      setPurchaseError('Not enough XP to unlock this theme!');
+      setTimeout(() => setPurchaseError(null), 3000);
     }
   };
 
@@ -660,27 +719,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleSendChat = () => {
-    if (!chatInput.trim()) return;
-    const msg = chatInput.trim();
-    setChatMessages(prev => [...prev, { sender: 'user', text: msg }]);
-    setChatInput('');
-    setIsTyping(true);
-
-    setTimeout(() => {
-        const aiResponses = [
-            "You're doing great! Keep up the good work and maintain your streak.",
-            "I suggest tackling your High Priority tasks first when your energy is highest.",
-            "Remember to take short breaks if you feel overwhelmed. I can suggest a 5-minute breather task if you need it.",
-            "Interesting! I'll keep that in mind to better recommend tasks for you.",
-            "Let's focus on one thing at a time. What's the next most important step?"
-        ];
-        const randomResp = aiResponses[Math.floor(Math.random() * aiResponses.length)];
-        setChatMessages(prev => [...prev, { sender: 'ai', text: randomResp }]);
-        setIsTyping(false);
-    }, 1500);
-  };
-
   const fetchIntegrations = async () => {
     try {
       const statuses = await api.getIntegrationsStatus();
@@ -709,7 +747,7 @@ export default function Dashboard() {
             setLanguageDraft(prev => ({ ...prev, primary: data.language }));
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [tab]);
 
@@ -800,7 +838,7 @@ export default function Dashboard() {
     }
   };
 
-  
+
   const fetchTasksAndBubble = async () => {
     try {
       const data = await api.getTasks();
@@ -820,7 +858,7 @@ export default function Dashboard() {
 
       const nextBubble = await api.getNextBubbleTask();
       if (nextBubble && nextBubble.primary_block) {
-          setBubbleTask(nextBubble);
+        setBubbleTask(nextBubble);
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -829,10 +867,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchTasksAndBubble();
-    
+
     // Optional: listen for IPC reload events
     if (IS_ELECTRON && window.electronAPI.onDashboardRefresh) {
-        window.electronAPI.onDashboardRefresh(() => fetchTasksAndBubble());
+      window.electronAPI.onDashboardRefresh(() => fetchTasksAndBubble());
     }
   }, [tab]); // Refresh when tab changes
 
@@ -850,7 +888,7 @@ export default function Dashboard() {
     const id = Date.now() + Math.random();
     setFloatingEmojis(prev => [...prev, { id, emoji, type, x, y }]);
     setTimeout(() => {
-        setFloatingEmojis(prev => prev.filter(f => f.id !== id));
+      setFloatingEmojis(prev => prev.filter(f => f.id !== id));
     }, 2000);
   };
 
@@ -866,7 +904,7 @@ export default function Dashboard() {
       if (source === 'manual') {
         // Use the server's duration parser for consistent parsing
         let hours = 2.0;
-        
+
         if (taskData.duration && taskData.duration.trim()) {
           try {
             // Call the server's duration parser API
@@ -875,7 +913,7 @@ export default function Dashboard() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ duration: taskData.duration })
             });
-            
+
             if (response.ok) {
               const result = await response.json();
               hours = result.hours;
@@ -918,8 +956,8 @@ export default function Dashboard() {
         const arrayBuffer = await extraData.arrayBuffer();
         await window.electronAPI.ingestVoiceTask(arrayBuffer);
       }
-      
-      setTaskData({ title:'', duration:'', due:'', notes:'' });
+
+      setTaskData({ title: '', duration: '', due: '', notes: '' });
       setAiText('');
       await fetchTasksAndBubble();
       updateToast(toastId, 'Task added', 'success');
@@ -933,30 +971,48 @@ export default function Dashboard() {
     }
   };
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-      audioChunks.current = [];
-      mediaRecorder.current.ondataavailable = (e) => {
-        if (e.data.size > 0) audioChunks.current.push(e.data);
-      };
-      mediaRecorder.current.start();
-      setIsRecording(true);
-    } catch (e) {
-      console.error("Microphone error:", e);
-      alert("Could not access microphone.");
+  const startRecording = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      pushToast('Voice recognition is not supported in your browser.', 'error');
+      return;
     }
+    
+    setIsRecording(true);
+    setAiText(''); // clear previous text
+    setAddTaskView('ai'); // Switch to the AI view where the textarea is
+    
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang === 'ar' ? 'ar-SA' : 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setAiText(transcript);
+    };
+    
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setIsRecording(false);
+      pushToast('Microphone error.', 'error');
+    };
+    
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+    
+    mediaRecorder.current = recognition;
+    recognition.start();
   };
 
   const stopRecording = () => {
-    if (!mediaRecorder.current) return;
-    mediaRecorder.current.onstop = async () => {
-      const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
-      await submitNewTask('voice', audioBlob);
-      mediaRecorder.current.stream.getTracks().forEach(track => track.stop());
-    };
-    mediaRecorder.current.stop();
+    if (mediaRecorder.current && typeof mediaRecorder.current.stop === 'function') {
+      mediaRecorder.current.stop();
+    }
     setIsRecording(false);
   };
 
@@ -964,48 +1020,48 @@ export default function Dashboard() {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
     const isNowDone = !task.done;
-    
-    setTasks(ts => ts.map(t => t.id === id ? { ...t, done: isNowDone } : t));
-    
-    if (isNowDone) {
-        // Task Completed
-        setStreak(s => {
-            const ns = s + 1;
-            localStorage.setItem('dopapal_streak_v3', ns);
-            return ns;
-        });
-        setUserXp(x => {
-            const nx = x + 50;
-            localStorage.setItem('dopapal_xp_v3', nx);
-            return nx;
-        });
-        const emojis = ['🚀', '🎉', '🔥', '⭐', '🤩', '🎯'];
-        const em = emojis[Math.floor(Math.random() * emojis.length)];
-        setStreakEmoji(em);
-        setStreakAnim('bump');
-        setTimeout(() => setStreakAnim(''), 300);
-        triggerFloatingEmoji(em, 'good', e);
 
-        try {
-            await api.completeTask(id);
-        } catch (err) {
-            console.error("Failed to complete task:", err);
-            setTasks(ts => ts.map(t => t.id === id ? { ...t, done: false } : t));
-        }
+    setTasks(ts => ts.map(t => t.id === id ? { ...t, done: isNowDone } : t));
+
+    if (isNowDone) {
+      // Task Completed
+      setStreak(s => {
+        const ns = s + 1;
+        localStorage.setItem('dopapal_streak_v3', ns);
+        return ns;
+      });
+      setUserXp(x => {
+        const nx = x + 50;
+        localStorage.setItem('dopapal_xp_v3', nx);
+        return nx;
+      });
+      const emojis = ['🚀', '🎉', '🔥', '⭐', '🤩', '🎯'];
+      const em = emojis[Math.floor(Math.random() * emojis.length)];
+      setStreakEmoji(em);
+      setStreakAnim('bump');
+      setTimeout(() => setStreakAnim(''), 300);
+      triggerFloatingEmoji(em, 'good', e);
+
+      try {
+        await api.completeTask(id);
+      } catch (err) {
+        console.error("Failed to complete task:", err);
+        setTasks(ts => ts.map(t => t.id === id ? { ...t, done: false } : t));
+      }
     } else {
-        // Task Missed / Un-checked
-        setStreak(s => {
-            const ns = Math.max(0, s - 1);
-            localStorage.setItem('dopapal_streak_v3', ns);
-            return ns;
-        });
-        const sadEmojis = ['🧊', '🥶', '🥺', '🌧️', '📉'];
-        const em = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
-        setStreakEmoji(em);
-        setStreakAnim('shake');
-        setTimeout(() => setStreakAnim(''), 400);
-        triggerFloatingEmoji(em, 'bad', e);
-        // Note: Demo uncheck logic mocked.
+      // Task Missed / Un-checked
+      setStreak(s => {
+        const ns = Math.max(0, s - 1);
+        localStorage.setItem('dopapal_streak_v3', ns);
+        return ns;
+      });
+      const sadEmojis = ['🧊', '🥶', '🥺', '🌧️', '📉'];
+      const em = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
+      setStreakEmoji(em);
+      setStreakAnim('shake');
+      setTimeout(() => setStreakAnim(''), 400);
+      triggerFloatingEmoji(em, 'bad', e);
+      // Note: Demo uncheck logic mocked.
     }
   };
 
@@ -1104,17 +1160,17 @@ export default function Dashboard() {
   };
 
   const pending = tasks.filter(t => !t.done);
-  const done    = tasks.filter(t =>  t.done);
+  const done = tasks.filter(t => t.done);
 
   // One filter, applied consistently everywhere (color + filter agree).
-  const matchesFilter  = (t) => matchesPinch(t, pinchFilter);
-  const visibleAll     = tasks.filter(matchesFilter);
+  const matchesFilter = (t) => matchesPinch(t, pinchFilter);
+  const visibleAll = tasks.filter(matchesFilter);
   const visiblePending = pending.filter(matchesFilter);
-  const visibleDone    = done.filter(matchesFilter);
+  const visibleDone = done.filter(matchesFilter);
 
   const close = () => {
     if (IS_ELECTRON) window.electronAPI.closeDashboard();
-    else             window.history.back();
+    else window.history.back();
   };
 
   const maximize = () => {
@@ -1123,6 +1179,43 @@ export default function Dashboard() {
 
   const minimize = () => {
     if (IS_ELECTRON) window.electronAPI.minimizeDashboard();
+  };
+
+  const handleSendChat = async () => {
+    if (!chatInput.trim()) return;
+    const userMsg = chatInput.trim();
+    setChatInput('');
+    setChatMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+    setIsTyping(true);
+
+    try {
+      const apiMessages = [...chatMessages, { sender: 'user', text: userMsg }].map(m => ({
+        role: m.sender === 'ai' ? 'assistant' : 'user',
+        content: m.text
+      }));
+      
+      const response = await api.sendChatMessage(apiMessages);
+      let aiText = '';
+      if (typeof response === 'string') {
+        aiText = response;
+      } else if (response && response.text) {
+        aiText = response.text;
+      } else if (response && response.message) {
+        aiText = response.message;
+      } else if (response && response.reply) {
+        aiText = response.reply;
+      } else {
+        aiText = JSON.stringify(response);
+      }
+      
+      setChatMessages(prev => [...prev, { sender: 'ai', text: aiText }]);
+      fetchTasksAndBubble();
+    } catch (err) {
+      console.error('Chat error:', err);
+      setChatMessages(prev => [...prev, { sender: 'ai', text: 'Sorry, I am having trouble connecting to the brain.' }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (
@@ -1146,9 +1239,9 @@ export default function Dashboard() {
         <aside className="d-sidebar">
           <div className="d-sidebar-main">
             {[
-              { id: 'home',      label: t('dashboard.home'),     Icon: IconHome },
-              { id: 'tasks',     label: t('dashboard.allTasks'), Icon: IconTask },
-              { id: 'assistant', label: 'Assistant',             Icon: IconSparkle },
+              { id: 'home', label: t('dashboard.home'), Icon: IconHome },
+              { id: 'tasks', label: t('dashboard.allTasks'), Icon: IconTask },
+              { id: 'assistant', label: 'Assistant', Icon: IconSparkle },
             ].map(({ id, label, Icon }) => (
               <button
                 key={id}
@@ -1210,23 +1303,23 @@ export default function Dashboard() {
 
               {/* AI Recommend card */}
               {bubbleTask && bubbleTask.primary_block ? (
-              <div className="d-card d-card--ai">
-                <div className="d-card-header">
-                  <IconSparkle />
-                  <span>AI Recommendation</span>
-                  <span className="d-chip">Now</span>
+                <div className="d-card d-card--ai">
+                  <div className="d-card-header">
+                    <IconSparkle />
+                    <span>AI Recommendation</span>
+                    <span className="d-chip">Now</span>
+                  </div>
+                  <h2 className="d-card-title">{bubbleTask.primary_block.task_title}</h2>
+                  <p className="d-card-reason">Based on your cognitive state ({bubbleTask.state_score}), this is the best task to tackle.</p>
+                  <div className="d-card-meta">
+                    <span>⚡ {bubbleTask.mode === 'focused' ? 'High' : 'Low'} energy</span>
+                    <span>⏱ {bubbleTask.primary_block.duration_minutes} min</span>
+                  </div>
+                  <button className="d-btn d-btn--primary" onClick={async () => {
+                    await api.completeSubBlock(bubbleTask.primary_block.sub_block_id);
+                    fetchTasksAndBubble();
+                  }}>Complete Block →</button>
                 </div>
-                <h2 className="d-card-title">{bubbleTask.primary_block.task_title}</h2>
-                <p className="d-card-reason">Based on your cognitive state ({bubbleTask.state_score}), this is the best task to tackle.</p>
-                <div className="d-card-meta">
-                  <span>⚡ {bubbleTask.mode === 'focused' ? 'High' : 'Low'} energy</span>
-                  <span>⏱ {bubbleTask.primary_block.duration_minutes} min</span>
-                </div>
-                <button className="d-btn d-btn--primary" onClick={async () => {
-                  await api.completeSubBlock(bubbleTask.primary_block.sub_block_id);
-                  fetchTasksAndBubble();
-                }}>Complete Block →</button>
-              </div>
               ) : (
                 <div className="d-card d-card--ai" style={{ alignItems: 'center', textAlign: 'center', padding: '40px 20px' }}>
                   <div style={{ animation: 'pulse 2s infinite', color: 'var(--accent)', marginBottom: '12px' }}>
@@ -1394,10 +1487,10 @@ export default function Dashboard() {
                 <div className="d-avatar">{USER.avatar}</div>
                 <div className="d-profile-info">
                   {isEditingName ? (
-                    <input 
-                      type="text" 
-                      value={userName} 
-                      onChange={(e) => setUserName(e.target.value)} 
+                    <input
+                      type="text"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
                       onBlur={() => { setIsEditingName(false); localStorage.setItem('dopapal_username', userName); }}
                       onKeyDown={(e) => { if (e.key === 'Enter') { setIsEditingName(false); localStorage.setItem('dopapal_username', userName); } }}
                       autoFocus
@@ -1738,12 +1831,12 @@ export default function Dashboard() {
           {tab === 'settings' && false && (
             <div className="d-section fade-in">
               <h1 className="d-h1">Settings</h1>
-              
+
               {/* Language Selector */}
               <div className="d-card" style={{ marginBottom: 16 }}>
                 <div className="d-card-header"><span>🌐</span><span>{t('dashboard.language')}</span></div>
                 <div style={{ display: 'flex', gap: 10, padding: '12px 0 0 0' }}>
-                  {[{code:'ar', label:'العربية 🇸🇦'}, {code:'en', label:'English 🇬🇧'}].map(({ code, label }) => (
+                  {[{ code: 'ar', label: 'العربية 🇸🇦' }, { code: 'en', label: 'English 🇬🇧' }].map(({ code, label }) => (
                     <button
                       key={code}
                       onClick={() => changeLanguage(code)}
@@ -1761,14 +1854,14 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="d-card">
                 <div className="d-card-header"><span>App Settings</span></div>
                 <div className="d-settings-list">
                   {['Notifications', 'Privacy'].map(s => (
-                    <div 
-                      key={s} 
-                      className="d-setting-row" 
+                    <div
+                      key={s}
+                      className="d-setting-row"
                       style={{ display: 'flex', justifyContent: 'space-between' }}
                     >
                       <span>{s}</span>
@@ -1791,42 +1884,74 @@ export default function Dashboard() {
               <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '0' }}>
                 <h1 className="d-h1" style={{ margin: 0, fontSize: '18px' }}>DopaPal Assistant</h1>
               </div>
-              
+
               <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {chatMessages.map((m, i) => (
-                  <div key={i} style={{ 
-                      alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start', 
-                      background: m.sender === 'user' ? '#8b5cf6' : 'rgba(255,255,255,0.05)', 
-                      color: 'white', padding: '12px 16px', borderRadius: '16px', 
-                      borderBottomRightRadius: m.sender === 'user' ? '4px' : '16px', 
-                      borderBottomLeftRadius: m.sender === 'ai' ? '4px' : '16px', 
-                      maxWidth: '80%', lineHeight: '1.4' 
+                  <div key={i} style={{
+                    alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start',
+                    background: m.sender === 'user' ? '#8b5cf6' : 'rgba(255,255,255,0.05)',
+                    color: 'white', padding: '12px 16px', borderRadius: '16px',
+                    borderBottomRightRadius: m.sender === 'user' ? '4px' : '16px',
+                    borderBottomLeftRadius: m.sender === 'ai' ? '4px' : '16px',
+                    maxWidth: '80%', lineHeight: '1.4'
                   }}>
-                    {m.text}
+                    {m.sender === 'ai' ? <MarkdownRenderer content={m.text} /> : m.text}
                   </div>
                 ))}
                 {isTyping && (
                   <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.05)', color: '#9ca3af', padding: '12px 16px', borderRadius: '16px', borderBottomLeftRadius: '4px' }}>
                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '20px' }}>
-                       <span style={{ width: '6px', height: '6px', background: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></span>
-                       <span style={{ width: '6px', height: '6px', background: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.2s' }}></span>
-                       <span style={{ width: '6px', height: '6px', background: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.4s' }}></span>
+                      <span style={{ width: '6px', height: '6px', background: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></span>
+                      <span style={{ width: '6px', height: '6px', background: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.2s' }}></span>
+                      <span style={{ width: '6px', height: '6px', background: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.4s' }}></span>
                     </div>
                   </div>
                 )}
                 <div ref={chatEndRef} />
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                <input 
-                  type="text" 
-                  value={chatInput} 
-                  onChange={e => setChatInput(e.target.value)} 
-                  onKeyDown={e => e.key === 'Enter' && handleSendChat()}
-                  placeholder="Message DopaPal AI..." 
-                  style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px', color: 'white', outline: 'none', fontSize: '14px' }} 
-                />
-                <button className="d-btn d-btn--primary" onClick={handleSendChat} style={{ borderRadius: '12px', padding: '0 20px' }}>Send</button>
+              <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.1)' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '8px', 
+                  background: 'rgba(255,255,255,0.03)', 
+                  border: '1px solid rgba(255,255,255,0.08)', 
+                  borderRadius: '24px', 
+                  padding: '6px 6px 6px 16px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  alignItems: 'center',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSendChat()}
+                    placeholder="Message DopaPal AI..."
+                    style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', outline: 'none', fontSize: '14px' }}
+                  />
+                  <button 
+                    onClick={handleSendChat} 
+                    disabled={!chatInput.trim() || isTyping}
+                    style={{ 
+                      borderRadius: '50%', 
+                      width: '36px', 
+                      height: '36px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      background: chatInput.trim() && !isTyping ? 'var(--accent)' : 'rgba(255,255,255,0.1)', 
+                      color: chatInput.trim() && !isTyping ? 'white' : 'rgba(255,255,255,0.3)', 
+                      border: 'none', 
+                      cursor: chatInput.trim() && !isTyping ? 'pointer' : 'default',
+                      transition: 'all 0.2s',
+                      boxShadow: chatInput.trim() && !isTyping ? '0 2px 10px var(--accent-dim)' : 'none'
+                    }}
+                    title="Send message"
+                  >
+                    <IconSend />
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -1950,11 +2075,11 @@ export default function Dashboard() {
               </div>
 
               {purchaseError && (
-                 <div style={{ margin: '16px 24px 0 24px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 500 }}>
-                    {purchaseError}
-                 </div>
+                <div style={{ margin: '16px 24px 0 24px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 500 }}>
+                  {purchaseError}
+                </div>
               )}
-              
+
               <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {THEMES.map(t => {
                   const isUnlocked = unlockedThemes.includes(t.id);
@@ -1966,9 +2091,9 @@ export default function Dashboard() {
                         <div>
                           <div style={{ fontSize: '16px', fontWeight: 600, color: 'white' }}>{t.name}</div>
                           {!isUnlocked && (
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24', padding: '4px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, marginTop: '6px' }}>
-                                <IconSparkle size={12} /> {t.cost} XP
-                              </div>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24', padding: '4px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, marginTop: '6px' }}>
+                              <IconSparkle size={12} /> {t.cost} XP
+                            </div>
                           )}
                           {isUnlocked && <div style={{ fontSize: '13px', color: '#34d399', marginTop: '6px', fontWeight: 500 }}>✓ Unlocked</div>}
                         </div>
@@ -2050,7 +2175,7 @@ export default function Dashboard() {
               {(() => {
                 const tk = tasks.find(t => t.id === confirmDeleteId);
                 return tk ? `“${tk.title}” and its steps will be removed. This can't be undone.`
-                          : "This task and its steps will be removed. This can't be undone.";
+                  : "This task and its steps will be removed. This can't be undone.";
               })()}
             </p>
             <div className="d-confirm-actions">
@@ -2127,23 +2252,23 @@ export default function Dashboard() {
 
             {addTaskView === 'manual' && (
               <div className="d-modal-form">
-                <input className="d-input" placeholder={t('bubble.taskPlaceholder')} value={taskData.title} onChange={e => setTaskData({...taskData, title: e.target.value})} autoFocus />
+                <input className="d-input" placeholder={t('bubble.taskPlaceholder')} value={taskData.title} onChange={e => setTaskData({ ...taskData, title: e.target.value })} autoFocus />
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <input 
-                    className="d-input" 
-                    placeholder={t('bubble.durationPlaceholder')} 
+                  <input
+                    className="d-input"
+                    placeholder={t('bubble.durationPlaceholder')}
                     value={taskData.duration}
-                    onChange={e => setTaskData({...taskData, duration: e.target.value})}
+                    onChange={e => setTaskData({ ...taskData, duration: e.target.value })}
                     style={{ flex: 1 }}
                   />
                   <button
-                    onClick={() => setTaskData({...taskData, duration: '30m'})}
-                    style={{ 
-                      padding: '8px 16px', 
-                      background: 'var(--accent)', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '6px', 
+                    onClick={() => setTaskData({ ...taskData, duration: '30m' })}
+                    style={{
+                      padding: '8px 16px',
+                      background: 'var(--accent)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
                       cursor: 'pointer',
                       fontSize: '14px',
                       alignSelf: 'stretch'
@@ -2152,13 +2277,13 @@ export default function Dashboard() {
                     30m
                   </button>
                   <button
-                    onClick={() => setTaskData({...taskData, duration: '1h'})}
-                    style={{ 
-                      padding: '8px 16px', 
-                      background: 'var(--accent)', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '6px', 
+                    onClick={() => setTaskData({ ...taskData, duration: '1h' })}
+                    style={{
+                      padding: '8px 16px',
+                      background: 'var(--accent)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
                       cursor: 'pointer',
                       fontSize: '14px',
                       alignSelf: 'stretch'
@@ -2167,13 +2292,13 @@ export default function Dashboard() {
                     1h
                   </button>
                   <button
-                    onClick={() => setTaskData({...taskData, duration: '2h'})}
-                    style={{ 
-                      padding: '8px 16px', 
-                      background: 'var(--accent)', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '6px', 
+                    onClick={() => setTaskData({ ...taskData, duration: '2h' })}
+                    style={{
+                      padding: '8px 16px',
+                      background: 'var(--accent)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
                       cursor: 'pointer',
                       fontSize: '14px',
                       alignSelf: 'stretch'
@@ -2182,8 +2307,8 @@ export default function Dashboard() {
                     2h
                   </button>
                 </div>
-                <input className="d-input" placeholder={t('bubble.dueDatePlaceholder')} value={taskData.due} onChange={e => setTaskData({...taskData, due: e.target.value})} />
-                <textarea className="d-input" placeholder={t('bubble.notesPlaceholder')} value={taskData.notes} onChange={e => setTaskData({...taskData, notes: e.target.value})} />
+                <input className="d-input" placeholder={t('bubble.dueDatePlaceholder')} value={taskData.due} onChange={e => setTaskData({ ...taskData, due: e.target.value })} />
+                <textarea className="d-input" placeholder={t('bubble.notesPlaceholder')} value={taskData.notes} onChange={e => setTaskData({ ...taskData, notes: e.target.value })} />
                 <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                   <button className="d-btn d-btn--secondary" onClick={() => setAddTaskView('options')} style={{ flex: 1 }}>Back</button>
                   <button className="d-btn d-btn--primary" onClick={() => submitNewTask('manual')} disabled={isSubmittingTask || !taskData.title.trim()} style={{ flex: 2 }}>

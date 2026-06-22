@@ -739,8 +739,8 @@ export default function Bubble() {
                 {playSession.queue.map((item, index) => (
                   <div key={item.sub_block_id ?? index} className={`b-play-queue-row ${index === 0 ? 'b-play-queue-row--primary' : ''}`}>
                     <div className="b-play-queue-main">
-                      <div className="b-play-queue-title">{item.task_title}</div>
-                      <div className="b-play-queue-meta">Block {index + 1}</div>
+                      <div className="b-play-queue-title">{item.block_title || item.task_title}</div>
+                      <div className="b-play-queue-meta">{item.block_title ? item.task_title : `Block ${index + 1}`}</div>
                     </div>
                     <div className="b-play-queue-controls">
                       <input
@@ -779,9 +779,9 @@ export default function Bubble() {
               </div>
 
               <div className="b-play-current">
-                <div className="b-play-current-title">{playSession.current.task_title}</div>
+                <div className="b-play-current-title">{playSession.current.block_title || playSession.current.task_title}</div>
                 <div className="b-play-current-meta">
-                  <span>⏱ {playSession.current.original_minutes} min</span>
+                  <span>{playSession.current.block_title ? playSession.current.task_title + " • " : ""}⏱ {playSession.current.original_minutes} min</span>
                   <span>{playSession.queue.length - playSession.currentIndex} in rotation</span>
                 </div>
               </div>

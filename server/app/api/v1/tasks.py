@@ -55,6 +55,7 @@ class TaskUpdateRequest(BaseModel):
 class SubBlockResponse(BaseModel):
     id: int
     sequence: int
+    title: Optional[str] = None
     duration_minutes: int
     scheduled_date: date
     status: str
@@ -286,6 +287,7 @@ def api_get_next_bubble(db: Session = Depends(get_db)):
             bonus_blocks.append({
                 "sub_block_id": sb.id,
                 "task_title": sb.task.title,
+                "block_title": sb.title,
                 "duration_minutes": sb.duration_minutes,
                 "pinch_score": round(_score, 2),
             })
@@ -298,6 +300,7 @@ def api_get_next_bubble(db: Session = Depends(get_db)):
         "primary_block": {
             "sub_block_id": primary_block.id,
             "task_title": primary_block.task.title,
+            "block_title": primary_block.title,
             "duration_minutes": primary_block.duration_minutes,
             "pinch_score": round(primary_score, 2),
             "interest_tag": primary_block.task.interest_tag,

@@ -18,6 +18,7 @@ from app.api.v1.state import router as state_router
 from app.api.v1.users import router as users_router
 from app.api.v1.rewards import router as rewards_router
 from app.api.v1.integrations import router as integrations_router
+from app.api.v1.chat import router as chat_router
 
 from app.services.websocket_manager import manager as ws_manager
 
@@ -50,6 +51,7 @@ app.include_router(state_router, prefix=settings.API_V1_STR)
 app.include_router(users_router, prefix=settings.API_V1_STR)
 app.include_router(rewards_router, prefix=settings.API_V1_STR)
 app.include_router(integrations_router, prefix=settings.API_V1_STR)
+app.include_router(chat_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def read_root():

@@ -1429,3 +1429,9 @@
 [dir="rtl"] .d-task-actions { margin-left: 0; margin-right: auto; }
 [dir="rtl"] .d-submod { text-align: right; }
 [dir="rtl"] .d-toast-stack { right: auto; left: 20px; }
+
+/* ── Chat Messages ────────────────────────────────────────── */
+.d-chat-msg-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}

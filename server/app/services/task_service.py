@@ -167,9 +167,9 @@ def create_manual_task(
         source_type=source_type,
     )
 
-    # Override with the user-provided structured values
+    # Override with the user-provided structured values, but use the AI-refined title if available
     ingest_result = IngestResult(
-        title=title,
+        title=full_result.title if full_result.title else title,
         deadline=deadline,
         estimated_hours=estimated_hours,
         interest_tag=interest_tag,
@@ -202,7 +202,7 @@ def get_ranked_pending_blocks(
     This is the function backing ``GET /api/v1/bubble/next``.
     """
     # Fetch pending sub-blocks with their parent tasks eagerly loaded
-    pending_blocks = (
+    raw_pending_blocks = (
         db.query(SubBlock)
         .join(Task)
         .filter(
@@ -210,11 +210,20 @@ def get_ranked_pending_blocks(
             Task.status == "pending",
             SubBlock.status == "pending",
         )
+        .order_by(SubBlock.task_id, SubBlock.sequence)
         .all()
     )
 
-    if not pending_blocks:
+    if not raw_pending_blocks:
         return []
+
+    # Enforce strict sequence: only surface the FIRST pending step per task
+    pending_blocks = []
+    seen_tasks = set()
+    for block in raw_pending_blocks:
+        if block.task_id not in seen_tasks:
+            pending_blocks.append(block)
+            seen_tasks.add(block.task_id)
 
     ai = get_ai_service()
     now = datetime.now()

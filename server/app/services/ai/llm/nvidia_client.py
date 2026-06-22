@@ -116,6 +116,27 @@ class NvidiaClient:
 
         return self._validate_enrichment(parsed)
 
+    def chat(self, messages: list[dict[str, str]], system_prompt: str) -> str:
+        """
+        Send a conversation to the LLM and return the assistant's reply.
+        """
+        if not self._client:
+            raise NvidiaUnavailableError("No API key provided for Nvidia API")
+            
+        full_messages = [{"role": "system", "content": system_prompt}] + messages
+        try:
+            completion = self._client.chat.completions.create(
+                model=self._config.model,
+                messages=full_messages,
+                temperature=0.7,
+                top_p=0.95,
+                max_tokens=4096,
+                stream=False
+            )
+            return completion.choices[0].message.content
+        except APIError as exc:
+            raise NvidiaUnavailableError(f"Nvidia API request failed: {exc}") from exc
+
     def _build_prompt(self, raw_text: str, deterministic_title: str) -> str:
         return (
             "You analyze task descriptions for an ADHD productivity app and intelligently chunk them. "
@@ -124,11 +145,13 @@ class NvidiaClient:
             '"difficulty_reason": string or null, "estimated_hours": number or null, '
             '"interest_tag": string or null, '
             '"ai_sub_tasks": [{"title": string, "duration_minutes": number}] or null}\n\n'
-            "CRITICAL RULES FOR ai_sub_tasks:\n"
-            "1. You MUST break down the task into logical, specific sub-tasks based on the text.\n"
-            "2. Each sub-task MUST have a 'duration_minutes' strictly between 15 and 45 minutes. Never exceed 45 minutes.\n"
-            "3. The sum of all 'duration_minutes' in the array MUST equal 'estimated_hours' * 60.\n"
-            "4. Base the percentages (chunk sizes) on the difficulty of each part. Give complex parts shorter bursts (e.g. 25 mins) and easier parts longer flows (e.g. 40-45 mins).\n\n"
+            "CRITICAL RULES FOR ai_sub_tasks AND refined_title:\n"
+            "1. You MUST divide the large task into smaller subtasks, each with its own specific title/name.\n"
+            "2. Subtasks MUST be clear instructions/actionable steps so that executing them sequentially guarantees completion of the overall task.\n"
+            "3. Each sub-task MUST have a 'duration_minutes' strictly between 15 and 45 minutes. Never exceed 45 minutes.\n"
+            "4. The sum of all 'duration_minutes' in the array MUST equal 'estimated_hours' * 60.\n"
+            "5. Base the percentages (chunk sizes) on the difficulty of each part. Give complex parts shorter bursts (e.g. 25 mins) and easier parts longer flows (e.g. 40-45 mins).\n"
+            "6. The 'refined_title' MUST be a clear, concise title that clarifies the task itself, and MUST NOT be the raw text given to it.\n\n"
             f"Deterministically-parsed title (for reference, may already be good): {deterministic_title!r}\n"
             f"Original task text: {raw_text!r}\n"
         )
