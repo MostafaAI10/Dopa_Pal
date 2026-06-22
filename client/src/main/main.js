@@ -176,7 +176,7 @@ ipcMain.handle('update-task', async (_e, id, payload) => {
 ipcMain.handle('ingest-voice-task', async (_e, audioBuffer) => {
   try {
     // Convert audioBuffer to base64 string for transmission
-    const audioData = audioBuffer.toString('base64');
+    const audioData = Buffer.from(audioBuffer).toString('base64');
     
     // Send to backend voice ingestion endpoint
     const response = await fetch(apiUrl('/tasks/ingest'), {
