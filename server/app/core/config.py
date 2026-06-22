@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     NVIDIA_API_KEY: str = ""
     NVIDIA_MODEL: str = "nvidia/nemotron-3-super-120b-a12b"
     AI_USE_LLM: bool = False  # Deterministic-first: LLM enrichment is opt-in
+    OPENAI_API_KEY: str = ""
     
     # Optional local file system path for configuration fallback
     model_config = SettingsConfigDict(

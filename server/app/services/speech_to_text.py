@@ -10,6 +10,7 @@ import io
 import os
 from typing import Optional
 from openai import OpenAI
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class SpeechToTextService:
     
     def __init__(self):
         self.client = None
-        api_key = os.environ.get("OPENAI_API_KEY")
+        api_key = settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY")
         if api_key:
             self.client = OpenAI(api_key=api_key)
         else:
