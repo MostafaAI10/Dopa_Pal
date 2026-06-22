@@ -1,29 +1,33 @@
 """
 Speech-to-text service for voice task ingestion.
 
-This service converts audio data to text using a placeholder implementation.
-In a production environment, this would use a proper speech-to-text service
-like Google Speech-to-Text, AWS Transcribe, or Whisper.
+This service converts audio data to text using OpenAI Whisper.
 """
 
 import base64
 import logging
+import io
+import os
 from typing import Optional
+from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
 
 class SpeechToTextService:
-    """Convert audio data to text for task ingestion."""
+    """Convert audio data to text for task ingestion using OpenAI Whisper."""
     
     def __init__(self):
-        # TODO: Integrate with a real speech-to-text service
-        # For now, use a placeholder implementation
-        pass
+        self.client = None
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if api_key:
+            self.client = OpenAI(api_key=api_key)
+        else:
+            logger.warning("OPENAI_API_KEY not found in environment. Voice transcription will fail.")
     
     def audio_to_text(self, audio_data: str, source_type: str = 'voice') -> str:
         """
-        Convert audio data to text.
+        Convert base64 audio data to text using OpenAI Whisper.
         
         Args:
             audio_data: Base64 encoded audio data
@@ -36,33 +40,27 @@ class SpeechToTextService:
             # Decode base64 audio data
             audio_bytes = base64.b64decode(audio_data)
             
-            # Placeholder implementation - in production, use a real
-            # speech-to-text service like:
-            # - Google Speech-to-Text API
-            # - AWS Transcribe
-            # - OpenAI Whisper
-            # - Hugging Face Transformers
+            if not self.client:
+                raise ValueError("OpenAI client not configured (Missing OPENAI_API_KEY in .env)")
             
-            # For demo purposes, return a mock transcription
-            mock_transcriptions = [
-                "Create a project specification document for the new mobile app",
-                "Schedule a meeting with the design team to review the wireframes",
-                "Update the database schema to include user preferences",
-                "Fix the login authentication issue for new users",
-                "Review the quarterly financial report and prepare summary"
-            ]
+            # Create a file-like object with a name required by OpenAI
+            audio_file = io.BytesIO(audio_bytes)
+            audio_file.name = "audio.webm"
             
-            # Return a random mock transcription for demo
-            import random
-            transcribed_text = random.choice(mock_transcriptions)
+            logger.info("Sending audio to OpenAI Whisper API...")
+            transcription = self.client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
             
-            logger.info("Mock speech-to-text conversion: %s", transcribed_text)
+            transcribed_text = transcription.text
+            logger.info("Successfully transcribed audio: %s", transcribed_text)
+            
             return transcribed_text
             
         except Exception as e:
             logger.error("Error converting audio to text: %s", e)
-            # Return a fallback text for demo purposes
-            return "Create a task from voice input"
+            raise e
 
 
 # Global service instance

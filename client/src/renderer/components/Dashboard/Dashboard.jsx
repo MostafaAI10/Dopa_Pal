@@ -973,50 +973,56 @@ export default function Dashboard() {
     }
   };
 
-  const startRecording = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      pushToast('Voice recognition is not supported in your browser.', 'error');
-      return;
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      mediaRecorder.current = recorder;
+      audioChunks.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunks.current.push(event.data);
+        }
+      };
+
+      recorder.start();
+      setIsRecording(true);
+      // Keep showing the options menu, the button will change to a red recording dot
+      setAddTaskView('options');
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      pushToast('Microphone access denied or error occurred.', 'error');
     }
-    
-    setIsRecording(true);
-    setIsVoiceTask(true);
-    setAiText(''); // clear previous text
-    setAddTaskView('ai'); // Switch to the AI view where the textarea is
-    
-    const recognition = new SpeechRecognition();
-    recognition.lang = lang === 'ar' ? 'ar-SA' : 'en-US';
-    recognition.interimResults = true;
-    recognition.continuous = true;
-    
-    recognition.onresult = (event) => {
-      let transcript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      setAiText(transcript);
-    };
-    
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      setIsRecording(false);
-      pushToast('Microphone error.', 'error');
-    };
-    
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-    
-    mediaRecorder.current = recognition;
-    recognition.start();
   };
 
   const stopRecording = () => {
-    if (mediaRecorder.current && typeof mediaRecorder.current.stop === 'function') {
+    if (mediaRecorder.current && isRecording) {
+      mediaRecorder.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
+        
+        // Show loading state while processing voice
+        setIsSubmittingTask(true);
+        const toastId = pushToast('Analyzing voice with AI...', 'loading', 0);
+        
+        // Stop all tracks to release the mic
+        mediaRecorder.current.stream.getTracks().forEach(track => track.stop());
+        
+        // Submit the audio blob
+        try {
+          await submitNewTask('voice', audioBlob);
+          dismissToast(toastId);
+        } catch (error) {
+          console.error("Voice task failed:", error);
+          updateToast(toastId, 'Failed to analyze voice', 'error');
+          dismissToast(toastId, 3000);
+          setIsSubmittingTask(false);
+        }
+      };
+      
       mediaRecorder.current.stop();
+      setIsRecording(false);
     }
-    setIsRecording(false);
   };
 
   const toggleTask = async (id, e) => {
