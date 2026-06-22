@@ -151,7 +151,7 @@ class NvidiaClient:
             "3. Each sub-task MUST have a 'duration_minutes' strictly between 15 and 45 minutes. Never exceed 45 minutes.\n"
             "4. The sum of all 'duration_minutes' in the array MUST equal 'estimated_hours' * 60.\n"
             "5. Base the percentages (chunk sizes) on the difficulty of each part. Give complex parts shorter bursts (e.g. 25 mins) and easier parts longer flows (e.g. 40-45 mins).\n"
-            "6. The 'refined_title' MUST be a clear, concise title that clarifies the task itself, and MUST NOT be the raw text given to it.\n\n"
+            "6. The 'refined_title' MUST be a clear, concise title that clarifies the task itself, and MUST NOT be the raw text given to it. IMPORTANT: Ignore any conversational wrappers like 'Please add a task to...' or 'Create a task for...'. Focus on what the user actually wants to accomplish.\n\n"
             f"Deterministically-parsed title (for reference, may already be good): {deterministic_title!r}\n"
             f"Original task text: {raw_text!r}\n"
         )

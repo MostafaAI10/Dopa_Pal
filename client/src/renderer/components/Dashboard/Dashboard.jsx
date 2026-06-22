@@ -564,6 +564,7 @@ export default function Dashboard() {
   const [taskData, setTaskData] = useState({ title: '', duration: '', due: '', notes: '' });
   const [aiText, setAiText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [isVoiceTask, setIsVoiceTask] = useState(false);
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
@@ -944,7 +945,7 @@ export default function Dashboard() {
       } else if (source === 'ai') {
         const payload = {
           source_text: aiText,
-          source_type: 'highlight'
+          source_type: isVoiceTask ? 'voice' : 'highlight'
         };
 
         if (IS_ELECTRON) {
@@ -959,6 +960,7 @@ export default function Dashboard() {
 
       setTaskData({ title: '', duration: '', due: '', notes: '' });
       setAiText('');
+      setIsVoiceTask(false);
       await fetchTasksAndBubble();
       updateToast(toastId, 'Task added', 'success');
       dismissToast(toastId);
@@ -979,6 +981,7 @@ export default function Dashboard() {
     }
     
     setIsRecording(true);
+    setIsVoiceTask(true);
     setAiText(''); // clear previous text
     setAddTaskView('ai'); // Switch to the AI view where the textarea is
     
@@ -2201,11 +2204,11 @@ export default function Dashboard() {
 
       {/* ══ ADD TASK MODAL ══ */}
       {showAddTaskModal && (
-        <div className="d-modal-overlay fade-in" onClick={() => setShowAddTaskModal(false)}>
+        <div className="d-modal-overlay fade-in" onClick={() => { setShowAddTaskModal(false); setIsVoiceTask(false); }}>
           <div className="d-modal-content" onClick={e => e.stopPropagation()}>
             <div className="d-modal-header">
               <h2 className="d-h1">{addTaskView === 'options' ? t('bubble.newTask') : (addTaskView === 'manual' ? t('bubble.manualEntry') : t('bubble.aiSmartInput'))}</h2>
-              <button className="d-modal-close" onClick={() => setShowAddTaskModal(false)}>
+              <button className="d-modal-close" onClick={() => { setShowAddTaskModal(false); setIsVoiceTask(false); }}>
                 <IconClose />
               </button>
             </div>
