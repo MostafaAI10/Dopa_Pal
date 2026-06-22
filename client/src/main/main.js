@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, screen, globalShortcut, clipboard, Notification } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { exec } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -295,47 +296,63 @@ app.on('will-quit', () => {
 });
 
 const registerGlobalShortcuts = () => {
-  // Use Ctrl+Alt+A to avoid Windows shortcut conflicts
-  globalShortcut.register('CommandOrControl+Alt+A', async () => {
-    // 1. Read what the user already copied to their clipboard
-    const newText = clipboard.readText();
-        
-    if (!newText || newText.trim() === '') {
-      new Notification({ title: 'DopaPal', body: 'Clipboard is empty. Please copy some text first (Ctrl+C).' }).show();
-      return;
-    }
-
-    try {
-      // 2. Process with AI via Backend
-      const response = await fetch(apiUrl('/tasks/ingest'), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          source_text: newText,
-          source_type: 'ai'
-        })
-      });
+  // Global shortcut to capture currently highlighted text anywhere in the OS
+  globalShortcut.register('CommandOrControl+Shift+Space', async () => {
+    // 1. Save old clipboard
+    const oldText = clipboard.readText();
+    
+    // 2. Simulate Ctrl+C to copy the highlighted text
+    // We use a small powershell command that leverages WScript.Shell to send the keys
+    exec('powershell.exe -command "$wshell = New-Object -ComObject wscript.shell; $wshell.SendKeys(\'^c\')"', async () => {
       
-      if (!response.ok) throw new Error("Backend API error");
-      const parsed = await response.json();
+      // Wait briefly for the OS clipboard to update
+      setTimeout(async () => {
+        const newText = clipboard.readText();
+        
+        // Restore old clipboard immediately so user doesn't lose their data
+        clipboard.writeText(oldText);
+        
+        // If the clipboard didn't change, we assume nothing new was highlighted
+        if (!newText || newText.trim() === '' || newText === oldText) {
+          new Notification({ title: 'DopaPal', body: 'Could not capture highlight. Make sure text is selected.' }).show();
+          return;
+        }
 
-      // 3. Show success notification
-      new Notification({
-        title: '✅ AI Task Saved!',
-        body: `Added: "${parsed.title}"`
-      }).show();
+        new Notification({ title: 'DopaPal', body: 'Highlight captured! Analyzing with AI...' }).show();
+
+        try {
+          // 3. Process with AI via Backend
+          const response = await fetch(apiUrl('/tasks/ingest'), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              source_text: newText,
+              source_type: 'highlight'
+            })
+          });
           
-      // 4. Refresh dashboard if open
-      if (dashboardWin && !dashboardWin.isDestroyed()) {
-          dashboardWin.webContents.reload();
-      }
-    } catch (error) {
-      console.error("Failed to process hotkey task:", error);
-      new Notification({
-        title: '❌ DopaPal Error',
-        body: 'Failed to extract task. Ensure API key is valid.'
-      }).show();
-    }
+          if (!response.ok) throw new Error("Backend API error");
+          const parsed = await response.json();
+
+          // 4. Show success notification
+          new Notification({
+            title: '✅ AI Task Saved!',
+            body: `Extracted from highlight: "${parsed.title}"`
+          }).show();
+              
+          // 5. Refresh dashboard if open
+          if (dashboardWin && !dashboardWin.isDestroyed()) {
+              dashboardWin.webContents.send('dashboard-refresh');
+          }
+        } catch (error) {
+          console.error("Failed to process hotkey task:", error);
+          new Notification({
+            title: '❌ DopaPal Error',
+            body: 'Failed to extract task. Ensure backend is running.'
+          }).show();
+        }
+      }, 150); // 150ms delay to allow OS clipboard event to fire
+    });
   });
 };
 
