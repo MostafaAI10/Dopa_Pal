@@ -13,12 +13,14 @@ heavy lifting so task creation never depends on an LLM being up, and the
 Ollama client is a clean, swappable seam for later upgrades.
 """
 
-from app.services.ai.schemas import ParsedTask, SubBlockPlan, IngestResult
+from app.services.ai.schemas import ParsedTask, SubBlockPlan, IngestResult, SegmentationInput, SegmentationOutput
 from app.services.ai.service import AIService
 
 __all__ = [
     "ParsedTask",
     "SubBlockPlan",
     "IngestResult",
+    "SegmentationInput",
+    "SegmentationOutput",
     "AIService",
 ]

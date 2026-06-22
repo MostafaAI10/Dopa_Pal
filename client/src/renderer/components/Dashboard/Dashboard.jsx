@@ -214,13 +214,87 @@ const INTEGRATION_PROVIDERS = [
   { id: 'canvas', name: 'Canvas LMS', accent: '#fb7185', tokenLabel: 'Access token', settingLabel: 'Course ID', settingKey: 'course_id' },
 ];
 
+/* ─── PINCH categories — single source of truth (no emojis) ── */
+const PINCH_CATEGORIES = [
+  { id: 'passion',   label: 'Passion',   color: '#ec4899' },
+  { id: 'interest',  label: 'Interest',  color: '#38bdf8' },
+  { id: 'novelty',   label: 'Novelty',   color: '#fb923c' },
+  { id: 'challenge', label: 'Challenge', color: '#22c55e' },
+  { id: 'hurry',     label: 'Hurry',     color: '#ef4444' },
+];
+const PINCH_BY_ID = Object.fromEntries(PINCH_CATEGORIES.map(c => [c.id, c]));
+
+const _daysUntil = (deadlineRaw) => {
+  if (!deadlineRaw) return Infinity;
+  const ms = new Date(deadlineRaw).getTime() - Date.now();
+  return ms / 86400000;
+};
+
+/**
+ * Deterministic, single-category mapping used for BOTH coloring and
+ * filtering, so the two never disagree. Precedence: time pressure first,
+ * then heavy lifts, then engagement, then novelty as the default.
+ */
+function getPinchCategory(task) {
+  const score = task.pinchScore ?? 50;
+  const hours = task.estimatedHours ?? 0;
+  if (_daysUntil(task.deadlineRaw) <= 1) return 'hurry';
+  if (hours >= 4 && score >= 60) return 'challenge';
+  if (task.interestTag && score >= 70) return 'passion';
+  if (task.interestTag) return 'interest';
+  return 'novelty';
+}
+
+const matchesPinch = (task, filter) => filter === 'all' || getPinchCategory(task) === filter;
+
+/* ─── PINCH category tag (colored chip, no emoji) ───────────── */
+const PinchTag = ({ category }) => {
+  const cat = PINCH_BY_ID[category];
+  if (!cat) return null;
+  return (
+    <span
+      className="d-pinch-tag"
+      style={{ color: cat.color, borderColor: cat.color + '66', background: cat.color + '1f' }}
+    >
+      {cat.label}
+    </span>
+  );
+};
+
+/* ─── PINCH filter bar (data-driven, colored, no emoji) ─────── */
+const PinchFilterBar = ({ value, onChange }) => (
+  <div className="d-pinch-filter">
+    <span className="d-pinch-filter-label">Filter by PINCH</span>
+    <button
+      className={`d-pinch-pill${value === 'all' ? ' active' : ''}`}
+      onClick={() => onChange('all')}
+    >
+      All
+    </button>
+    {PINCH_CATEGORIES.map(cat => (
+      <button
+        key={cat.id}
+        className={`d-pinch-pill${value === cat.id ? ' active' : ''}`}
+        onClick={() => onChange(cat.id)}
+        style={value === cat.id
+          ? { background: cat.color + '33', borderColor: cat.color, color: '#fff' }
+          : { borderColor: cat.color + '80', color: cat.color }}
+      >
+        {cat.label}
+      </button>
+    ))}
+  </div>
+);
+
 /* ─── Priority badge ────────────────────────────────────── */
 const PriorityBadge = ({ level }) => (
   <span className={`d-badge d-badge--${level}`}>{level.toUpperCase()}</span>
 );
 
 /* ─── Task row ──────────────────────────────────────────── */
-const TaskRow = ({ task, onToggle, onDelete, onUpdateTask }) => {
+const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleting }) => {
+  const category = getPinchCategory(task);
+  const catColor = PINCH_BY_ID[category].color;
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [editPriority, setEditPriority] = useState(task.priority);
@@ -309,55 +383,75 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask }) => {
     );
   }
 
+  const subs = task.subBlocks || [];
+  const doneSubs = subs.filter(b => b.status === 'completed').length;
+
   return (
-    <div className={`d-task${task.done ? ' d-task--done' : ''}`}>
-      <button className={`d-task-check${task.done ? ' checked' : ''}`} onClick={() => onToggle(task.id)}>
-        {task.done && <IconCheck />}
-      </button>
-      <div className="d-task-body">
-        <span className="d-task-title">{task.title}</span>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <span className="d-task-due">📅 {task.due}</span>
-          {task.estimatedHours != null && (
-            <span className="d-task-due">⏱️ {task.estimatedHours}h</span>
-          )}
-          {task.interestTag && (
-            <span className="d-task-interest">🏷️ {task.interestTag}</span>
-          )}
-          {task.pinchScore && (
-            <span className="d-task-pinch">🧠 {task.pinchScore}</span>
-          )}
-        </div>
-        {/* Sub-blocks display */}
-        {task.subBlocks && task.subBlocks.length > 0 && !task.done && (
-          <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', marginBottom: '4px', fontWeight: 600 }}>SUB-TASKS:</div>
-            {task.subBlocks.map((block, index) => (
-              <div key={block.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: block.status === 'completed' ? '#10b981' : '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {block.status === 'completed' && <span style={{ color: 'white', fontSize: '10px' }}>✓</span>}
-                  {block.status !== 'completed' && <span style={{ color: 'white', fontSize: '10px' }}>{block.sequence}</span>}
-                </div>
-                <span style={{ fontSize: '12px', color: block.status === 'completed' ? 'rgba(255,255,255,0.5)' : 'white' }}>
-                  {block.duration_minutes}min - {new Date(block.scheduled_date).toLocaleDateString()}
-                </span>
-                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>
-                  ({block.status})
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      <PriorityBadge level={task.priority} />
-      {!task.done && (
-        <button className="d-task-edit" onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: '#a78bfa', cursor: 'pointer', marginLeft: '12px', padding: 0, display: 'flex' }} title="Edit Task">
-          <IconEdit />
+    <div
+      className={`d-task d-task--card${task.done ? ' d-task--done' : ''}${isDeleting ? ' d-task--deleting' : ''}`}
+      style={{ '--cat': catColor }}
+    >
+      <span className="d-task-cat-bar" />
+      <div className="d-task-head">
+        <button className={`d-task-check${task.done ? ' checked' : ''}`} onClick={() => onToggle(task.id)}>
+          {task.done && <IconCheck />}
         </button>
+        <div className="d-task-body">
+          <div className="d-task-title-row">
+            <span className="d-task-title">{task.title}</span>
+            <PinchTag category={category} />
+          </div>
+          <div className="d-task-meta">
+            <span className="d-task-meta-item">{task.due}</span>
+            {task.estimatedHours != null && (
+              <span className="d-task-meta-item">{task.estimatedHours}h</span>
+            )}
+            {task.interestTag && (
+              <span className="d-task-meta-item d-task-meta-tag">{task.interestTag}</span>
+            )}
+            {subs.length > 0 && (
+              <span className="d-task-meta-item">{doneSubs}/{subs.length} steps</span>
+            )}
+          </div>
+        </div>
+        <div className="d-task-actions">
+          <PriorityBadge level={task.priority} />
+          {!task.done && (
+            <button className="d-task-icon-btn" onClick={() => setIsEditing(true)} title="Edit task">
+              <IconEdit />
+            </button>
+          )}
+          <button className="d-task-icon-btn d-task-icon-btn--danger" onClick={() => onDelete(task.id)} title="Delete task">
+            <IconTrash />
+          </button>
+        </div>
+      </div>
+
+      {/* Sub-tasks as interactive mini-modules */}
+      {subs.length > 0 && (
+        <div className="d-submods">
+          {subs.map((block) => {
+            const done = block.status === 'completed';
+            return (
+              <button
+                key={block.id ?? block.sequence}
+                className={`d-submod${done ? ' d-submod--done' : ''}`}
+                onClick={() => !done && onToggleSub && onToggleSub(task.id, block)}
+                disabled={done}
+                title={done ? 'Completed' : 'Mark step complete'}
+              >
+                <span className="d-submod-check">{done ? <IconCheck /> : block.sequence}</span>
+                <span className="d-submod-body">
+                  <span className="d-submod-title">{block.title || `Step ${block.sequence}`}</span>
+                  <span className="d-submod-meta">
+                    {block.duration_minutes}m · {new Date(block.scheduled_date).toLocaleDateString()}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
       )}
-      <button className="d-task-delete" onClick={() => onDelete(task.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', marginLeft: '12px', padding: 0, display: 'flex' }} title="Delete Task">
-        <IconTrash />
-      </button>
     </div>
   );
 };
@@ -372,6 +466,23 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [bubbleTask, setBubbleTask] = useState(null);
   const [pinchFilter, setPinchFilter] = useState('all'); // 'all', 'passion', 'interest', 'novelty', 'challenge', 'hurry'
+
+  // Delete flow (confirm prompt + exit animation) and background toasts
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [deletingIds, setDeletingIds] = useState(() => new Set());
+  const [toasts, setToasts] = useState([]);
+  const toastSeq = useRef(0);
+
+  const pushToast = (text, kind = 'info', ttl = 2600) => {
+    const id = ++toastSeq.current;
+    setToasts(ts => [...ts, { id, text, kind }]);
+    if (ttl) setTimeout(() => setToasts(ts => ts.filter(t => t.id !== id)), ttl);
+    return id;
+  };
+  const updateToast = (id, text, kind) =>
+    setToasts(ts => ts.map(t => (t.id === id ? { ...t, text, kind } : t)));
+  const dismissToast = (id, delay = 2200) =>
+    setTimeout(() => setToasts(ts => ts.filter(t => t.id !== id)), delay);
 
   // Chat state
   const [chatMessages, setChatMessages] = useState([
@@ -746,6 +857,11 @@ export default function Dashboard() {
   /* ── Add Task Logic ────────────────────────────────────── */
   const submitNewTask = async (source, extraData = null) => {
     setIsSubmittingTask(true);
+    // Background the work: close the modal right away and track via a toast,
+    // so the user isn't held on a blocking "Saving…" screen.
+    setShowAddTaskModal(false);
+    setAddTaskView('options');
+    const toastId = pushToast('Adding task…', 'loading', 0);
     try {
       if (source === 'manual') {
         // Use the server's duration parser for consistent parsing
@@ -805,12 +921,13 @@ export default function Dashboard() {
       
       setTaskData({ title:'', duration:'', due:'', notes:'' });
       setAiText('');
-      setShowAddTaskModal(false);
-      setAddTaskView('options');
-      fetchTasksAndBubble();
+      await fetchTasksAndBubble();
+      updateToast(toastId, 'Task added', 'success');
+      dismissToast(toastId);
     } catch (e) {
       console.error("Failed to submit task:", e);
-      alert("Error saving task: " + e.message);
+      updateToast(toastId, 'Could not add task — ' + (e?.message || 'try again'), 'error');
+      dismissToast(toastId, 3600);
     } finally {
       setIsSubmittingTask(false);
     }
@@ -892,48 +1009,108 @@ export default function Dashboard() {
     }
   };
 
-  const deleteTask = async (id) => {
-    setTasks(ts => ts.filter(t => t.id !== id));
-    try {
+  // Delete is a two-step flow: ask for confirmation, then play an exit
+  // animation before the row actually leaves and is persisted.
+  const requestDelete = (id) => setConfirmDeleteId(id);
+
+  const performDelete = async () => {
+    const id = confirmDeleteId;
+    if (id == null) return;
+    setConfirmDeleteId(null);
+    setDeletingIds(prev => new Set(prev).add(id));
+    setTimeout(async () => {
+      setTasks(ts => ts.filter(t => t.id !== id));
+      setDeletingIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+      try {
         await api.deleteTask(id);
-        fetchTasksAndBubble();
-    } catch (e) {
+        pushToast('Task deleted', 'info');
+      } catch (e) {
         console.error("Failed to delete task:", e);
-        fetchTasksAndBubble();
+        pushToast('Could not delete task', 'error', 3200);
+      }
+      fetchTasksAndBubble();
+    }, 380); // keep in sync with the d-task--deleting animation
+  };
+
+  const toggleSubBlock = async (taskId, block) => {
+    if (!block || block.status === 'completed') return;
+    const key = block.id ?? block.sequence;
+    const setStatus = (status) => setTasks(ts => ts.map(t => {
+      if (t.id !== taskId) return t;
+      return {
+        ...t,
+        subBlocks: (t.subBlocks || []).map(b =>
+          (b.id ?? b.sequence) === key ? { ...b, status } : b),
+      };
+    }));
+
+    setStatus('completed'); // optimistic — CSS plays the completion pop
+    try {
+      if (block.id != null) await api.completeSubBlock(block.id);
+    } catch (e) {
+      console.error('Failed to complete sub-block:', e);
+      setStatus(block.status); // revert
+      pushToast('Could not update step', 'error', 3000);
     }
   };
 
   const updateTaskDetails = async (id, updates) => {
-    let payload = {};
+    const current = tasks.find(t => t.id === id);
+    const payload = {};
     if (updates.title !== undefined) payload.title = updates.title;
     if (updates.deadline !== undefined) payload.deadline = updates.deadline;
     if (updates.estimatedHours !== undefined) payload.estimated_hours = updates.estimatedHours;
-    if (updates.priority !== undefined) {
-      if (updates.priority === 'high') payload.pinch_score = 90.0;
-      else if (updates.priority === 'low') payload.pinch_score = 20.0;
-      else payload.pinch_score = 50.0;
+    // Only rewrite the PINCH score when the priority bucket actually changed,
+    // so editing a title/deadline doesn't silently reset the score.
+    if (updates.priority !== undefined && updates.priority !== current?.priority) {
+      payload.pinch_score = updates.priority === 'high' ? 90.0
+        : updates.priority === 'low' ? 20.0 : 50.0;
     }
 
-    // Optimistic update for local state
+    // Optimistic update so the row reflects the edit immediately.
     setTasks(ts => ts.map(t => t.id === id ? {
       ...t,
-      ...updates,
+      title: updates.title ?? t.title,
+      priority: updates.priority ?? t.priority,
       due: updates.deadline ? new Date(updates.deadline).toLocaleString() : t.due,
       deadlineRaw: updates.deadline ?? t.deadlineRaw,
       estimatedHours: updates.estimatedHours ?? t.estimatedHours,
     } : t));
 
     try {
-      await api.updateTask(id, payload);
-      fetchTasksAndBubble();
+      const saved = await api.updateTask(id, payload);
+      // Trust the server's persisted row as the source of truth, so the UI
+      // always shows the value the backend actually stored (fixes stale edits).
+      if (saved && saved.id != null) {
+        setTasks(ts => ts.map(t => t.id === id ? {
+          ...t,
+          title: saved.title ?? t.title,
+          due: saved.deadline ? new Date(saved.deadline).toLocaleString() : t.due,
+          deadlineRaw: saved.deadline ?? t.deadlineRaw,
+          estimatedHours: saved.estimated_hours ?? t.estimatedHours,
+          pinchScore: saved.pinch_score ?? t.pinchScore,
+          priority: saved.pinch_score != null
+            ? (saved.pinch_score >= 80 ? 'high' : saved.pinch_score < 40 ? 'low' : 'medium')
+            : t.priority,
+          interestTag: saved.interest_tag ?? t.interestTag,
+        } : t));
+      }
+      pushToast('Task updated', 'success');
     } catch (e) {
       console.error("Failed to update task:", e);
-      fetchTasksAndBubble();
+      pushToast('Could not save changes', 'error', 3200);
+      fetchTasksAndBubble(); // resync from server on failure
     }
   };
 
   const pending = tasks.filter(t => !t.done);
   const done    = tasks.filter(t =>  t.done);
+
+  // One filter, applied consistently everywhere (color + filter agree).
+  const matchesFilter  = (t) => matchesPinch(t, pinchFilter);
+  const visibleAll     = tasks.filter(matchesFilter);
+  const visiblePending = pending.filter(matchesFilter);
+  const visibleDone    = done.filter(matchesFilter);
 
   const close = () => {
     if (IS_ELECTRON) window.electronAPI.closeDashboard();
@@ -1068,128 +1245,16 @@ export default function Dashboard() {
                   <span className="d-chip">{pending.filter(t => t.due === 'Today').length} {t('dashboard.upNext')}</span>
                 </div>
                 {/* PINCH Filter */}
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>Filter by PINCH:</span>
-                  <button
-                    onClick={() => setPinchFilter('all')}
-                    style={{
-                      padding: '4px 12px',
-                      borderRadius: '16px',
-                      border: pinchFilter === 'all' ? 'none' : '1px solid rgba(167,139,250,0.5)',
-                      background: pinchFilter === 'all' ? 'var(--accent)' : 'transparent',
-                      color: 'white',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    All
-                  </button>
-                  <button
-                    onClick={() => setPinchFilter('passion')}
-                    style={{
-                      padding: '4px 12px',
-                      borderRadius: '16px',
-                      border: pinchFilter === 'passion' ? 'none' : '1px solid rgba(236,72,153,0.5)',
-                      background: pinchFilter === 'passion' ? 'rgba(236,72,153,0.3)' : 'transparent',
-                      color: 'white',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    💖 Passion
-                  </button>
-                  <button
-                    onClick={() => setPinchFilter('interest')}
-                    style={{
-                      padding: '4px 12px',
-                      borderRadius: '16px',
-                      border: pinchFilter === 'interest' ? 'none' : '1px solid rgba(56,189,248,0.5)',
-                      background: pinchFilter === 'interest' ? 'rgba(56,189,248,0.3)' : 'transparent',
-                      color: 'white',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    🔍 Interest
-                  </button>
-                  <button
-                    onClick={() => setPinchFilter('novelty')}
-                    style={{
-                      padding: '4px 12px',
-                      borderRadius: '16px',
-                      border: pinchFilter === 'novelty' ? 'none' : '1px solid rgba(251,146,60,0.5)',
-                      background: pinchFilter === 'novelty' ? 'rgba(251,146,60,0.3)' : 'transparent',
-                      color: 'white',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    ✨ Novelty
-                  </button>
-                  <button
-                    onClick={() => setPinchFilter('challenge')}
-                    style={{
-                      padding: '4px 12px',
-                      borderRadius: '16px',
-                      border: pinchFilter === 'challenge' ? 'none' : '1px solid rgba(34,197,94,0.5)',
-                      background: pinchFilter === 'challenge' ? 'rgba(34,197,94,0.3)' : 'transparent',
-                      color: 'white',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    🎯 Challenge
-                  </button>
-                  <button
-                    onClick={() => setPinchFilter('hurry')}
-                    style={{
-                      padding: '4px 12px',
-                      borderRadius: '16px',
-                      border: pinchFilter === 'hurry' ? 'none' : '1px solid rgba(239,68,68,0.5)',
-                      background: pinchFilter === 'hurry' ? 'rgba(239,68,68,0.3)' : 'transparent',
-                      color: 'white',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    ⏰ Hurry
-                  </button>
-                </div>
+                <PinchFilterBar value={pinchFilter} onChange={setPinchFilter} />
                 <div className="d-task-list">
-                  {tasks.filter(t => {
-                    if (pinchFilter === 'all') return true;
-                    if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
-                    if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
-                    if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
-                    if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
-                    if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
-                    return true;
-                  }).length === 0 ? (
-                    <div style={{ 
-                      padding: '40px 20px', 
-                      textAlign: 'center', 
-                      color: 'rgba(255,255,255,0.6)',
-                      fontSize: '14px',
-                      fontStyle: 'italic'
-                    }}>
-                      No tasks match the current filter. Try selecting a different PINCH category or reset to "All".
+                  {visibleAll.length === 0 ? (
+                    <div className="d-task-empty">
+                      No tasks match the current filter. Try a different PINCH category or reset to "All".
                     </div>
-                  ) : tasks.filter(t => {
-                    if (pinchFilter === 'all') return true;
-                    if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
-                    if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
-                    if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
-                    if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
-                    if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
-                    return true;
-                  }).map(t => (
-                    <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} />
+                  ) : visibleAll.map(t => (
+                    <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={requestDelete}
+                      onUpdateTask={updateTaskDetails} onToggleSub={toggleSubBlock}
+                      isDeleting={deletingIds.has(t.id)} />
                   ))}
                 </div>
               </div>
@@ -1209,90 +1274,40 @@ export default function Dashboard() {
                 </button>
               </div>
 
+              <PinchFilterBar value={pinchFilter} onChange={setPinchFilter} />
+
               {pending.length > 0 && (
                 <div className="d-card">
-                  <div className="d-card-header"><span>Pending</span><span className="d-chip">{pending.filter(t => {
-                    if (pinchFilter === 'all') return true;
-                    if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
-                    if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
-                    if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
-                    if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
-                    if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
-                    return true;
-                  }).length}</span></div>
+                  <div className="d-card-header"><span>Pending</span><span className="d-chip">{visiblePending.length}</span></div>
                   <div className="d-task-list">
-                    {pending.filter(t => {
-                      if (pinchFilter === 'all') return true;
-                      if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
-                      if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
-                      if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
-                      if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
-                      if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
-                      return true;
-                    }).length === 0 ? (
-                      <div style={{ 
-                        padding: '40px 20px', 
-                        textAlign: 'center', 
-                        color: 'rgba(255,255,255,0.6)',
-                        fontSize: '14px',
-                        fontStyle: 'italic'
-                      }}>
-                        No pending tasks. Add a task to get started!
-                      </div>
-                    ) : pending.filter(t => {
-                      if (pinchFilter === 'all') return true;
-                      if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
-                      if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
-                      if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
-                      if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
-                      if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
-                      return true;
-                    }).map(t => <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} onUpdateTask={updateTaskDetails} />)}
+                    {visiblePending.length === 0 ? (
+                      <div className="d-task-empty">No pending tasks match this filter.</div>
+                    ) : visiblePending.map(t => (
+                      <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={requestDelete}
+                        onUpdateTask={updateTaskDetails} onToggleSub={toggleSubBlock}
+                        isDeleting={deletingIds.has(t.id)} />
+                    ))}
                   </div>
                 </div>
               )}
 
               {done.length > 0 && (
                 <div className="d-card" style={{ opacity: .7 }}>
-                  <div className="d-card-header"><span>Completed</span><span className="d-chip">{done.filter(t => {
-                    if (pinchFilter === 'all') return true;
-                    if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
-                    if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
-                    if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
-                    if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
-                    if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
-                    return true;
-                  }).length}</span></div>
+                  <div className="d-card-header"><span>Completed</span><span className="d-chip">{visibleDone.length}</span></div>
                   <div className="d-task-list">
-                    {done.filter(t => {
-                      if (pinchFilter === 'all') return true;
-                      if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
-                      if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
-                      if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
-                      if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
-                      if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
-                      return true;
-                    }).length === 0 ? (
-                      <div style={{ 
-                        padding: '40px 20px', 
-                        textAlign: 'center', 
-                        color: 'rgba(255,255,255,0.5)',
-                        fontSize: '14px',
-                        fontStyle: 'italic'
-                      }}>
-                        No completed tasks yet. Complete a task to see it here!
-                      </div>
-                    ) : done.filter(t => {
-                      if (pinchFilter === 'all') return true;
-                      if (pinchFilter === 'passion') return t.interestTag && t.pinchScore >= 70;
-                      if (pinchFilter === 'interest') return t.interestTag && t.pinchScore >= 50 && t.pinchScore < 70;
-                      if (pinchFilter === 'novelty') return t.pinchScore >= 80 && !t.interestTag;
-                      if (pinchFilter === 'challenge') return t.pinchScore >= 60 && t.estimatedHours >= 4;
-                      if (pinchFilter === 'hurry') return t.due === 'Today' || t.due === 'Tomorrow';
-                      return true;
-                    }).map(t => <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} onUpdateTask={updateTaskDetails} />)}
+                    {visibleDone.length === 0 ? (
+                      <div className="d-task-empty">No completed tasks match this filter.</div>
+                    ) : visibleDone.map(t => (
+                      <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={requestDelete}
+                        onUpdateTask={updateTaskDetails} onToggleSub={toggleSubBlock}
+                        isDeleting={deletingIds.has(t.id)} />
+                    ))}
                   </div>
                 </div>
+              )}
+
+              {pending.length === 0 && done.length === 0 && (
+                <div className="d-task-empty">No tasks yet. Hit “Add Task” to create your first one.</div>
               )}
             </div>
           )}
@@ -2024,6 +2039,40 @@ export default function Dashboard() {
           {f.emoji}
         </div>
       ))}
+
+      {/* ══ DELETE CONFIRMATION ══ */}
+      {confirmDeleteId != null && (
+        <div className="d-modal-overlay fade-in" onClick={() => setConfirmDeleteId(null)}>
+          <div className="d-confirm" onClick={e => e.stopPropagation()}>
+            <div className="d-confirm-icon"><IconTrash /></div>
+            <h2 className="d-confirm-title">Delete this task?</h2>
+            <p className="d-confirm-text">
+              {(() => {
+                const tk = tasks.find(t => t.id === confirmDeleteId);
+                return tk ? `“${tk.title}” and its steps will be removed. This can't be undone.`
+                          : "This task and its steps will be removed. This can't be undone.";
+              })()}
+            </p>
+            <div className="d-confirm-actions">
+              <button className="d-btn d-btn--secondary" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+              <button className="d-btn d-confirm-delete" onClick={performDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ TOASTS (background add / update / delete feedback) ══ */}
+      {toasts.length > 0 && (
+        <div className="d-toast-stack">
+          {toasts.map(toast => (
+            <div key={toast.id} className={`d-toast d-toast--${toast.kind}`}>
+              {toast.kind === 'loading' && <span className="d-toast-spinner" />}
+              {toast.kind === 'success' && <span className="d-toast-mark"><IconCheck /></span>}
+              <span>{toast.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ══ ADD TASK MODAL ══ */}
       {showAddTaskModal && (

@@ -139,6 +139,12 @@ class IngestionPipeline:
                 logger.info("LLM refined interest_tag for %r: %s (deterministic: %s)",
                            parsed.title[:60], updates["interest_tag"], parsed.interest_tag or "None")
 
+        # Pass along the AI chunked sub tasks
+        ai_sub_tasks = enrichment.get("ai_sub_tasks")
+        if ai_sub_tasks:
+            updates["ai_sub_tasks"] = ai_sub_tasks
+            logger.info("LLM provided %d custom sub tasks for %r", len(ai_sub_tasks), parsed.title[:60])
+
         if updates:
             parsed = parsed.model_copy(update=updates)
 

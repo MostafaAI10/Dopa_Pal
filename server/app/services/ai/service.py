@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
@@ -9,7 +10,10 @@ from app.services.ai.ingestion import IngestionPipeline
 from app.services.ai.llm.nvidia_client import NvidiaClient, NvidiaConfig, NvidiaUnavailableError
 from app.services.ai.parsers.challenge_estimator import estimate_challenge
 from app.services.ai.pinch import PinchEngine, PinchScoreBreakdown
-from app.services.ai.schemas import IngestResult, ParsedTask, PinchInput, SourceType
+from app.services.ai.schemas import IngestResult, ParsedTask, PinchInput, SegmentationInput, SegmentationOutput, SourceType
+from app.services.ai.segmentation import SegmentationEngine
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -27,6 +31,9 @@ class AIService:
     Two responsibilities, matching the two API contracts in the README:
       1. ingest()        -> POST /api/v1/tasks/ingest
       2. score_for_bubble() -> the ranking step behind GET /api/v1/bubble/next
+
+    Plus the new segmentation pipeline:
+      3. segment()       -> POST /api/v1/tasks/segment
     """
 
     def __init__(
@@ -51,6 +58,7 @@ class AIService:
         )
         self._chunker = ChunkingEngine(block_minutes=self._options.block_minutes)
         self._pinch = PinchEngine()
+        self._segmenter = SegmentationEngine()
 
     def ingest(
         self,
@@ -80,6 +88,7 @@ class AIService:
             title=parsed.title,
             interest_tag=parsed.interest_tag or "",
             raw_source_text=parsed.raw_source_text,
+            ai_sub_tasks=parsed.ai_sub_tasks,
         )
 
         pinch_input = PinchInput(
@@ -112,6 +121,7 @@ class AIService:
             estimated_hours=parsed.estimated_hours,
             interest_tag=parsed.interest_tag,
             sub_blocks=chunk_result.sub_blocks,
+            ai_sub_tasks=parsed.ai_sub_tasks,
             pinch_score=breakdown.total,
         )
 
@@ -130,6 +140,45 @@ class AIService:
         """
         now = now or datetime.now()
         return self._pinch.rank(candidates, state_score, now)
+
+    # ── Task Segmentation Pipeline ────────────────────────────────────
+
+    def segment(self, payload: SegmentationInput) -> SegmentationOutput:
+        """
+        Task segmentation pipeline: parse raw input → estimate/validate
+        duration → apply 2-hour threshold → generate micro-steps → apply
+        fog-of-war.
+
+        Uses the LLM for ADHD-optimised micro-step copywriting when
+        available; falls back to the deterministic engine otherwise.
+        """
+        # Attempt LLM-powered micro-step generation
+        llm_steps: list[dict] | None = None
+
+        if self._options.use_llm and self._llm_client is not None:
+            try:
+                title = self._segmenter._extract_title(payload.raw_input)
+                total_minutes = self._segmenter._resolve_total_minutes(payload)
+                days = self._segmenter._calculate_days_to_deadline(
+                    payload.current_timestamp, payload.deadline_timestamp,
+                )
+                llm_steps = self._llm_client.generate_micro_steps(
+                    raw_text=payload.raw_input,
+                    parsed_title=title,
+                    total_minutes=total_minutes,
+                    days_to_deadline=days,
+                )
+                logger.info(
+                    "LLM generated %d micro-steps for segmentation of %r",
+                    len(llm_steps), title[:60],
+                )
+            except NvidiaUnavailableError as exc:
+                logger.warning("LLM segmentation skipped (unavailable): %s", exc)
+                llm_steps = None
+
+        return self._segmenter.segment(payload, llm_steps=llm_steps)
+
+    # ── Private helpers ───────────────────────────────────────────────
 
     def _llm_challenge_hint(self, parsed: ParsedTask) -> Optional[str]:
         """

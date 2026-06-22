@@ -36,6 +36,7 @@ class SubBlock(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
     sequence: Mapped[int] = mapped_column()
+    title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     duration_minutes: Mapped[int] = mapped_column(default=120)
     scheduled_date: Mapped[datetime.date] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(50), default="pending") # 'pending', 'completed', 'skipped'

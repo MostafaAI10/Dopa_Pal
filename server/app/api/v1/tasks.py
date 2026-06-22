@@ -18,6 +18,7 @@ from app.models.state import StateLog
 from app.services import task_service, reward_service, focus_mode, enhanced_notification
 from app.services.websocket_manager import manager as ws_manager
 from app.services.duration_parser import parse_duration, format_duration
+from app.services.ai.schemas import SegmentationInput, SegmentationOutput
 
 router = APIRouter()
 
@@ -27,6 +28,13 @@ router = APIRouter()
 class TaskIngestRequest(BaseModel):
     source_text: str = Field(..., min_length=1, description="Raw text to parse via NLP pipeline")
     source_type: str = Field(..., description="'highlight', 'voice', 'manual', 'calendar'")
+
+
+class SegmentationRequest(BaseModel):
+    """Mirrors SegmentationInput but with server-defaulted timestamp."""
+    raw_input: str = Field(..., min_length=1, description="Raw chaotic text to segment")
+    deadline_timestamp: Optional[datetime] = Field(None, description="ISO deadline")
+    user_estimated_duration_minutes: Optional[int] = Field(None, gt=0, description="Estimated minutes")
 
 
 class TaskCreateRequest(BaseModel):
@@ -115,6 +123,29 @@ async def api_ingest_task(payload: TaskIngestRequest, db: Session = Depends(get_
     })
 
     return task
+
+
+# ---------- Task Segmentation Endpoint ----------
+
+@router.post("/tasks/segment", response_model=SegmentationOutput)
+async def api_segment_task(payload: SegmentationRequest):
+    """
+    Task Segmentation Agent endpoint.
+
+    Accepts raw, chaotic task input and returns a structured, multi-day
+    execution plan with micro-steps, behavioral tips, and fog-of-war masking.
+    This endpoint is stateless — it does NOT persist anything to the database.
+    """
+    ai = task_service.get_ai_service()
+
+    segmentation_input = SegmentationInput(
+        raw_input=payload.raw_input,
+        current_timestamp=datetime.now(),
+        deadline_timestamp=payload.deadline_timestamp,
+        user_estimated_duration_minutes=payload.user_estimated_duration_minutes,
+    )
+
+    return ai.segment(segmentation_input)
 
 
 @router.post("/tasks/create", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)

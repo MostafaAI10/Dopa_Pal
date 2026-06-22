@@ -117,6 +117,7 @@ def persist_ingested_task(
         sub_block = SubBlock(
             task_id=task.id,
             sequence=plan.sequence,
+            title=plan.title,
             duration_minutes=plan.duration_minutes,
             scheduled_date=plan.scheduled_date,
             status="pending",

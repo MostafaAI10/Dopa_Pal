@@ -92,7 +92,9 @@ class PinchEngine:
         return LOW_ENERGY_WEIGHTS if state_score < LOW_ENERGY_THRESHOLD else HIGH_ENERGY_WEIGHTS
 
     def _urgency(self, task: PinchInput, now: datetime) -> float:
-        hours_remaining = max(0.0, (task.deadline - now).total_seconds() / 3600.0)
+        task_deadline = task.deadline.replace(tzinfo=None)
+        now_naive = now.replace(tzinfo=None)
+        hours_remaining = max(0.0, (task_deadline - now_naive).total_seconds() / 3600.0)
         slack = hours_remaining - task.estimated_hours
 
         if slack <= 0:
@@ -100,7 +102,9 @@ class PinchEngine:
         return max(0.0, min(1.0, 1.0 - (slack / MAX_SLACK_HOURS)))
 
     def _novelty(self, task: PinchInput, now: datetime) -> float:
-        age_hours = max(0.0, (now - task.created_at).total_seconds() / 3600.0)
+        task_created = task.created_at.replace(tzinfo=None)
+        now_naive = now.replace(tzinfo=None)
+        age_hours = max(0.0, (now_naive - task_created).total_seconds() / 3600.0)
         recency_decay = max(0.0, 1.0 - (age_hours / NOVELTY_DECAY_HOURS))
         explicit_flag = 1.0 if task.is_novel else 0.0
         return max(recency_decay, explicit_flag)

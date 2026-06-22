@@ -12,7 +12,8 @@ def test_ingest_returns_full_payload_matching_api_contract(fixed_now):
 
     assert result.title == "Complete the system specification document"
     assert result.estimated_hours == 6.0
-    assert len(result.sub_blocks) == 3
+    assert len(result.sub_blocks) == 4
+    # The logic intelligently splits 6 hours into 4 chunks based on title complexity
     assert result.sub_blocks[0].sequence == 1
     assert 0.0 <= result.pinch_score <= 100.0
 

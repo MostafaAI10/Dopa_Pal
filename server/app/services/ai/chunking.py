@@ -39,14 +39,21 @@ class ChunkingEngine:
         title: str = "",
         interest_tag: str = "",
         raw_source_text: str = "",
+        ai_sub_tasks: list[dict] | None = None,
     ) -> ChunkingResult:
         reference_time = reference_time or datetime.now()
         total_minutes = round(estimated_hours * 60)
 
-        # Intelligently split based on task characteristics
-        durations = self._intelligent_split_durations(
-            total_minutes, title, interest_tag, raw_source_text
-        )
+        # Use AI-provided sub-tasks if available, else intelligently split
+        if ai_sub_tasks:
+            durations = [st["duration_minutes"] for st in ai_sub_tasks]
+            titles = [st.get("title") for st in ai_sub_tasks]
+        else:
+            durations = self._intelligent_split_durations(
+                total_minutes, title, interest_tag, raw_source_text
+            )
+            titles = [None] * len(durations)
+
         window_start = reference_time.date()
         window_end = deadline.date()
 
@@ -57,7 +64,7 @@ class ChunkingEngine:
         dates = self._distribute_dates(len(durations), window_start, window_end)
 
         sub_blocks = [
-            SubBlockPlan(sequence=i + 1, duration_minutes=duration, scheduled_date=d)
+            SubBlockPlan(sequence=i + 1, duration_minutes=duration, scheduled_date=d, title=titles[i])
             for i, (duration, d) in enumerate(zip(durations, dates))
         ]
         return ChunkingResult(sub_blocks=sub_blocks, was_compressed=was_compressed)
