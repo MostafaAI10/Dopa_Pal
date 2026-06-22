@@ -301,58 +301,68 @@ const registerGlobalShortcuts = () => {
     // 1. Save old clipboard
     const oldText = clipboard.readText();
     
-    // 2. Simulate Ctrl+C to copy the highlighted text
-    // We use a small powershell command that leverages WScript.Shell to send the keys
-    exec('powershell.exe -command "$wshell = New-Object -ComObject wscript.shell; $wshell.SendKeys(\'^c\')"', async () => {
+    // Wait briefly to allow the user to physically release the shortcut keys (Ctrl/Shift/Space)
+    // Otherwise, the OS might interpret the simulated Ctrl+C as Ctrl+Shift+C.
+    setTimeout(() => {
+      clipboard.clear(); // Clear clipboard to reliably detect when the copy succeeds
       
-      // Wait briefly for the OS clipboard to update
-      setTimeout(async () => {
-        const newText = clipboard.readText();
+      // 2. Simulate Ctrl+C to copy the highlighted text
+      exec('powershell.exe -command "$wshell = New-Object -ComObject wscript.shell; $wshell.SendKeys(\'^c\')"', async () => {
         
-        // Restore old clipboard immediately so user doesn't lose their data
-        clipboard.writeText(oldText);
-        
-        // If the clipboard didn't change, we assume nothing new was highlighted
-        if (!newText || newText.trim() === '' || newText === oldText) {
-          new Notification({ title: 'DopaPal', body: 'Could not capture highlight. Make sure text is selected.' }).show();
-          return;
-        }
-
-        new Notification({ title: 'DopaPal', body: 'Highlight captured! Analyzing with AI...' }).show();
-
-        try {
-          // 3. Process with AI via Backend
-          const response = await fetch(apiUrl('/tasks/ingest'), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              source_text: newText,
-              source_type: 'highlight'
-            })
-          });
+        let retries = 10;
+        const checkClipboard = async () => {
+          const newText = clipboard.readText();
           
-          if (!response.ok) throw new Error("Backend API error");
-          const parsed = await response.json();
+          if (newText && newText !== '') {
+            // Restore old clipboard immediately so user doesn't lose their data
+            clipboard.writeText(oldText);
+            
+            new Notification({ title: 'DopaPal', body: 'Highlight captured! Analyzing with AI...' }).show();
 
-          // 4. Show success notification
-          new Notification({
-            title: '✅ AI Task Saved!',
-            body: `Extracted from highlight: "${parsed.title}"`
-          }).show();
+            try {
+              // 3. Process with AI via Backend
+              const response = await fetch(apiUrl('/tasks/ingest'), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  source_text: newText,
+                  source_type: 'highlight'
+                })
+              });
               
-          // 5. Refresh dashboard if open
-          if (dashboardWin && !dashboardWin.isDestroyed()) {
-              dashboardWin.webContents.send('dashboard-refresh');
+              if (!response.ok) throw new Error("Backend API error");
+              const parsed = await response.json();
+
+              // 4. Show success notification
+              new Notification({
+                title: '✅ AI Task Saved!',
+                body: `Extracted from highlight: "${parsed.title}"`
+              }).show();
+                  
+              // 5. Refresh dashboard if open
+              if (dashboardWin && !dashboardWin.isDestroyed()) {
+                  dashboardWin.webContents.send('dashboard-refresh');
+              }
+            } catch (error) {
+              console.error("Failed to process hotkey task:", error);
+              new Notification({
+                title: '❌ DopaPal Error',
+                body: 'Failed to extract task. Ensure backend is running.'
+              }).show();
+            }
+          } else if (retries > 0) {
+            retries--;
+            setTimeout(checkClipboard, 50); // Poll every 50ms
+          } else {
+            // Restore old clipboard and fail
+            if (oldText) clipboard.writeText(oldText);
+            new Notification({ title: 'DopaPal', body: 'Could not capture highlight. Make sure text is selected.' }).show();
           }
-        } catch (error) {
-          console.error("Failed to process hotkey task:", error);
-          new Notification({
-            title: '❌ DopaPal Error',
-            body: 'Failed to extract task. Ensure backend is running.'
-          }).show();
-        }
-      }, 150); // 150ms delay to allow OS clipboard event to fire
-    });
+        };
+        
+        checkClipboard();
+      });
+    }, 400); // 400ms delay before sending keystroke
   });
 };
 
