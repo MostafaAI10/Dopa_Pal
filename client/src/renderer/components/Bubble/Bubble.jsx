@@ -364,6 +364,14 @@ export default function Bubble() {
       }
 
       if (d.moved) {
+        if (window.electronAPI.moveWindow) {
+          const dx = mv.screenX - d.lx;
+          const dy = mv.screenY - d.ly;
+          window.electronAPI.moveWindow(dx, dy);
+        }
+        d.lx = mv.screenX;
+        d.ly = mv.screenY;
+
         const screenLeft = window.screen.availLeft || 0;
         setPanelSide((mv.screenX - screenLeft) > (window.screen.width / 2) ? 'left' : 'right');
       }

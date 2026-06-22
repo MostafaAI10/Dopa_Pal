@@ -1,76 +1,75 @@
 """
 Speech-to-text service for voice task ingestion.
 
-This service converts audio data to text using OpenAI Whisper.
+This service converts audio data to text using SpeechRecognition and Google Web Speech API.
 """
 
 import base64
-import logging
 import io
-import os
-from typing import Optional
-from openai import OpenAI
-from app.core.config import settings
+import logging
+import speech_recognition as sr
+from pydub import AudioSegment
 
 logger = logging.getLogger(__name__)
 
 
 class SpeechToTextService:
-    """Convert audio data to text for task ingestion using OpenAI Whisper."""
-    
     def __init__(self):
-        self.client = None
-        api_key = settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY")
-        if api_key:
-            self.client = OpenAI(api_key=api_key)
-        else:
-            logger.warning("OPENAI_API_KEY not found in environment. Voice transcription will fail.")
-    
-    def audio_to_text(self, audio_data: str, source_type: str = 'voice') -> str:
+        self.recognizer = sr.Recognizer()
+
+    def audio_to_text(self, audio_data: str, source_type: str = "voice") -> str:
         """
-        Convert base64 audio data to text using OpenAI Whisper.
-        
-        Args:
-            audio_data: Base64 encoded audio data
-            source_type: Type of source (voice, etc.)
-            
-        Returns:
-            Transcribed text
+        Converts base64 encoded audio to text using SpeechRecognition (Google).
         """
         try:
             # Decode base64 audio data
             audio_bytes = base64.b64decode(audio_data)
             
-            if not self.client:
-                raise ValueError("OpenAI client not configured (Missing OPENAI_API_KEY in .env)")
+            if not audio_bytes:
+                raise ValueError("Received empty audio data")
             
-            # Create a file-like object with a name required by OpenAI
+            logger.info("Converting audio to WAV format...")
+            # Load WebM/Ogg audio from memory
             audio_file = io.BytesIO(audio_bytes)
-            audio_file.name = "audio.webm"
+            audio_segment = AudioSegment.from_file(audio_file)
             
-            logger.info("Sending audio to OpenAI Whisper API...")
-            transcription = self.client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file
-            )
+            # Export as WAV to a new BytesIO buffer
+            wav_io = io.BytesIO()
+            audio_segment.export(wav_io, format="wav")  # type: ignore
+            wav_io.seek(0)
             
-            transcribed_text = transcription.text
+            logger.info("Sending audio to SpeechRecognition (Google Web API)...")
+            with sr.AudioFile(wav_io) as source:
+                audio = self.recognizer.record(source)
+            
+            # Using Google Web Speech API (free, no key required)
+            transcribed_text = self.recognizer.recognize_google(audio, language='ar-SA')  # type: ignore
+            
             logger.info("Successfully transcribed audio: %s", transcribed_text)
             
             return transcribed_text
             
+        except ValueError:
+            raise
+        except sr.UnknownValueError:
+            logger.error("Google Speech Recognition could not understand audio")
+            raise ValueError("Voice transcription failed: Could not understand audio")
+        except sr.RequestError as e:
+            logger.error("Could not request results from Google Speech Recognition service; {0}".format(e))
+            raise ValueError(f"Voice transcription failed: API error {e}")
         except Exception as e:
             logger.error("Error converting audio to text: %s", e)
-            raise e
+            raise ValueError(f"Voice transcription failed: {str(e)}")
 
 
 # Global service instance
 speech_to_text_service = SpeechToTextService()
 
 
-def convert_audio_to_text(audio_data: str, source_type: str = 'voice') -> str:
+def convert_audio_to_text(audio_data: str, source_type: str = "voice") -> str:
     """
-    Convenience function to convert audio data to text.
+    Module-level function to convert audio to text.
+    Uses the global SpeechToTextService instance.
     
     Args:
         audio_data: Base64 encoded audio data

@@ -126,7 +126,14 @@ ipcMain.handle('create-task', async (_e, payload) => {
         source_type: payload.sourceType || 'manual'
       })
     });
-    if (!response.ok) throw new Error("Backend API error: " + response.statusText);
+    if (!response.ok) {
+      let errorDetail = response.statusText;
+      try {
+        const errJson = await response.json();
+        if (errJson.detail) errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+      } catch (e) { }
+      throw new Error("Backend API error: " + errorDetail);
+    }
     const json = await response.json();
     if (dashboardWin) dashboardWin.webContents.send('dashboard-refresh');
     return json;
@@ -146,7 +153,14 @@ ipcMain.handle('ingest-task', async (_e, payload) => {
         source_type: payload.source_type
       })
     });
-    if (!response.ok) throw new Error("Backend API error: " + response.statusText);
+    if (!response.ok) {
+      let errorDetail = response.statusText;
+      try {
+        const errJson = await response.json();
+        if (errJson.detail) errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+      } catch (e) { }
+      throw new Error("Backend API error: " + errorDetail);
+    }
     const json = await response.json();
     if (dashboardWin) dashboardWin.webContents.send('dashboard-refresh');
     return json;
@@ -163,7 +177,14 @@ ipcMain.handle('update-task', async (_e, id, payload) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-    if (!response.ok) throw new Error("Backend API error: " + response.statusText);
+    if (!response.ok) {
+      let errorDetail = response.statusText;
+      try {
+        const errJson = await response.json();
+        if (errJson.detail) errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+      } catch (e) { }
+      throw new Error("Backend API error: " + errorDetail);
+    }
     const json = await response.json();
     if (dashboardWin) dashboardWin.webContents.send('dashboard-refresh');
     return json;
@@ -189,7 +210,14 @@ ipcMain.handle('ingest-voice-task', async (_e, audioBuffer) => {
     });
     
     if (!response.ok) {
-      throw new Error(`Backend API error: ${response.statusText}`);
+      let errorDetail = response.statusText;
+      try {
+        const errJson = await response.json();
+        if (errJson.detail) errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+      } catch (e) {
+        // ignore
+      }
+      throw new Error(`Backend API error: ${errorDetail}`);
     }
     
     const json = await response.json();
@@ -330,7 +358,14 @@ const registerGlobalShortcuts = () => {
                 })
               });
               
-              if (!response.ok) throw new Error("Backend API error");
+              if (!response.ok) {
+                let errorDetail = "Backend API error";
+                try {
+                  const errJson = await response.json();
+                  if (errJson.detail) errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+                } catch (e) { }
+                throw new Error(errorDetail);
+              }
               const parsed = await response.json();
 
               // 4. Show success notification
