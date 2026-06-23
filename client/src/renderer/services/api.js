@@ -105,6 +105,24 @@ export const api = {
     return response.data;
   },
 
+  // Rewards / Shop
+  getUnlockedRewards: async () => {
+    const response = await apiClient.get('/rewards/unlocked');
+    return response.data;
+  },
+  getVaultDrops: async () => {
+    const response = await apiClient.get('/rewards/vault');
+    return response.data;
+  },
+  purchaseReward: async (type, itemId, metadata = {}) => {
+    const response = await apiClient.post('/rewards/purchase', {
+      type,
+      item_id: itemId,
+      metadata,
+    });
+    return response.data;
+  },
+
   // Generic HTTP helpers (used by sync settings, etc.)
   get: async (url) => {
     const response = await apiClient.get(url);

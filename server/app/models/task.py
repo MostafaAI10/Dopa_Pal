@@ -21,7 +21,7 @@ class Task(Base):
     interest_tag: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="pending") # 'pending', 'completed', 'failed'
     created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        DateTime(), server_default=func.now()
     )
     pinch_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 

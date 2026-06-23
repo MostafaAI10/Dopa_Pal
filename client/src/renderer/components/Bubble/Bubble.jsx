@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import './Bubble.css';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { applyTheme, getActiveThemeId } from '../../themes';
 
 /* ─── Detect Electron ───────────────────────────────────── */
 const IS_ELECTRON = typeof window !== 'undefined' && !!window.electronAPI;
@@ -48,7 +49,7 @@ const Svg = ({ size = 22, children }) => (
   </svg>
 );
 
-const BrainIcon = () => <span style={{ fontSize: '36px', filter: 'drop-shadow(0 0 10px rgba(236,72,153,.6))', transform: 'translateY(-2px)' }}>🧠</span>;
+const BrainIcon = () => <span style={{ fontSize: '36px', filter: 'drop-shadow(0 0 10px rgba(var(--accent-rgb),.6))', transform: 'translateY(-2px)' }}>🧠</span>;
 const HomeIcon = () => <Svg><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></Svg>;
 const PlusIcon = () => <Svg><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></Svg>;
 const SparkleIcon = () => <Svg><path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5z" /></Svg>;
@@ -123,6 +124,15 @@ export default function Bubble() {
     }
     return () => clearTimeout(exitTmr.current);
   }, [goTo]);
+
+  /* ── Apply active theme on mount & listen for changes ── */
+  useEffect(() => {
+    applyTheme(getActiveThemeId());
+    const handler = () => applyTheme(getActiveThemeId());
+    window.addEventListener('storage', handler);
+    const interval = setInterval(handler, 3000);
+    return () => { window.removeEventListener('storage', handler); clearInterval(interval); };
+  }, []);
 
   useEffect(() => {
     if (!playSession?.current || playSession.stage !== 'running') return;
@@ -670,7 +680,7 @@ export default function Bubble() {
                 <div style={{ animation: 'pulse 1.5s infinite', color: 'var(--accent)' }}>Generating summary... 🧠</div>
               </div>
             ) : (
-              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ background: 'rgba(var(--glass-rgb),0.05)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(var(--glass-rgb),0.1)' }}>
                 {summaryData?.text}
               </div>
             )}

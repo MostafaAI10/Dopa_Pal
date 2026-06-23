@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Dashboard.css';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { THEMES, applyTheme } from '../../themes';
 
 /* ─── Helpers ───────────────────────────────────────────── */
 const IS_ELECTRON = typeof window !== 'undefined' && !!window.electronAPI;
@@ -200,14 +201,7 @@ const TaskListLogo = ({ size = 20 }) => (
   </svg>
 );
 
-/* ─── Themes Store ──────────────────────────────────────── */
-const THEMES = [
-  { id: 'default', name: 'Dopa Default', cost: 0, accent: '#a78bfa', glow: 'rgba(167,139,250,.35)', dim: 'rgba(167,139,250,.12)' },
-  { id: 'ocean', name: 'Ocean Breeze', cost: 500, accent: '#38bdf8', glow: 'rgba(56,189,248,.35)', dim: 'rgba(56,189,248,.12)' },
-  { id: 'sunset', name: 'Sunset Flare', cost: 1500, accent: '#f97316', glow: 'rgba(249,115,22,.35)', dim: 'rgba(249,115,22,.12)' },
-  { id: 'cyber', name: 'Neon Cyberpunk', cost: 3000, accent: '#ec4899', glow: 'rgba(236,72,153,.35)', dim: 'rgba(236,72,153,.12)' },
-  { id: 'gold', name: 'Midnight Gold', cost: 10000, accent: '#fbbf24', glow: 'rgba(251,191,36,.35)', dim: 'rgba(251,191,36,.12)' },
-];
+/* ─── Themes Store (imported from themes.js) ─────────────── */
 
 const SHOP_ITEMS = [
   { id: 'music-lofi', type: 'Music', name: 'Lo-fi Focus Loop', cost: 800, accent: '#38bdf8', description: 'Soft study ambience for deep work sessions.' },
@@ -330,7 +324,7 @@ const PinchFilterBar = ({ value, onChange }) => (
         className={`d-pinch-pill${value === cat.id ? ' active' : ''}`}
         onClick={() => onChange(cat.id)}
         style={value === cat.id
-          ? { background: cat.color + '33', borderColor: cat.color, color: '#fff' }
+          ? { background: cat.color + '33', borderColor: cat.color, color: 'var(--text-white)' }
           : { borderColor: cat.color + '80', color: cat.color }}
       >
         {cat.label}
@@ -376,7 +370,7 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
 
   if (isEditing) {
     return (
-      <div className="d-task d-task--editing" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '10px', background: 'rgba(167,139,250,0.06)', borderColor: 'var(--accent)', padding: '14px 16px' }}>
+      <div className="d-task d-task--editing" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '10px', background: 'var(--accent-dim)', borderColor: 'var(--accent)', padding: '14px 16px' }}>
         {/* Row 1: Title + Priority */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input
@@ -393,7 +387,7 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
             value={editPriority}
             onChange={e => setEditPriority(e.target.value)}
             className={`d-badge d-badge--${editPriority}`}
-            style={{ cursor: 'pointer', outline: 'none', border: '1px solid rgba(255,255,255,0.2)', padding: '4px 10px', flexShrink: 0 }}
+            style={{ cursor: 'pointer', outline: 'none', border: '1px solid var(--border)', padding: '4px 10px', flexShrink: 0 }}
           >
             <option style={{ color: 'black' }} value="high">HIGH</option>
             <option style={{ color: 'black' }} value="medium">MEDIUM</option>
@@ -403,7 +397,7 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
         {/* Row 2: Deadline + Duration */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
-            <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>📅 Deadline</label>
+            <label style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>📅 Deadline</label>
             <input
               type="datetime-local"
               value={editDeadline}
@@ -413,7 +407,7 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
             />
           </div>
           <div style={{ width: '130px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-            <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>⏱️ Duration (hrs)</label>
+            <label style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>⏱️ Duration (hrs)</label>
             <input
               type="number"
               min="0.25"
@@ -533,10 +527,10 @@ const MarkdownRenderer = ({ content }) => {
           return <h4 key={idx} style={{ color: 'var(--accent)', marginTop: '8px', marginBottom: '4px', fontSize: '15px' }}>{line.replace('### ', '')}</h4>;
         }
         if (line.startsWith('## ')) {
-          return <h3 key={idx} style={{ color: '#fbbf24', marginTop: '12px', marginBottom: '6px', fontSize: '16px' }}>{line.replace('## ', '')}</h3>;
+          return <h3 key={idx} style={{ color: 'var(--med)', marginTop: '12px', marginBottom: '6px', fontSize: '16px' }}>{line.replace('## ', '')}</h3>;
         }
         if (line.startsWith('# ')) {
-          return <h2 key={idx} style={{ color: '#34d399', marginTop: '16px', marginBottom: '8px', fontSize: '18px' }}>{line.replace('# ', '')}</h2>;
+          return <h2 key={idx} style={{ color: 'var(--success)', marginTop: '16px', marginBottom: '8px', fontSize: '18px' }}>{line.replace('# ', '')}</h2>;
         }
 
         // Render bold text
@@ -544,9 +538,9 @@ const MarkdownRenderer = ({ content }) => {
           const parts = text.split(/(\*\*.*?\*\*)/g);
           return parts.map((part, i) => {
             if (part.startsWith('**') && part.endsWith('**')) {
-              return <strong key={i} style={{ color: 'white' }}>{part.slice(2, -2)}</strong>;
+              return <strong key={i} style={{ color: 'var(--text-white)' }}>{part.slice(2, -2)}</strong>;
             }
-            return <span key={i} style={{ color: 'rgba(255,255,255,0.85)' }}>{part}</span>;
+            return <span key={i} style={{ color: 'var(--text)' }}>{part}</span>;
           });
         };
 
@@ -760,6 +754,30 @@ export default function Dashboard() {
     const savedShopItems = localStorage.getItem('dopapal_shop_items_v1');
     if (savedShopItems) setUnlockedShopItems(JSON.parse(savedShopItems));
 
+    // Sync unlocked rewards from backend, merging with localStorage
+    api.getUnlockedRewards().then(rewards => {
+      const themeIds = rewards
+        .filter(r => r.type === 'theme' && r.metadata_json?.item_id)
+        .map(r => r.metadata_json.item_id);
+      const shopIds = rewards
+        .filter(r => r.type === 'shop_item' && r.metadata_json?.item_id)
+        .map(r => r.metadata_json.item_id);
+      if (themeIds.length > 0) {
+        setUnlockedThemes(prev => {
+          const merged = [...new Set([...prev, ...themeIds])];
+          localStorage.setItem('dopapal_themes_v3', JSON.stringify(merged));
+          return merged;
+        });
+      }
+      if (shopIds.length > 0) {
+        setUnlockedShopItems(prev => {
+          const merged = [...new Set([...prev, ...shopIds])];
+          localStorage.setItem('dopapal_shop_items_v1', JSON.stringify(merged));
+          return merged;
+        });
+      }
+    }).catch(() => {});
+
     const savedActive = localStorage.getItem('dopapal_active_theme_v3');
     if (savedActive) setActiveTheme(savedActive);
 
@@ -800,10 +818,7 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const theme = THEMES.find(t => t.id === activeTheme) || THEMES[0];
-    document.documentElement.style.setProperty('--accent', theme.accent);
-    document.documentElement.style.setProperty('--accent-glow', theme.glow);
-    document.documentElement.style.setProperty('--accent-dim', theme.dim);
+    applyTheme(activeTheme);
   }, [activeTheme]);
 
   const buyTheme = (themeId, cost) => {
@@ -815,6 +830,7 @@ export default function Dashboard() {
       localStorage.setItem('dopapal_xp_v3', newXp);
       localStorage.setItem('dopapal_themes_v3', JSON.stringify(newUnlocked));
       setPurchaseError(null);
+      api.purchaseReward('theme', themeId).catch(() => {});
     } else if (userXp < cost) {
       setPurchaseError('Not enough XP to unlock this theme!');
       setTimeout(() => setPurchaseError(null), 3000);
@@ -830,6 +846,7 @@ export default function Dashboard() {
       localStorage.setItem('dopapal_xp_v3', newXp);
       localStorage.setItem('dopapal_shop_items_v1', JSON.stringify(newUnlocked));
       setPurchaseError(null);
+      api.purchaseReward('shop_item', itemId).catch(() => {});
     } else if (userXp < cost) {
       setPurchaseError('Not enough XP to unlock this customization.');
       setTimeout(() => setPurchaseError(null), 3000);
@@ -1784,7 +1801,7 @@ export default function Dashboard() {
                       onBlur={() => { setIsEditingName(false); localStorage.setItem('dopapal_username', userName); }}
                       onKeyDown={(e) => { if (e.key === 'Enter') { setIsEditingName(false); localStorage.setItem('dopapal_username', userName); } }}
                       autoFocus
-                      style={{ background: 'transparent', border: 'none', borderBottom: '1px solid var(--accent)', color: 'white', fontSize: '20px', fontWeight: 'bold', outline: 'none', width: '100%', marginBottom: '4px' }}
+                      style={{ background: 'transparent', border: 'none', borderBottom: '1px solid var(--accent)', color: 'var(--text-white)', fontSize: '20px', fontWeight: 'bold', outline: 'none', width: '100%', marginBottom: '4px' }}
                     />
                   ) : (
                     <h2 className="d-profile-name" onClick={() => setIsEditingName(true)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} title="Click to edit">
@@ -1919,8 +1936,8 @@ export default function Dashboard() {
                           style={{
                             justifyContent: 'flex-start',
                             padding: '12px',
-                            borderColor: languageDraft.primary === option.code ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
-                            background: languageDraft.primary === option.code ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
+                            borderColor: languageDraft.primary === option.code ? 'var(--accent)' : 'var(--border)',
+                            background: languageDraft.primary === option.code ? 'var(--accent-dim)' : 'transparent',
                             color: languageDraft.primary === option.code ? 'var(--accent)' : 'var(--text)',
                             flexDirection: 'column',
                             alignItems: 'flex-start',
@@ -1993,8 +2010,8 @@ export default function Dashboard() {
                           style={{
                             justifyContent: 'flex-start',
                             padding: '12px',
-                            borderColor: notificationDraft.level === level.id ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
-                            background: notificationDraft.level === level.id ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
+                            borderColor: notificationDraft.level === level.id ? 'var(--accent)' : 'var(--border)',
+                            background: notificationDraft.level === level.id ? 'var(--accent-dim)' : 'transparent',
                             color: notificationDraft.level === level.id ? 'var(--accent)' : 'var(--text)',
                             flexDirection: 'column',
                             alignItems: 'flex-start',
@@ -2103,7 +2120,7 @@ export default function Dashboard() {
                               <button className="d-btn d-btn--primary" onClick={connected ? disconnectGoogle : connectGoogle} disabled={integrationSaving} style={{
                                 width: '100%',
                                 background: connected ? 'var(--accent-dim)' : 'var(--accent)',
-                                color: connected ? 'var(--accent)' : '#fff',
+                                color: connected ? 'var(--accent)' : 'var(--text-white)',
                                 border: connected ? '1px solid var(--accent)' : 'none'
                               }}>
                                 {integrationSaving ? (connected ? 'Disconnecting...' : 'Connecting...') : (connected ? 'Disconnect' : 'Connect')}
@@ -2151,9 +2168,9 @@ export default function Dashboard() {
                       onClick={() => changeLanguage(code)}
                       style={{
                         flex: 1, padding: '10px', borderRadius: '10px', cursor: 'pointer',
-                        border: lang === code ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.1)',
+                        border: lang === code ? '2px solid var(--accent)' : '1px solid var(--border)',
                         background: lang === code ? 'var(--accent-dim)' : 'transparent',
-                        color: lang === code ? 'var(--accent)' : 'rgba(255,255,255,0.7)',
+                        color: lang === code ? 'var(--accent)' : 'var(--text2)',
                         fontWeight: lang === code ? 700 : 400,
                         fontSize: '14px', transition: 'all 0.2s'
                       }}
@@ -2175,8 +2192,8 @@ export default function Dashboard() {
                     >
                       <span>{s}</span>
                       {s === 'Notifications' ? (
-                        <div style={{ width: 36, height: 20, background: '#8b5cf6', borderRadius: 10, position: 'relative' }}>
-                          <div style={{ position: 'absolute', right: 2, top: 2, width: 16, height: 16, background: 'white', borderRadius: '50%' }}></div>
+                        <div style={{ width: 36, height: 20, background: 'var(--accent)', borderRadius: 10, position: 'relative' }}>
+                          <div style={{ position: 'absolute', right: 2, top: 2, width: 16, height: 16, background: 'var(--text-white)', borderRadius: '50%' }}></div>
                         </div>
                       ) : (
                         <span className="d-setting-arrow">›</span>
@@ -2190,7 +2207,7 @@ export default function Dashboard() {
 
           {tab === 'assistant' && (
             <div className="d-section fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 0' }}>
-              <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '0' }}>
+              <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid var(--border)', marginBottom: '0' }}>
                 <h1 className="d-h1" style={{ margin: 0, fontSize: '18px' }}>DopaPal Assistant</h1>
               </div>
 
@@ -2198,8 +2215,8 @@ export default function Dashboard() {
                 {chatMessages.map((m, i) => (
                   <div key={i} style={{
                     alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start',
-                    background: m.sender === 'user' ? '#8b5cf6' : 'rgba(255,255,255,0.05)',
-                    color: 'white', padding: '12px 16px', borderRadius: '16px',
+                    background: m.sender === 'user' ? 'var(--accent)' : 'transparent',
+                    color: 'var(--text-white)', padding: '12px 16px', borderRadius: '16px',
                     borderBottomRightRadius: m.sender === 'user' ? '4px' : '16px',
                     borderBottomLeftRadius: m.sender === 'ai' ? '4px' : '16px',
                     maxWidth: '80%', lineHeight: '1.4'
@@ -2208,23 +2225,23 @@ export default function Dashboard() {
                   </div>
                 ))}
                 {isTyping && (
-                  <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.05)', color: '#9ca3af', padding: '12px 16px', borderRadius: '16px', borderBottomLeftRadius: '4px' }}>
+                  <div style={{ alignSelf: 'flex-start', background: 'transparent', color: 'var(--text3)', padding: '12px 16px', borderRadius: '16px', borderBottomLeftRadius: '4px' }}>
                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '20px' }}>
-                      <span style={{ width: '6px', height: '6px', background: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></span>
-                      <span style={{ width: '6px', height: '6px', background: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.2s' }}></span>
-                      <span style={{ width: '6px', height: '6px', background: '#9ca3af', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.4s' }}></span>
+                      <span style={{ width: '6px', height: '6px', background: 'var(--text3)', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></span>
+                      <span style={{ width: '6px', height: '6px', background: 'var(--text3)', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.2s' }}></span>
+                      <span style={{ width: '6px', height: '6px', background: 'var(--text3)', borderRadius: '50%', animation: 'pulse 1.5s infinite 0.4s' }}></span>
                     </div>
                   </div>
                 )}
                 <div ref={chatEndRef} />
               </div>
 
-              <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.1)' }}>
+              <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', background: 'var(--overlay)' }}>
                 <div style={{ 
                   display: 'flex', 
                   gap: '8px', 
-                  background: 'rgba(255,255,255,0.03)', 
-                  border: '1px solid rgba(255,255,255,0.08)', 
+                  background: 'transparent', 
+                  border: '1px solid var(--border)', 
                   borderRadius: '24px', 
                   padding: '6px 6px 6px 16px',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
@@ -2237,7 +2254,7 @@ export default function Dashboard() {
                     onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSendChat()}
                     placeholder="Message DopaPal AI..."
-                    style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', outline: 'none', fontSize: '14px' }}
+                    style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--text-white)', outline: 'none', fontSize: '14px' }}
                   />
                   <button 
                     onClick={handleSendChat} 
@@ -2249,8 +2266,8 @@ export default function Dashboard() {
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center', 
-                      background: chatInput.trim() && !isTyping ? 'var(--accent)' : 'rgba(255,255,255,0.1)', 
-                      color: chatInput.trim() && !isTyping ? 'white' : 'rgba(255,255,255,0.3)', 
+                      background: chatInput.trim() && !isTyping ? 'var(--accent)' : 'var(--surface)', 
+                      color: chatInput.trim() && !isTyping ? 'var(--text-white)' : 'var(--text3)', 
                       border: 'none', 
                       cursor: chatInput.trim() && !isTyping ? 'pointer' : 'default',
                       transition: 'all 0.2s',
@@ -2267,7 +2284,7 @@ export default function Dashboard() {
 
           {tab === 'sync' && (
             <div className="d-section fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 0' }}>
-              <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '0' }}>
+              <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid var(--border)', marginBottom: '0' }}>
                 <h1 className="d-h1" style={{ margin: 0, fontSize: '18px' }}>Sync</h1>
                 <span className="d-badge d-badge--accent">
                   {integrationStatuses.filter(status => status.connected).length}/{INTEGRATION_PROVIDERS.length} connected
@@ -2288,7 +2305,7 @@ export default function Dashboard() {
                           setIntegrationMessage('');
                         }}
                       >
-                        <span className="d-integration-dot" style={{ background: status.connected ? '#34d399' : 'rgba(255,255,255,0.25)' }} />
+                        <span className="d-integration-dot" style={{ background: status.connected ? 'var(--success)' : 'var(--text3)' }} />
                         <span>{provider.name}</span>
                         <span className={`d-integration-status ${status.connected ? 'connected' : ''}`}>
                           {status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Off'}
@@ -2383,17 +2400,17 @@ export default function Dashboard() {
 
           {tab === 'shop' && (
             <div className="d-section fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '10px 0' }}>
-              <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '0' }}>
+              <div className="d-section-header" style={{ padding: '0 24px 12px 24px', borderBottom: '1px solid var(--border)', marginBottom: '0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                   <h1 className="d-h1" style={{ margin: 0, fontSize: '18px' }}>Shop</h1>
-                  <div className="d-streak" style={{ background: 'rgba(251,191,36,0.1)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)', padding: '4px 12px', borderRadius: '16px' }}>
+                  <div className="d-streak" style={{ background: 'rgba(251,191,36,0.1)', color: 'var(--med)', border: '1px solid rgba(251,191,36,0.3)', padding: '4px 12px', borderRadius: '16px' }}>
                     <IconSparkle /> <span style={{ fontWeight: 600 }}>{userXp} XP</span>
                   </div>
                 </div>
               </div>
 
               {purchaseError && (
-                <div style={{ margin: '16px 24px 0 24px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 500 }}>
+                <div style={{ margin: '16px 24px 0 24px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: 'var(--error)', borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 500 }}>
                   {purchaseError}
                 </div>
               )}
@@ -2403,17 +2420,17 @@ export default function Dashboard() {
                   const isUnlocked = unlockedThemes.includes(t.id);
                   const isActive = activeTheme === t.id;
                   return (
-                    <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--surface2)', borderRadius: '12px', border: isActive ? `2px solid ${t.accent}` : '1px solid rgba(255,255,255,0.05)' }}>
+                    <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--surface2)', borderRadius: '12px', border: isActive ? `2px solid ${t.accent}` : '1px solid var(--border)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: `linear-gradient(135deg, ${t.accent}, ${t.dim})`, border: '2px solid rgba(255,255,255,0.1)' }}></div>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: `linear-gradient(135deg, ${t.accent}, ${t.dim})`, border: '2px solid var(--border)' }}></div>
                         <div>
-                          <div style={{ fontSize: '16px', fontWeight: 600, color: 'white' }}>{t.name}</div>
+                          <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-white)' }}>{t.name}</div>
                           {!isUnlocked && (
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24', padding: '4px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, marginTop: '6px' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', color: 'var(--med)', padding: '4px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, marginTop: '6px' }}>
                               <IconSparkle size={12} /> {t.cost} XP
                             </div>
                           )}
-                          {isUnlocked && <div style={{ fontSize: '13px', color: '#34d399', marginTop: '6px', fontWeight: 500 }}>✓ Unlocked</div>}
+                          {isUnlocked && <div style={{ fontSize: '13px', color: 'var(--success)', marginTop: '6px', fontWeight: 500 }}>✓ Unlocked</div>}
                         </div>
                       </div>
                       <div>
@@ -2422,7 +2439,7 @@ export default function Dashboard() {
                         ) : isUnlocked ? (
                           <button className="d-btn" onClick={() => equipTheme(t.id)} style={{ background: t.accent }}>Equip</button>
                         ) : (
-                          <button className="d-btn" onClick={() => buyTheme(t.id, t.cost)} style={{ background: '#fbbf24', color: 'black' }}>
+                          <button className="d-btn" onClick={() => buyTheme(t.id, t.cost)} style={{ background: 'var(--med)', color: 'var(--bg)' }}>
                             Buy Theme
                           </button>
                         )}
@@ -2440,7 +2457,7 @@ export default function Dashboard() {
                   const isUnlocked = unlockedShopItems.includes(item.id);
                   const isActive = item.type === 'Music' ? activeMusic === item.id : activeVisual === item.id;
                   return (
-                    <div key={item.id} className="d-shop-item" style={{ borderColor: isActive ? item.accent : 'rgba(255,255,255,0.05)' }}>
+                    <div key={item.id} className="d-shop-item" style={{ borderColor: isActive ? item.accent : 'var(--border)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
                         <div className="d-shop-item-icon" style={{ color: item.accent, background: `${item.accent}22` }}>
                           {item.type === 'Music' ? <IconMusic /> : <IconSparkle />}
@@ -2460,9 +2477,9 @@ export default function Dashboard() {
                         {isActive ? (
                           <button className="d-btn d-btn--secondary" disabled style={{ background: 'transparent', border: `1px solid ${item.accent}`, color: item.accent }}>Active</button>
                         ) : isUnlocked ? (
-                          <button className="d-btn" onClick={() => equipShopItem(item)} style={{ background: item.accent, color: item.accent === '#fbbf24' ? '#111' : '#fff' }}>Use</button>
+                          <button className="d-btn" onClick={() => equipShopItem(item)} style={{ background: item.accent, color: item.accent === '#fbbf24' ? 'var(--bg)' : 'var(--text-white)' }}>Use</button>
                         ) : (
-                          <button className="d-btn" onClick={() => buyShopItem(item.id, item.cost)} style={{ background: '#fbbf24', color: 'black' }}>
+                          <button className="d-btn" onClick={() => buyShopItem(item.id, item.cost)} style={{ background: 'var(--med)', color: 'var(--bg)' }}>
                             Buy
                           </button>
                         )}
@@ -2531,15 +2548,15 @@ export default function Dashboard() {
             {addTaskView === 'options' && (
               <div className="d-modal-options">
                 <button className="d-modal-btn" onClick={() => setAddTaskView('ai')}>
-                  <div className="d-modal-icon" style={{ background: 'rgba(167,139,250,.15)', color: '#a78bfa' }}><IconSparkle /></div>
+                  <div className="d-modal-icon" style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}><IconSparkle /></div>
                   <div className="d-modal-text">
                     <strong>{t('bubble.aiSmartInput')}</strong>
                     <span>{t('bubble.aiSmartInputDesc')}</span>
                   </div>
                 </button>
                 <button className="d-modal-btn" onClick={isRecording ? stopRecording : startRecording}>
-                  <div className="d-modal-icon" style={{ background: isRecording ? 'rgba(239,68,68,.15)' : 'rgba(56,189,248,.15)', color: isRecording ? '#ef4444' : '#38bdf8' }}>
-                    {isRecording ? <div className="b-dot" style={{ background: '#ef4444', width: 12, height: 12, borderRadius: '50%' }} /> : <IconMic />}
+                  <div className="d-modal-icon" style={{ background: isRecording ? 'rgba(239,68,68,.15)' : 'rgba(56,189,248,.15)', color: isRecording ? 'var(--error)' : '#38bdf8' }}>
+                    {isRecording ? <div className="b-dot" style={{ background: 'var(--error)', width: 12, height: 12, borderRadius: '50%' }} /> : <IconMic />}
                   </div>
                   <div className="d-modal-text">
                     <strong>{isRecording ? "Recording... Click to stop" : t('bubble.voiceMemo')}</strong>
@@ -2584,7 +2601,7 @@ export default function Dashboard() {
                     style={{
                       padding: '8px 16px',
                       background: 'var(--accent)',
-                      color: 'white',
+                      color: 'var(--text-white)',
                       border: 'none',
                       borderRadius: '6px',
                       cursor: 'pointer',
@@ -2599,7 +2616,7 @@ export default function Dashboard() {
                     style={{
                       padding: '8px 16px',
                       background: 'var(--accent)',
-                      color: 'white',
+                      color: 'var(--text-white)',
                       border: 'none',
                       borderRadius: '6px',
                       cursor: 'pointer',
@@ -2614,7 +2631,7 @@ export default function Dashboard() {
                     style={{
                       padding: '8px 16px',
                       background: 'var(--accent)',
-                      color: 'white',
+                      color: 'var(--text-white)',
                       border: 'none',
                       borderRadius: '6px',
                       cursor: 'pointer',
@@ -2673,7 +2690,7 @@ export default function Dashboard() {
                     const appDraft = d[app] || {};
                     const appIconsMap = { tasks: <TaskListLogo size={16} />, calendar: <CalendarLogo size={16} />, gmail: <GmailLogo size={16} /> };
                     return (
-                      <div key={app} style={{ borderBottom: idx < 2 ? '1px solid rgba(255,255,255,.06)' : 'none', padding: '20px 24px' }}>
+                      <div key={app} style={{ borderBottom: idx < 2 ? '1px solid var(--border)' : 'none', padding: '20px 24px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                           <span style={{ display: 'inline-flex' }}>{appIconsMap[app]}</span>
                           <span style={{ fontWeight: 600, fontSize: 14 }}>{app.charAt(0).toUpperCase() + app.slice(1)}</span>
@@ -2753,7 +2770,7 @@ export default function Dashboard() {
             </div>
             <div className="d-modal-footer">
               <button className="d-btn" onClick={closeSyncSettings}>Cancel</button>
-              <button className="d-btn d-btn--primary" onClick={saveSyncSettings} disabled={syncSettingsSaving} style={{ background: 'var(--accent)', color: '#fff', border: 'none' }}>
+              <button className="d-btn d-btn--primary" onClick={saveSyncSettings} disabled={syncSettingsSaving} style={{ background: 'var(--accent)', color: 'var(--text-white)', border: 'none' }}>
                 {syncSettingsSaving ? 'Saving...' : 'Save'}
               </button>
             </div>

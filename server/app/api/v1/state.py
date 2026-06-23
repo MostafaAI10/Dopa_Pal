@@ -9,7 +9,7 @@ from app.services import state_service, task_service
 from app.services.websocket_manager import manager as ws_manager
 from app.api.v1.tasks import get_or_create_default_user
 
-router = APIRouter()
+router = APIRouter(tags=["State"])
 
 
 class StateLogCreate(BaseModel):

@@ -106,7 +106,7 @@ app.include_router(chat_router, prefix=settings.API_V1_STR)
 app.include_router(auth_google_router, prefix=settings.API_V1_STR)
 app.include_router(sync_router, prefix=settings.API_V1_STR)
 
-@app.get("/")
+@app.get("/", tags=["System"])
 def read_root():
     return {
         "message": f"Welcome to the {settings.PROJECT_NAME} API",
@@ -114,6 +114,6 @@ def read_root():
         "version": "0.1.0"
     }
 
-@app.get("/health")
+@app.get("/health", tags=["System"])
 def health_check():
     return {"status": "healthy"}

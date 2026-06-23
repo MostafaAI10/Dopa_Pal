@@ -10,7 +10,7 @@ import logging
 import json
 import re
 
-router = APIRouter()
+router = APIRouter(tags=["Chat"])
 logger = logging.getLogger(__name__)
 
 class ChatMessage(BaseModel):

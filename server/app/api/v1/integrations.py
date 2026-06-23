@@ -6,7 +6,7 @@ from app.core.database import get_db
 from app.services import integration_service
 from app.api.v1.tasks import get_or_create_default_user
 
-router = APIRouter()
+router = APIRouter(tags=["Integrations"])
 
 # Schemas
 class IntegrationConfigRequest(BaseModel):

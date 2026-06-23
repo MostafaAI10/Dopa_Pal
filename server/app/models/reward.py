@@ -14,7 +14,7 @@ class Reward(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     type: Mapped[str] = mapped_column(String(50)) # 'theme', 'audio', 'interest_drop'
-    unlocked_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    unlocked_at: Mapped[datetime.datetime] = mapped_column(DateTime(), server_default=func.now())
     metadata_json: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True) # Maps to json/jsonb natively in Postgres
 
     # Relationships

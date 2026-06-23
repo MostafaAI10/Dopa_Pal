@@ -7,7 +7,7 @@ from datetime import time
 from app.core.database import get_db
 from app.models.user import User
 
-router = APIRouter()
+router = APIRouter(tags=["Users"])
 
 # Schema for updating settings
 class UserSettingsUpdate(BaseModel):

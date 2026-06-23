@@ -12,7 +12,7 @@ from app.services.integration_service import get_integration_status
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["Sync"])
 
 
 class SyncResponse(BaseModel):
