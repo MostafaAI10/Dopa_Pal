@@ -103,7 +103,25 @@ export const api = {
   sendChatMessage: async (messages) => {
     const response = await apiClient.post('/chat', { messages });
     return response.data;
-  }
+  },
+
+  // Generic HTTP helpers (used by sync settings, etc.)
+  get: async (url) => {
+    const response = await apiClient.get(url);
+    return response.data;
+  },
+  post: async (url, data) => {
+    const response = await apiClient.post(url, data);
+    return response.data;
+  },
+  put: async (url, data) => {
+    const response = await apiClient.put(url, data);
+    return response.data;
+  },
+  delete: async (url) => {
+    const response = await apiClient.delete(url);
+    return response.data;
+  },
 };
 
 export default api;

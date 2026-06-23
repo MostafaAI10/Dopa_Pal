@@ -14,6 +14,8 @@ class SourceType(str, Enum):
     VOICE = "voice"
     HIGHLIGHT = "highlight"
     CALENDAR = "calendar"
+    GOOGLE_TASKS = "google_tasks"
+    GMAIL = "gmail"
 
 
 class ParsedTask(BaseModel):

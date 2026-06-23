@@ -42,6 +42,14 @@ def configure_integration(payload: IntegrationConfigRequest, db: Session = Depen
     status = integration_service.get_integration_status(db, user.id, payload.provider.lower())
     return status
 
+@router.delete("/integrations/config/{provider}")
+def delete_integration(provider: str, db: Session = Depends(get_db)):
+    user = get_or_create_default_user(db)
+    deleted = integration_service.delete_integration_config(db, user.id, provider.lower())
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"{provider} not connected")
+    return {"success": True, "provider": provider}
+
 @router.get("/integrations/status/{provider}", response_model=IntegrationStatusResponse)
 def get_single_integration_status(provider: str, db: Session = Depends(get_db)):
     user = get_or_create_default_user(db)

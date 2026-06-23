@@ -75,6 +75,8 @@ class TaskResponse(BaseModel):
     estimated_hours: float
     interest_tag: Optional[str]
     status: str
+    source_type: Optional[str] = None
+    raw_source_text: Optional[str] = None
     pinch_score: Optional[float] = None
     sub_blocks: List[SubBlockResponse]
 

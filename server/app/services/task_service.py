@@ -64,13 +64,19 @@ def ingest_from_raw_text(
     user_id: int,
     raw_text: str,
     source_type: str,
+    interest_tag_override: str | None = None,
 ) -> Task:
     """
     Full NLP-powered ingestion: parse raw text through the AI pipeline,
     then persist the resulting task and sub-blocks to the database.
+
+    If ``interest_tag_override`` is provided it replaces whatever tag the
+    AI pipeline extracted (used by Google sync to honour user-configured tags).
     """
     ai = get_ai_service()
     ingest_result = ai.ingest(raw_text=raw_text, source_type=source_type)
+    if interest_tag_override:
+        ingest_result.interest_tag = interest_tag_override
     return persist_ingested_task(
         db=db,
         user_id=user_id,

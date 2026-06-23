@@ -17,4 +17,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onDashboardRefresh: (callback) => ipcRenderer.on('dashboard-refresh', callback),
   onOpenAddMenu: (callback) => ipcRenderer.on('open-add-menu', callback),
   setIgnoreMouse: (ignore) => ipcRenderer.send('set-ignore-mouse', ignore),
+  startGoogleOAuth: () => ipcRenderer.invoke('start-google-oauth'),
 });

@@ -151,6 +151,54 @@ const IconShop = () => <Svg><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V
 const IconSync = () => <Svg><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" /><path d="M3 21v-5h5" /><path d="M3 12A9 9 0 0 1 18.5 5.7L21 8" /><path d="M21 3v5h-5" /></Svg>;
 const IconMusic = () => <Svg><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></Svg>;
 const IconSend = () => <Svg size={18}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></Svg>;
+const IconBell = () => <Svg><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></Svg>;
+const IconShield = () => <Svg><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></Svg>;
+const IconGlobe = () => <Svg><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></Svg>;
+const IconMail = () => <Svg size={14}><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 4L12 13 2 4" /></Svg>;
+const IconChecklist = () => <Svg size={14}><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="9" /><line x1="9" y1="13" x2="15" y2="13" /><line x1="9" y1="17" x2="13" y2="17" /></Svg>;
+
+/* ── Brand icons (inline SVGs with brand colors) ── */
+const GoogleLogo = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+  </svg>
+);
+const GmailLogo = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24">
+    <path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.9 12 9.548 18.545 4.9l1.528-1.407C21.691 2.28 24 3.434 24 5.457z" />
+  </svg>
+);
+const CalendarLogo = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M3 3h18v18H3z" />
+    <path fill="#fff" d="M3 3h18v4H3z" />
+    <path fill="#fff" d="M3 7h18v4H3z" opacity="0" />
+    <rect x="7" y="2" width="2" height="5" rx="1" fill="#fff" />
+    <rect x="15" y="2" width="2" height="5" rx="1" fill="#fff" />
+    <text x="12" y="18" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="bold" fontFamily="Arial">1</text>
+  </svg>
+);
+const NotionLogo = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24">
+    <rect width="24" height="24" rx="4" fill="#fff" />
+    <path fill="#000" d="M4 5.5c0-.8.6-1.2 1.6-1.3l12.4-1c.9 0 1.4.3 1.4 1v13.6c0 .8-.6 1.3-1.5 1.4l-12.5 1c-.8 0-1.4-.3-1.4-1V5.5z" opacity="0.9" />
+    <path fill="#fff" d="M6.7 6.3l7.5-.6v11.7l-7.5.6V6.3z" />
+    <path fill="#000" d="M10.5 7.3l4.5-.4v9.9l-4.5.4V7.3z" opacity="0.2" />
+    <path fill="#fff" d="M7.8 6.6l2.7-.2v10.5l-2.7.2V6.6z" />
+  </svg>
+);
+const TaskListLogo = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M9 8h6" />
+    <path d="M9 12h6" />
+    <path d="M9 16h4" />
+    <path d="M7 8l1 1 2-2" strokeWidth="2.5" opacity="0.7" />
+  </svg>
+);
 
 /* ─── Themes Store ──────────────────────────────────────── */
 const THEMES = [
@@ -213,10 +261,10 @@ const NOTIFICATION_DIGESTS = [
 ];
 
 const INTEGRATION_PROVIDERS = [
-  { id: 'google', name: 'Google Calendar', accent: '#38bdf8', tokenLabel: 'OAuth access token', settingLabel: 'Calendar ID', settingKey: 'calendar_id' },
-  { id: 'notion', name: 'Notion', accent: '#f8fafc', tokenLabel: 'Integration token', settingLabel: 'Database ID', settingKey: 'database_id' },
-  { id: 'jira', name: 'Jira', accent: '#60a5fa', tokenLabel: 'API token', settingLabel: 'Project key', settingKey: 'project_key' },
-  { id: 'canvas', name: 'Canvas LMS', accent: '#fb7185', tokenLabel: 'Access token', settingLabel: 'Course ID', settingKey: 'course_id' },
+  { id: 'google', name: 'Google', accent: '#38bdf8', apps: ['Tasks', 'Calendar', 'Gmail'], tokenLabel: 'OAuth access token', settingLabel: 'Account email', settingKey: 'email' },
+  { id: 'notion', name: 'Notion', accent: '#f8fafc', apps: ['Databases', 'Tasks'], tokenLabel: 'Integration token', settingLabel: 'Database ID', settingKey: 'database_id' },
+  { id: 'jira', name: 'Jira', accent: '#60a5fa', apps: ['Issues', 'Projects'], tokenLabel: 'API token', settingLabel: 'Project key', settingKey: 'project_key' },
+  { id: 'canvas', name: 'Canvas LMS', accent: '#fb7185', apps: ['Assignments', 'Courses'], tokenLabel: 'Access token', settingLabel: 'Course ID', settingKey: 'course_id' },
 ];
 
 /* ─── PINCH categories — single source of truth (no emojis) ── */
@@ -457,6 +505,18 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
           })}
         </div>
       )}
+
+      {/* ── Source badge ── */}
+      {task.sourceType && (
+        <div className="d-task-source" title={task.rawSourceText ? task.rawSourceText : task.sourceType}>
+          {task.sourceType === 'manual' && <IconKeyboard />}
+          {task.sourceType === 'voice' && <IconMic />}
+          {task.sourceType === 'ai' && <IconSparkle />}
+          {task.sourceType === 'calendar' && <CalendarLogo size={13} />}
+          {task.sourceType === 'google_tasks' && <IconChecklist />}
+          {task.sourceType === 'gmail' && <IconMail />}
+        </div>
+      )}
     </div>
   );
 };
@@ -519,6 +579,66 @@ const MarkdownRenderer = ({ content }) => {
   );
 };
 
+/* ── ChipInput ─────────────────────────────────────────── */
+const ChipInput = ({ values = [], onChange, placeholder }) => {
+  const [input, setInput] = useState('');
+  const inputRef = useRef(null);
+
+  const add = (val) => {
+    const v = val.trim().toLowerCase();
+    if (v && !values.includes(v)) {
+      onChange([...values, v]);
+    }
+  };
+
+  const remove = (idx) => {
+    const copy = [...values];
+    copy.splice(idx, 1);
+    onChange(copy);
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      add(input);
+      setInput('');
+    }
+    if (e.key === 'Backspace' && !input && values.length) {
+      remove(values.length - 1);
+    }
+  };
+
+  const handlePaste = (e) => {
+    const text = e.clipboardData.getData('text');
+    if (text.includes(',') || text.includes('\n')) {
+      e.preventDefault();
+      const parts = text.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+      const combined = [...values, ...parts.map(v => v.toLowerCase())];
+      onChange([...new Set(combined)]);
+    }
+  };
+
+  return (
+    <div className="d-chip-input" onClick={() => inputRef.current?.focus()}>
+      {values.map((v, i) => (
+        <span key={i} className="d-chip-item">
+          <span>{v}</span>
+          <button className="d-chip-remove" onClick={() => remove(i)}>×</button>
+        </span>
+      ))}
+      <input
+        ref={inputRef}
+        className="d-chip-field"
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        onKeyDown={handleKey}
+        onPaste={handlePaste}
+        placeholder={values.length ? '' : placeholder}
+      />
+    </div>
+  );
+};
+
 /* ══════════════════════════════════════════════════════════
    DASHBOARD COMPONENT
    ══════════════════════════════════════════════════════════ */
@@ -535,6 +655,7 @@ export default function Dashboard() {
   const [deletingIds, setDeletingIds] = useState(() => new Set());
   const [toasts, setToasts] = useState([]);
   const toastSeq = useRef(0);
+  const lastSyncAtRef = useRef(null);
 
   const pushToast = (text, kind = 'info', ttl = 2600) => {
     const id = ++toastSeq.current;
@@ -593,6 +714,12 @@ export default function Dashboard() {
   });
   const [integrationSaving, setIntegrationSaving] = useState(false);
   const [integrationMessage, setIntegrationMessage] = useState('');
+  const [syncSettingsModal, setSyncSettingsModal] = useState(null);
+  const [syncSettingsClosing, setSyncSettingsClosing] = useState(false);
+  const [syncSettingsData, setSyncSettingsData] = useState({});
+  const [syncSettingsDraft, setSyncSettingsDraft] = useState({});
+  const [syncSettingsLoading, setSyncSettingsLoading] = useState(false);
+  const [syncSettingsSaving, setSyncSettingsSaving] = useState(false);
 
   // Settings state
   const [languageDraft, setLanguageDraft] = useState({
@@ -614,7 +741,7 @@ export default function Dashboard() {
   });
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState('');
-  const [settingsSection, setSettingsSection] = useState('account');
+  const [settingsPage, setSettingsPage] = useState(null); // null = grid, or section id
 
   // Streak & gamification state
   const [streak, setStreak] = useState(0);
@@ -843,6 +970,82 @@ export default function Dashboard() {
     }
   };
 
+  const connectGoogle = async () => {
+    if (IS_ELECTRON && window.electronAPI.startGoogleOAuth) {
+      setIntegrationSaving(true);
+      setIntegrationMessage('');
+      try {
+        const result = await window.electronAPI.startGoogleOAuth();
+        if (result.success) {
+          setIntegrationMessage('Google connected successfully!');
+          await fetchIntegrations();
+        } else {
+          setIntegrationMessage(result.error || 'Connection failed.');
+        }
+      } catch (err) {
+        console.error('Google OAuth error:', err);
+        setIntegrationMessage('Could not connect Google. Check the backend logs.');
+      } finally {
+        setIntegrationSaving(false);
+      }
+    } else {
+      setIntegrationMessage('Google OAuth is only available in the desktop app.');
+    }
+  };
+
+  const disconnectGoogle = async () => {
+    setIntegrationSaving(true);
+    try {
+      await api.delete('/integrations/config/google');
+      pushToast('Google disconnected', 'success');
+      await fetchIntegrations();
+    } catch (err) {
+      console.error('Disconnect error:', err);
+      pushToast('Failed to disconnect', 'error');
+    } finally {
+      setIntegrationSaving(false);
+    }
+  };
+
+  const loadSyncSettings = async () => {
+    setSyncSettingsLoading(true);
+    try {
+      const res = await api.get('/sync/google/settings');
+      const s = res.settings || {};
+      setSyncSettingsData(s);
+      setSyncSettingsDraft(JSON.parse(JSON.stringify(s)));
+    } catch (e) {
+      console.error('Failed to load sync settings', e);
+    } finally {
+      setSyncSettingsLoading(false);
+    }
+  };
+
+  const saveSyncSettings = async () => {
+    setSyncSettingsSaving(true);
+    try {
+      await api.put('/sync/google/settings', { settings: syncSettingsDraft });
+      setSyncSettingsData(JSON.parse(JSON.stringify(syncSettingsDraft)));
+      closeSyncSettings();
+    } catch (e) {
+      console.error('Failed to save sync settings', e);
+    } finally {
+      setSyncSettingsSaving(false);
+    }
+  };
+
+  const closeSyncSettings = () => {
+    setSyncSettingsClosing(true);
+    setTimeout(() => {
+      setSyncSettingsModal(null);
+      setSyncSettingsClosing(false);
+    }, 180);
+  };
+
+  const openSyncSettings = (provider) => {
+    if (!syncSettingsData.tasks) loadSyncSettings();
+    setSyncSettingsModal(provider);
+  };
 
   const fetchTasksAndBubble = async () => {
     try {
@@ -857,7 +1060,9 @@ export default function Dashboard() {
         done: t.status === 'completed',
         interestTag: t.interest_tag,
         pinchScore: t.pinch_score,
-        subBlocks: t.sub_blocks || []
+        subBlocks: t.sub_blocks || [],
+        sourceType: t.source_type || null,
+        rawSourceText: t.raw_source_text || null
       }));
       setTasks(mapped);
 
@@ -878,6 +1083,28 @@ export default function Dashboard() {
       window.electronAPI.onDashboardRefresh(() => fetchTasksAndBubble());
     }
   }, [tab]); // Refresh when tab changes
+
+  // ── Poll background sync status ──
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const status = await api.get('/sync/google/status');
+        if (status.connected && status.last_synced_at) {
+          const prev = lastSyncAtRef.current;
+          lastSyncAtRef.current = status.last_synced_at;
+          if (prev && prev !== status.last_synced_at) {
+            pushToast('Google data synced', 'success');
+            fetchTasksAndBubble();
+          }
+        }
+      } catch {
+        // not connected or offline — ignore
+      }
+    };
+    check();
+    const interval = setInterval(check, 20000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -1600,295 +1827,314 @@ export default function Dashboard() {
           {/* ══ SETTINGS TAB ══ */}
           {tab === 'settings' && (
             <div className="d-section fade-in">
-              <div className="d-greeting" style={{ alignItems: 'center' }}>
-                <div>
+
+              {/* ── Breadcrumb ── */}
+              {settingsPage && (
+                <div className="d-settings-breadcrumb">
+                  <button className="d-settings-back" onClick={() => setSettingsPage(null)}>
+                    <span style={{ fontSize: 18, lineHeight: 1 }}>‹</span>
+                    <span>Settings</span>
+                  </button>
+                  <span className="d-settings-breadcrumb-sep">/</span>
+                  <span className="d-settings-breadcrumb-current">
+                    {settingsPage === 'account' && 'Account'}
+                    {settingsPage === 'language' && 'Language'}
+                    {settingsPage === 'notifications' && 'Notifications'}
+                    {settingsPage === 'sync' && 'Sync'}
+                    {settingsPage === 'privacy' && 'Privacy'}
+                  </span>
+                </div>
+              )}
+
+              {/* ── Category grid (when no page selected) ── */}
+              {!settingsPage && (
+                <>
                   <h1 className="d-h1">Settings</h1>
-                  <p className="d-sub">Pick a section, then adjust only the settings for that area.</p>
+                  <p className="d-sub">Pick a category to adjust.</p>
+                  <div className="d-settings-category-grid">
+                    {[
+                      { id: 'account', title: 'Account', icon: <IconUser />, desc: 'Name, wake time, and profile details.' },
+                      { id: 'language', title: 'Language', icon: <IconGlobe />, desc: 'Locale, formatting, and text behavior.' },
+                      { id: 'notifications', title: 'Notifications', icon: <IconBell />, desc: 'Delivery, intensity, and quiet hours.' },
+                      { id: 'sync', title: 'Sync', icon: <IconSync />, desc: 'Connected services and provider settings.' },
+                      { id: 'privacy', title: 'Privacy', icon: <IconShield />, desc: 'Storage and data-sharing preferences.' },
+                    ].map(section => (
+                      <button key={section.id} className="d-settings-category" onClick={() => setSettingsPage(section.id)}>
+                        <div className="d-settings-category-icon">{section.icon}</div>
+                        <div className="d-settings-category-text">
+                          <strong>{section.title}</strong>
+                          <span>{section.desc}</span>
+                        </div>
+                        <span className="d-settings-category-arrow">›</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* ── Account detail ── */}
+              {settingsPage === 'account' && (
+                <div className="d-card">
+                  <div className="d-card-header"><IconUser /><span>Account</span></div>
+                  <p className="d-field-help">This controls your display name in the app and the wake-up time used for scheduling and prompts.</p>
+                  <div className="d-settings-grid">
+                    <label>
+                      <span className="d-field-label">Display name</span>
+                      <p className="d-field-help">Shown in the sidebar greeting, profile area, and task ownership.</p>
+                      <input className="d-input" value={accountForm.name} onChange={e => setAccountForm({ ...accountForm, name: e.target.value })} placeholder="Display name" />
+                    </label>
+                    <label>
+                      <span className="d-field-label">Wake time</span>
+                      <p className="d-field-help">The time the assistant should treat as your usual morning start.</p>
+                      <input className="d-input" type="time" value={accountForm.wakeTimePref} onChange={e => setAccountForm({ ...accountForm, wakeTimePref: e.target.value })} />
+                    </label>
+                  </div>
+                  <div className="d-integration-summary">
+                    <div><span className="d-integration-label">Primary account</span><strong>{USER.email}</strong></div>
+                    <div><span className="d-integration-label">Wake time</span><strong>{accountForm.wakeTimePref || '07:30'}</strong></div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button className="d-btn d-btn--primary" onClick={saveAccountSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Account'}</button>
+                  </div>
                 </div>
-                {settingsMessage && <span className="d-badge d-badge--accent">{settingsMessage}</span>}
-              </div>
+              )}
 
-              <div className="d-settings-shell">
-                <aside className="d-settings-nav">
-                  {[
-                    { id: 'account', title: 'Account', desc: 'Name, wake time, and profile details.' },
-                    { id: 'language', title: 'Language', desc: 'Locale, formatting, and text behavior.' },
-                    { id: 'notifications', title: 'Notifications', desc: 'Delivery, intensity, and quiet hours.' },
-                    { id: 'sync', title: 'Sync', desc: 'Connected services and provider settings.' },
-                    { id: 'privacy', title: 'Privacy', desc: 'Storage and data-sharing preferences.' },
-                  ].map(section => (
-                    <button
-                      key={section.id}
-                      className={`d-settings-nav-item${settingsSection === section.id ? ' active' : ''}`}
-                      onClick={() => setSettingsSection(section.id)}
-                    >
-                      <strong>{section.title}</strong>
-                      <span>{section.desc}</span>
-                    </button>
-                  ))}
-                </aside>
-
-                <div className="d-settings-panel">
-                  {settingsSection === 'account' && (
-                    <div className="d-card">
-                      <div className="d-card-header"><IconUser /><span>Account</span></div>
-                      <p className="d-field-help">This controls your display name in the app and the wake-up time used for scheduling and prompts.</p>
-                      <div className="d-settings-grid">
-                        <label>
-                          <span className="d-field-label">Display name</span>
-                          <p className="d-field-help">Shown in the sidebar greeting, profile area, and task ownership.</p>
-                          <input className="d-input" value={accountForm.name} onChange={e => setAccountForm({ ...accountForm, name: e.target.value })} placeholder="Display name" />
-                        </label>
-                        <label>
-                          <span className="d-field-label">Wake time</span>
-                          <p className="d-field-help">The time the assistant should treat as your usual morning start.</p>
-                          <input className="d-input" type="time" value={accountForm.wakeTimePref} onChange={e => setAccountForm({ ...accountForm, wakeTimePref: e.target.value })} />
-                        </label>
-                      </div>
-                      <div className="d-integration-summary">
-                        <div><span className="d-integration-label">Primary account</span><strong>{USER.email}</strong></div>
-                        <div><span className="d-integration-label">Wake time</span><strong>{accountForm.wakeTimePref || '07:30'}</strong></div>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button className="d-btn d-btn--primary" onClick={saveAccountSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Account'}</button>
-                      </div>
+              {/* ── Language detail ── */}
+              {settingsPage === 'language' && (
+                <div className="d-card">
+                  <div className="d-card-header"><span>🌐</span><span>{t('dashboard.language')}</span></div>
+                  <p className="d-field-help">Choose how the interface reads, formats dates and numbers, and handles mixed-language content.</p>
+                  <div className="d-field-block">
+                    <span className="d-field-label">Primary language</span>
+                    <p className="d-field-help">This is the app language used for menus, labels, and helper text.</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))', gap: 10 }}>
+                      {LANGUAGE_OPTIONS.map(option => (
+                        <button
+                          key={option.code}
+                          className="d-btn d-btn--secondary"
+                          onClick={() => {
+                            setLanguageDraft(prev => ({ ...prev, primary: option.code }));
+                            changeLanguage(option.code);
+                          }}
+                          style={{
+                            justifyContent: 'flex-start',
+                            padding: '12px',
+                            borderColor: languageDraft.primary === option.code ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
+                            background: languageDraft.primary === option.code ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
+                            color: languageDraft.primary === option.code ? 'var(--accent)' : 'var(--text)',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start',
+                            gap: '4px',
+                          }}
+                        >
+                          <strong>{option.native}</strong>
+                          <span style={{ fontSize: 12, color: 'inherit', opacity: 0.8 }}>{option.label}</span>
+                          <span style={{ fontSize: 11, opacity: 0.7 }}>{option.region}</span>
+                        </button>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                  <div className="d-settings-grid">
+                    <label>
+                      <span className="d-field-label">Secondary language</span>
+                      <p className="d-field-help">Use this as the fallback language for bilingual prompts and overlays.</p>
+                      <select className="d-input" value={languageDraft.secondary} onChange={e => setLanguageDraft({ ...languageDraft, secondary: e.target.value })}>
+                        {LANGUAGE_OPTIONS.filter(option => option.code !== languageDraft.primary).map(option => <option key={option.code} value={option.code}>{option.label}</option>)}
+                      </select>
+                    </label>
+                    <label>
+                      <span className="d-field-label">Content mode</span>
+                      <p className="d-field-help">Controls whether the app keeps one language, blends two, or auto-detects content.</p>
+                      <select className="d-input" value={languageDraft.contentMode} onChange={e => setLanguageDraft({ ...languageDraft, contentMode: e.target.value })}>
+                        <option value="auto">Auto detect content</option>
+                        <option value="primary">Primary language only</option>
+                        <option value="bilingual">Bilingual mode</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span className="d-field-label">Date format</span>
+                      <p className="d-field-help">Affects how deadlines and reminders are displayed everywhere in the app.</p>
+                      <select className="d-input" value={languageDraft.dateFormat} onChange={e => setLanguageDraft({ ...languageDraft, dateFormat: e.target.value })}>
+                        <option value="locale">Locale dates</option>
+                        <option value="iso">ISO dates</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span className="d-field-label">Number format</span>
+                      <p className="d-field-help">Controls whether values are shown plainly or in compact human-friendly form.</p>
+                      <select className="d-input" value={languageDraft.numberFormat} onChange={e => setLanguageDraft({ ...languageDraft, numberFormat: e.target.value })}>
+                        <option value="locale">Locale numbers</option>
+                        <option value="compact">Compact numbers</option>
+                        <option value="plain">Plain numbers</option>
+                      </select>
+                    </label>
+                  </div>
+                  <label className="d-toggle-row"><span>Transliterate borrowed content</span><input type="checkbox" checked={languageDraft.transliteration} onChange={e => setLanguageDraft({ ...languageDraft, transliteration: e.target.checked })} /></label>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button className="d-btn d-btn--primary" onClick={saveLanguageSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Language'}</button>
+                  </div>
+                </div>
+              )}
 
-                  {settingsSection === 'language' && (
-                    <div className="d-card">
-                      <div className="d-card-header"><span>🌐</span><span>{t('dashboard.language')}</span></div>
-                      <p className="d-field-help">Choose how the interface reads, formats dates and numbers, and handles mixed-language content.</p>
-                      <div className="d-field-block">
-                        <span className="d-field-label">Primary language</span>
-                        <p className="d-field-help">This is the app language used for menus, labels, and helper text.</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))', gap: 10 }}>
-                          {LANGUAGE_OPTIONS.map(option => (
-                            <button
-                              key={option.code}
-                              className="d-btn d-btn--secondary"
-                              onClick={() => {
-                                setLanguageDraft(prev => ({ ...prev, primary: option.code }));
-                                changeLanguage(option.code);
-                              }}
-                              style={{
-                                justifyContent: 'flex-start',
-                                padding: '12px',
-                                borderColor: languageDraft.primary === option.code ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
-                                background: languageDraft.primary === option.code ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
-                                color: languageDraft.primary === option.code ? 'var(--accent)' : 'var(--text)',
-                                flexDirection: 'column',
-                                alignItems: 'flex-start',
-                                gap: '4px',
-                              }}
-                            >
-                              <strong>{option.native}</strong>
-                              <span style={{ fontSize: 12, color: 'inherit', opacity: 0.8 }}>{option.label}</span>
-                              <span style={{ fontSize: 11, opacity: 0.7 }}>{option.region}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="d-settings-grid">
-                        <label>
-                          <span className="d-field-label">Secondary language</span>
-                          <p className="d-field-help">Use this as the fallback language for bilingual prompts and overlays.</p>
-                          <select className="d-input" value={languageDraft.secondary} onChange={e => setLanguageDraft({ ...languageDraft, secondary: e.target.value })}>
-                            {LANGUAGE_OPTIONS.filter(option => option.code !== languageDraft.primary).map(option => <option key={option.code} value={option.code}>{option.label}</option>)}
-                          </select>
-                        </label>
-                        <label>
-                          <span className="d-field-label">Content mode</span>
-                          <p className="d-field-help">Controls whether the app keeps one language, blends two, or auto-detects content.</p>
-                          <select className="d-input" value={languageDraft.contentMode} onChange={e => setLanguageDraft({ ...languageDraft, contentMode: e.target.value })}>
-                            <option value="auto">Auto detect content</option>
-                            <option value="primary">Primary language only</option>
-                            <option value="bilingual">Bilingual mode</option>
-                          </select>
-                        </label>
-                        <label>
-                          <span className="d-field-label">Date format</span>
-                          <p className="d-field-help">Affects how deadlines and reminders are displayed everywhere in the app.</p>
-                          <select className="d-input" value={languageDraft.dateFormat} onChange={e => setLanguageDraft({ ...languageDraft, dateFormat: e.target.value })}>
-                            <option value="locale">Locale dates</option>
-                            <option value="iso">ISO dates</option>
-                          </select>
-                        </label>
-                        <label>
-                          <span className="d-field-label">Number format</span>
-                          <p className="d-field-help">Controls whether values are shown plainly or in compact human-friendly form.</p>
-                          <select className="d-input" value={languageDraft.numberFormat} onChange={e => setLanguageDraft({ ...languageDraft, numberFormat: e.target.value })}>
-                            <option value="locale">Locale numbers</option>
-                            <option value="compact">Compact numbers</option>
-                            <option value="plain">Plain numbers</option>
-                          </select>
-                        </label>
-                      </div>
-                      <label className="d-toggle-row"><span>Transliterate borrowed content</span><input type="checkbox" checked={languageDraft.transliteration} onChange={e => setLanguageDraft({ ...languageDraft, transliteration: e.target.checked })} /></label>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button className="d-btn d-btn--primary" onClick={saveLanguageSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Language'}</button>
-                      </div>
+              {/* ── Notifications detail ── */}
+              {settingsPage === 'notifications' && (
+                <div className="d-card">
+                  <div className="d-card-header"><span>Notifications</span></div>
+                  <p className="d-field-help">Choose how intense alerts should be, which channels they use, and what kinds of events they should cover.</p>
+                  <div className="d-field-block">
+                    <span className="d-field-label">Notification level</span>
+                    <p className="d-field-help">Higher levels surface more nudges and summaries; lower levels keep the app quieter.</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 }}>
+                      {NOTIFICATION_LEVELS.map(level => (
+                        <button
+                          key={level.id}
+                          className="d-btn d-btn--secondary"
+                          onClick={() => setNotificationDraft({ ...notificationDraft, level: level.id })}
+                          style={{
+                            justifyContent: 'flex-start',
+                            padding: '12px',
+                            borderColor: notificationDraft.level === level.id ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
+                            background: notificationDraft.level === level.id ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
+                            color: notificationDraft.level === level.id ? 'var(--accent)' : 'var(--text)',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start',
+                            gap: '4px',
+                          }}
+                        >
+                          <strong>{level.label}</strong>
+                          <span style={{ fontSize: 12, opacity: 0.8 }}>{level.detail}</span>
+                        </button>
+                      ))}
                     </div>
-                  )}
-
-                  {settingsSection === 'notifications' && (
-                    <div className="d-card">
-                      <div className="d-card-header"><span>Notifications</span></div>
-                      <p className="d-field-help">Choose how intense alerts should be, which channels they use, and what kinds of events they should cover.</p>
-                      <div className="d-field-block">
-                        <span className="d-field-label">Notification level</span>
-                        <p className="d-field-help">Higher levels surface more nudges and summaries; lower levels keep the app quieter.</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 }}>
-                          {NOTIFICATION_LEVELS.map(level => (
-                            <button
-                              key={level.id}
-                              className="d-btn d-btn--secondary"
-                              onClick={() => setNotificationDraft({ ...notificationDraft, level: level.id })}
-                              style={{
-                                justifyContent: 'flex-start',
-                                padding: '12px',
-                                borderColor: notificationDraft.level === level.id ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
-                                background: notificationDraft.level === level.id ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)',
-                                color: notificationDraft.level === level.id ? 'var(--accent)' : 'var(--text)',
-                                flexDirection: 'column',
-                                alignItems: 'flex-start',
-                                gap: '4px',
-                              }}
-                            >
-                              <strong>{level.label}</strong>
-                              <span style={{ fontSize: 12, opacity: 0.8 }}>{level.detail}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="d-field-block">
-                        <span className="d-field-label">Delivery channels</span>
-                        <p className="d-field-help">Pick where alerts are allowed to show up.</p>
-                        <div className="d-settings-pills">
-                          {NOTIFICATION_CHANNELS.map(channel => (
-                            <button key={channel.id} className={`d-pill${notificationDraft.channels.includes(channel.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, channels: toggleListValue(notificationDraft.channels, channel.id) })}>{channel.label}</button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="d-field-block">
-                        <span className="d-field-label">Categories</span>
-                        <p className="d-field-help">Decide which event types should trigger notifications.</p>
-                        <div className="d-settings-pills">
-                          {NOTIFICATION_CATEGORIES.map(category => (
-                            <button key={category.id} className={`d-pill${notificationDraft.categories.includes(category.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, categories: toggleListValue(notificationDraft.categories, category.id) })}>{category.label}</button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="d-settings-grid">
-                        <label>
-                          <span className="d-field-label">Digest cadence</span>
-                          <p className="d-field-help">How often the app should bundle summary notifications.</p>
-                          <select className="d-input" value={notificationDraft.digest} onChange={e => setNotificationDraft({ ...notificationDraft, digest: e.target.value })}>
-                            {NOTIFICATION_DIGESTS.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
-                          </select>
-                        </label>
-                        <label>
-                          <span className="d-field-label">Sound profile</span>
-                          <p className="d-field-help">Controls the style of sound cues when notifications are enabled.</p>
-                          <select className="d-input" value={notificationDraft.soundProfile} onChange={e => setNotificationDraft({ ...notificationDraft, soundProfile: e.target.value })}>
-                            <option value="soft">Soft</option>
-                            <option value="balanced">Balanced</option>
-                            <option value="sharp">Sharp</option>
-                            <option value="silent">Silent</option>
-                          </select>
-                        </label>
-                        <label>
-                          <span className="d-field-label">Quiet hours start</span>
-                          <p className="d-field-help">Alerts are muted or reduced after this time.</p>
-                          <input className="d-input" type="time" value={notificationDraft.quietStart} onChange={e => setNotificationDraft({ ...notificationDraft, quietStart: e.target.value })} />
-                        </label>
-                        <label>
-                          <span className="d-field-label">Quiet hours end</span>
-                          <p className="d-field-help">Notifications resume after this time.</p>
-                          <input className="d-input" type="time" value={notificationDraft.quietEnd} onChange={e => setNotificationDraft({ ...notificationDraft, quietEnd: e.target.value })} />
-                        </label>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button className="d-btn d-btn--primary" onClick={saveNotificationSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Notifications'}</button>
-                      </div>
+                  </div>
+                  <div className="d-field-block">
+                    <span className="d-field-label">Delivery channels</span>
+                    <p className="d-field-help">Pick where alerts are allowed to show up.</p>
+                    <div className="d-settings-pills">
+                      {NOTIFICATION_CHANNELS.map(channel => (
+                        <button key={channel.id} className={`d-pill${notificationDraft.channels.includes(channel.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, channels: toggleListValue(notificationDraft.channels, channel.id) })}>{channel.label}</button>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                  <div className="d-field-block">
+                    <span className="d-field-label">Categories</span>
+                    <p className="d-field-help">Decide which event types should trigger notifications.</p>
+                    <div className="d-settings-pills">
+                      {NOTIFICATION_CATEGORIES.map(category => (
+                        <button key={category.id} className={`d-pill${notificationDraft.categories.includes(category.id) ? ' active' : ''}`} onClick={() => setNotificationDraft({ ...notificationDraft, categories: toggleListValue(notificationDraft.categories, category.id) })}>{category.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="d-settings-grid">
+                    <label>
+                      <span className="d-field-label">Digest cadence</span>
+                      <p className="d-field-help">How often the app should bundle summary notifications.</p>
+                      <select className="d-input" value={notificationDraft.digest} onChange={e => setNotificationDraft({ ...notificationDraft, digest: e.target.value })}>
+                        {NOTIFICATION_DIGESTS.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
+                      </select>
+                    </label>
+                    <label>
+                      <span className="d-field-label">Sound profile</span>
+                      <p className="d-field-help">Controls the style of sound cues when notifications are enabled.</p>
+                      <select className="d-input" value={notificationDraft.soundProfile} onChange={e => setNotificationDraft({ ...notificationDraft, soundProfile: e.target.value })}>
+                        <option value="soft">Soft</option>
+                        <option value="balanced">Balanced</option>
+                        <option value="sharp">Sharp</option>
+                        <option value="silent">Silent</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span className="d-field-label">Quiet hours start</span>
+                      <p className="d-field-help">Alerts are muted or reduced after this time.</p>
+                      <input className="d-input" type="time" value={notificationDraft.quietStart} onChange={e => setNotificationDraft({ ...notificationDraft, quietStart: e.target.value })} />
+                    </label>
+                    <label>
+                      <span className="d-field-label">Quiet hours end</span>
+                      <p className="d-field-help">Notifications resume after this time.</p>
+                      <input className="d-input" type="time" value={notificationDraft.quietEnd} onChange={e => setNotificationDraft({ ...notificationDraft, quietEnd: e.target.value })} />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button className="d-btn d-btn--primary" onClick={saveNotificationSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Notifications'}</button>
+                  </div>
+                </div>
+              )}
 
-                  {settingsSection === 'sync' && (
-                    <div className="d-card">
-                      <div className="d-card-header"><IconSync /><span>Sync</span></div>
-                      <p className="d-field-help">Each provider can be connected separately, and each connection carries its own token and provider-specific metadata.</p>
-                      <div className="d-integrations-layout" style={{ padding: 0, gridTemplateColumns: 'minmax(220px, 280px) 1fr' }}>
-                        <div className="d-card d-integrations-list" style={{ padding: 16 }}>
-                          {INTEGRATION_PROVIDERS.map(provider => {
-                            const status = getIntegrationStatus(provider.id);
-                            return (
-                              <button key={provider.id} className={`d-integration-provider${selectedProvider === provider.id ? ' active' : ''}`} onClick={() => { setSelectedProvider(provider.id); setIntegrationMessage(''); }}>
-                                <span className="d-integration-dot" style={{ background: status.connected ? '#34d399' : 'rgba(255,255,255,0.25)' }} />
-                                <span>{provider.name}</span>
-                                <span className={`d-integration-status ${status.connected ? 'connected' : ''}`}>{status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Off'}</span>
+              {/* ── Sync detail (provider squares) ── */}
+              {settingsPage === 'sync' && (
+                <div className="d-sync-page">
+                  <p className="d-field-help" style={{ marginBottom: 20 }}>Connect external services to sync tasks, events, and emails directly into your workspace.</p>
+                  <div className="d-provider-grid">
+                    {INTEGRATION_PROVIDERS.map(provider => {
+                      const status = getIntegrationStatus(provider.id);
+                      const connected = status.connected && !status.is_expired;
+                      const LOGO_SIZE = 200;
+                      const logoEl = provider.id === 'google' ? <GoogleLogo size={LOGO_SIZE} /> :
+                        provider.id === 'notion' ? <NotionLogo size={LOGO_SIZE} /> : null;
+                      const appIcons = {
+                        'Tasks': <TaskListLogo size={13} />,
+                        'Calendar': <CalendarLogo size={13} />,
+                        'Gmail': <GmailLogo size={13} />,
+                      };
+                      const available = provider.id === 'google';
+                      return (
+                        <div key={provider.id} className="d-provider-card">
+                          <div className="d-provider-card-header">
+                            <span className="d-provider-name">{provider.name}</span>
+                            {available && (
+                              <button className="d-provider-cog" onClick={() => openSyncSettings(provider.id)} title="Sync settings">
+                                <IconSettings />
                               </button>
-                            );
-                          })}
+                            )}
+                          </div>
+                          <div className="d-provider-card-middle">
+                            <div className="d-provider-logo">{logoEl}</div>
+                          </div>
+                          <div className="d-provider-apps">
+                            {provider.apps.map(app => (
+                              <span key={app} className="d-provider-app">
+                                {appIcons[app] && <span style={{ marginRight: 5, display: 'inline-flex', verticalAlign: 'middle' }}>{appIcons[app]}</span>}
+                                {app}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="d-provider-card-footer">
+                            {available ? (
+                              <button className="d-btn d-btn--primary" onClick={connected ? disconnectGoogle : connectGoogle} disabled={integrationSaving} style={{
+                                width: '100%',
+                                background: connected ? 'var(--accent-dim)' : 'var(--accent)',
+                                color: connected ? 'var(--accent)' : '#fff',
+                                border: connected ? '1px solid var(--accent)' : 'none'
+                              }}>
+                                {integrationSaving ? (connected ? 'Disconnecting...' : 'Connecting...') : (connected ? 'Disconnect' : 'Connect')}
+                              </button>
+                            ) : (
+                              <button className="d-btn" disabled style={{ width: '100%', opacity: 0.4, background: 'var(--surface)', color: 'var(--text3)', border: '1px solid var(--accent-dim)' }}>
+                                Coming soon
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <div className="d-card d-integrations-detail" style={{ padding: 18 }}>
-                          {(() => {
-                            const provider = INTEGRATION_PROVIDERS.find(p => p.id === selectedProvider) || INTEGRATION_PROVIDERS[0];
-                            const status = getIntegrationStatus(provider.id);
-                            const expiresAt = status.expires_at ? new Date(status.expires_at).toLocaleString() : 'Not connected';
-                            return (
-                              <>
-                                <div className="d-card-header">
-                                  <IconLink />
-                                  <span>{provider.name}</span>
-                                  <span className={`d-chip ${status.connected ? '' : 'd-chip--muted'}`}>{status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Disconnected'}</span>
-                                </div>
-                                <div className="d-integration-summary">
-                                  <div><span className="d-integration-label">Expires</span><strong>{expiresAt}</strong></div>
-                                  <div><span className="d-integration-label">{provider.settingLabel}</span><strong>{status.settings?.[provider.settingKey] || 'None'}</strong></div>
-                                </div>
-                                <form className="d-modal-form" onSubmit={submitIntegration}>
-                                  <p className="d-field-help">Access token or API key used to authenticate this provider.</p>
-                                  <input className="d-input" type="password" placeholder={provider.tokenLabel} value={integrationForm.accessToken} onChange={e => setIntegrationForm({ ...integrationForm, accessToken: e.target.value })} />
-                                  <p className="d-field-help">Optional refresh token for OAuth-style connections.</p>
-                                  <input className="d-input" type="password" placeholder="Refresh token (optional)" value={integrationForm.refreshToken} onChange={e => setIntegrationForm({ ...integrationForm, refreshToken: e.target.value })} />
-                                  <div className="d-integration-form-grid">
-                                    <label>
-                                      <span className="d-field-label">{provider.settingLabel}</span>
-                                      <p className="d-field-help">Provider-specific metadata such as a course, database, or project reference.</p>
-                                      <input className="d-input" placeholder={provider.settingLabel} value={integrationForm.settingValue} onChange={e => setIntegrationForm({ ...integrationForm, settingValue: e.target.value })} />
-                                    </label>
-                                    <label>
-                                      <span className="d-field-label">Expires in seconds</span>
-                                      <p className="d-field-help">How long this token should be considered valid before expiring.</p>
-                                      <input className="d-input" type="number" min="60" step="60" value={integrationForm.expiresInSeconds} onChange={e => setIntegrationForm({ ...integrationForm, expiresInSeconds: e.target.value })} />
-                                    </label>
-                                  </div>
-                                  <button className="d-btn d-btn--primary" disabled={integrationSaving || !integrationForm.accessToken.trim()} style={{ alignSelf: 'stretch' }}>{integrationSaving ? 'Saving...' : `Connect ${provider.name}`}</button>
-                                </form>
-                                {integrationMessage && <div className="d-integration-message">{integrationMessage}</div>}
-                              </>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {settingsSection === 'privacy' && (
-                    <div className="d-card">
-                      <div className="d-card-header"><span>Privacy</span></div>
-                      <p className="d-field-help">These controls decide what the app stores locally and what kinds of usage data can leave the device.</p>
-                      <div className="d-settings-grid">
-                        <label className="d-toggle-row"><span>Share anonymous usage data</span><input type="checkbox" /></label>
-                        <label className="d-toggle-row"><span>Store task history locally</span><input type="checkbox" defaultChecked /></label>
-                        <label className="d-toggle-row"><span>Encrypt local sync cache</span><input type="checkbox" defaultChecked /></label>
-                        <label className="d-toggle-row"><span>Allow crash diagnostics</span><input type="checkbox" defaultChecked /></label>
-                      </div>
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
+                  {integrationMessage && <div className="d-integration-message" style={{ marginTop: 16 }}>{integrationMessage}</div>}
                 </div>
-              </div>
+              )}
+
+              {/* ── Privacy detail ── */}
+              {settingsPage === 'privacy' && (
+                <div className="d-card">
+                  <div className="d-card-header"><span>Privacy</span></div>
+                  <p className="d-field-help">These controls decide what the app stores locally and what kinds of usage data can leave the device.</p>
+                  <div className="d-settings-grid">
+                    <label className="d-toggle-row"><span>Share anonymous usage data</span><input type="checkbox" /></label>
+                    <label className="d-toggle-row"><span>Store task history locally</span><input type="checkbox" defaultChecked /></label>
+                    <label className="d-toggle-row"><span>Encrypt local sync cache</span><input type="checkbox" defaultChecked /></label>
+                    <label className="d-toggle-row"><span>Allow crash diagnostics</span><input type="checkbox" defaultChecked /></label>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {tab === 'settings' && false && (
@@ -2078,42 +2324,51 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        <form className="d-modal-form" onSubmit={submitIntegration}>
-                          <input
-                            className="d-input"
-                            type="password"
-                            placeholder={provider.tokenLabel}
-                            value={integrationForm.accessToken}
-                            onChange={e => setIntegrationForm({ ...integrationForm, accessToken: e.target.value })}
-                          />
-                          <input
-                            className="d-input"
-                            type="password"
-                            placeholder="Refresh token (optional)"
-                            value={integrationForm.refreshToken}
-                            onChange={e => setIntegrationForm({ ...integrationForm, refreshToken: e.target.value })}
-                          />
-                          <div className="d-integration-form-grid">
-                            <input
-                              className="d-input"
-                              placeholder={provider.settingLabel}
-                              value={integrationForm.settingValue}
-                              onChange={e => setIntegrationForm({ ...integrationForm, settingValue: e.target.value })}
-                            />
-                            <input
-                              className="d-input"
-                              type="number"
-                              min="60"
-                              step="60"
-                              value={integrationForm.expiresInSeconds}
-                              onChange={e => setIntegrationForm({ ...integrationForm, expiresInSeconds: e.target.value })}
-                              title="Token lifetime in seconds"
-                            />
+                        {provider.id === 'google' ? (
+                          <div className="d-modal-form">
+                            <p className="d-field-help">Connect your Google account to sync Calendar events and scan Gmail for tasks.</p>
+                            <button className="d-btn d-btn--primary" onClick={connectGoogle} disabled={integrationSaving} style={{ alignSelf: 'stretch' }}>
+                              {integrationSaving ? 'Connecting...' : (status.connected ? 'Reconnect Google' : 'Connect with Google')}
+                            </button>
                           </div>
-                          <button className="d-btn d-btn--primary" disabled={integrationSaving || !integrationForm.accessToken.trim()} style={{ alignSelf: 'stretch' }}>
-                            {integrationSaving ? 'Saving...' : `Connect ${provider.name}`}
-                          </button>
-                        </form>
+                        ) : (
+                          <form className="d-modal-form" onSubmit={submitIntegration}>
+                            <input
+                              className="d-input"
+                              type="password"
+                              placeholder={provider.tokenLabel}
+                              value={integrationForm.accessToken}
+                              onChange={e => setIntegrationForm({ ...integrationForm, accessToken: e.target.value })}
+                            />
+                            <input
+                              className="d-input"
+                              type="password"
+                              placeholder="Refresh token (optional)"
+                              value={integrationForm.refreshToken}
+                              onChange={e => setIntegrationForm({ ...integrationForm, refreshToken: e.target.value })}
+                            />
+                            <div className="d-integration-form-grid">
+                              <input
+                                className="d-input"
+                                placeholder={provider.settingLabel}
+                                value={integrationForm.settingValue}
+                                onChange={e => setIntegrationForm({ ...integrationForm, settingValue: e.target.value })}
+                              />
+                              <input
+                                className="d-input"
+                                type="number"
+                                min="60"
+                                step="60"
+                                value={integrationForm.expiresInSeconds}
+                                onChange={e => setIntegrationForm({ ...integrationForm, expiresInSeconds: e.target.value })}
+                                title="Token lifetime in seconds"
+                              />
+                            </div>
+                            <button className="d-btn d-btn--primary" disabled={integrationSaving || !integrationForm.accessToken.trim()} style={{ alignSelf: 'stretch' }}>
+                              {integrationSaving ? 'Saving...' : `Connect ${provider.name}`}
+                            </button>
+                          </form>
+                        )}
 
                         {integrationMessage && (
                           <div className="d-integration-message">{integrationMessage}</div>
@@ -2380,6 +2635,128 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Sync settings modal ── */}
+      {(syncSettingsModal || syncSettingsClosing) && (
+        <div className={`d-modal-overlay${syncSettingsClosing ? ' closing' : ''}`} onClick={closeSyncSettings}>
+          <div className={`d-modal-content${syncSettingsClosing ? ' closing' : ''}`} onClick={e => e.stopPropagation()} style={{ maxWidth: 540, maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+            <div className="d-modal-header">
+              <span style={{ fontWeight: 600, fontSize: 16 }}>Google Sync Settings</span>
+              <button className="d-modal-close" onClick={closeSyncSettings}>×</button>
+            </div>
+            <div className="d-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 0, padding: 0, overflowY: 'auto', flex: 1 }}>
+              {syncSettingsLoading ? (
+                <div style={{ padding: '40px 24px', color: 'var(--text2)', textAlign: 'center' }}>Loading...</div>
+              ) : (
+                (() => {
+                  const set = (path, val) => {
+                    setSyncSettingsDraft(prev => {
+                      const copy = JSON.parse(JSON.stringify(prev));
+                      const parts = path.split('.');
+                      let cur = copy;
+                      for (let i = 0; i < parts.length - 1; i++) {
+                        if (!cur[parts[i]]) cur[parts[i]] = {};
+                        cur = cur[parts[i]];
+                      }
+                      cur[parts[parts.length - 1]] = val;
+                      return copy;
+                    });
+                  };
+                  const d = syncSettingsDraft;
+                  const parseChips = (str) => (str || '').split(/[,;]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+                  const chipsToStr = (arr) => arr.join(', ');
+
+                  return ['tasks', 'calendar', 'gmail'].map((app, idx) => {
+                    const appDraft = d[app] || {};
+                    const appIconsMap = { tasks: <TaskListLogo size={16} />, calendar: <CalendarLogo size={16} />, gmail: <GmailLogo size={16} /> };
+                    return (
+                      <div key={app} style={{ borderBottom: idx < 2 ? '1px solid rgba(255,255,255,.06)' : 'none', padding: '20px 24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                          <span style={{ display: 'inline-flex' }}>{appIconsMap[app]}</span>
+                          <span style={{ fontWeight: 600, fontSize: 14 }}>{app.charAt(0).toUpperCase() + app.slice(1)}</span>
+                          <label className="d-toggle-row" style={{ marginLeft: 'auto', marginBottom: 0, gap: 8 }}>
+                            <span style={{ fontSize: 12, color: 'var(--text2)' }}>{appDraft.enabled !== false ? 'On' : 'Off'}</span>
+                            <input type="checkbox" checked={appDraft.enabled !== false} onChange={e => set(`${app}.enabled`, e.target.checked)} />
+                          </label>
+                        </div>
+
+                        {app === 'tasks' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            <label className="d-toggle-row" style={{ marginBottom: 0 }}>
+                              <span style={{ fontSize: 13 }}>Include completed tasks</span>
+                              <input type="checkbox" checked={!!appDraft.include_completed} onChange={e => set('tasks.include_completed', e.target.checked)} />
+                            </label>
+                            <label className="d-toggle-row" style={{ marginBottom: 0 }}>
+                              <span style={{ fontSize: 13 }}>Include tasks without a due date</span>
+                              <input type="checkbox" checked={appDraft.include_no_due_date !== false} onChange={e => set('tasks.include_no_due_date', e.target.checked)} />
+                            </label>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              <span className="d-field-label">Task category tags</span>
+                              <p className="d-field-help" style={{ margin: 0 }}>Tasks from Google will be tagged with these labels.</p>
+                              <ChipInput values={parseChips(appDraft.interest_tag)} onChange={vals => set('tasks.interest_tag', chipsToStr(vals))} placeholder="Type tag and press Enter" />
+                            </label>
+                          </div>
+                        )}
+
+                        {app === 'calendar' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              <span className="d-field-label">Include keywords</span>
+                              <p className="d-field-help" style={{ margin: 0 }}>Events with these words will be imported.</p>
+                              <ChipInput values={parseChips(appDraft.include_keywords)} onChange={vals => set('calendar.include_keywords', chipsToStr(vals))} placeholder="Type and press Enter" />
+                            </label>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              <span className="d-field-label">Exclude keywords</span>
+                              <p className="d-field-help" style={{ margin: 0 }}>Events with these words in the title will be skipped.</p>
+                              <ChipInput values={parseChips(appDraft.exclude_keywords)} onChange={vals => set('calendar.exclude_keywords', chipsToStr(vals))} placeholder="Type and press Enter" />
+                            </label>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              <span className="d-field-label">Minimum duration</span>
+                              <p className="d-field-help" style={{ margin: 0 }}>Events shorter than this (minutes) are treated as meetings.</p>
+                              <input className="d-input" type="number" min={0} value={appDraft.min_duration_minutes ?? 30} onChange={e => set('calendar.min_duration_minutes', parseInt(e.target.value) || 0)} style={{ width: 100 }} />
+                            </label>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              <span className="d-field-label">Event types to include</span>
+                              <p className="d-field-help" style={{ margin: 0 }}>Allowed: default, focusTime, outOfOffice, workingLocation.</p>
+                              <ChipInput values={parseChips(appDraft.include_event_types || 'default')} onChange={vals => set('calendar.include_event_types', chipsToStr(vals) || 'default')} placeholder="Type and press Enter" />
+                            </label>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              <span className="d-field-label">Event category tags</span>
+                              <p className="d-field-help" style={{ margin: 0 }}>Events from Google Calendar will be tagged with these labels.</p>
+                              <ChipInput values={parseChips(appDraft.interest_tag)} onChange={vals => set('calendar.interest_tag', chipsToStr(vals))} placeholder="Type tag and press Enter" />
+                            </label>
+                          </div>
+                        )}
+
+                        {app === 'gmail' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              <span className="d-field-label">Include keywords</span>
+                              <p className="d-field-help" style={{ margin: 0 }}>Emails with these words in the subject or body will be imported.</p>
+                              <ChipInput values={parseChips(appDraft.include_keywords)} onChange={vals => set('gmail.include_keywords', chipsToStr(vals))} placeholder="Type and press Enter" />
+                            </label>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              <span className="d-field-label">Include senders</span>
+                              <p className="d-field-help" style={{ margin: 0 }}>Only import emails from these addresses.</p>
+                              <ChipInput values={parseChips(appDraft.include_senders)} onChange={vals => set('gmail.include_senders', chipsToStr(vals))} placeholder="Type and press Enter" />
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  });
+                })()
+              )}
+            </div>
+            <div className="d-modal-footer">
+              <button className="d-btn" onClick={closeSyncSettings}>Cancel</button>
+              <button className="d-btn d-btn--primary" onClick={saveSyncSettings} disabled={syncSettingsSaving} style={{ background: 'var(--accent)', color: '#fff', border: 'none' }}>
+                {syncSettingsSaving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
           </div>
         </div>
       )}

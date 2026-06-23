@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
 from app.models.integration import IntegrationToken
+from app.services.constants import DEFAULT_SYNC_SETTINGS
 
 def encrypt_token(raw_token: str) -> str:
     """
@@ -46,19 +47,34 @@ def save_integration_config(
             existing.settings_json = settings
         token_entry = existing
     else:
+        # Seed default sync settings for Google
+        merged_settings = settings or {}
+        if provider == "google" and "sync_settings" not in merged_settings:
+            merged_settings["sync_settings"] = DEFAULT_SYNC_SETTINGS
         token_entry = IntegrationToken(
             user_id=user_id,
             provider=provider,
             access_token_enc=enc_access,
             refresh_token_enc=enc_refresh,
             expires_at=expires_at,
-            settings_json=settings or {}
+            settings_json=merged_settings
         )
         db.add(token_entry)
         
     db.commit()
     db.refresh(token_entry)
     return token_entry
+
+def delete_integration_config(db: Session, user_id: int, provider: str) -> bool:
+    token = db.query(IntegrationToken).filter(
+        IntegrationToken.user_id == user_id,
+        IntegrationToken.provider == provider
+    ).first()
+    if not token:
+        return False
+    db.delete(token)
+    db.commit()
+    return True
 
 def get_integration_status(db: Session, user_id: int, provider: str) -> Dict[str, Any]:
     token = db.query(IntegrationToken).filter(
