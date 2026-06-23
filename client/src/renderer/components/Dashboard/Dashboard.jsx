@@ -6,6 +6,10 @@ import { useLanguage } from '../../contexts/LanguageContext';
 /* ─── Helpers ───────────────────────────────────────────── */
 const IS_ELECTRON = typeof window !== 'undefined' && !!window.electronAPI;
 
+/* ─── API base URL for direct fetch calls (voice upload) ── */
+const API_BASE_URL = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL : 'http://localhost:8000/api/v1';
+
 /* ─── Duration parser utility ────────────────────────────── */
 function parseDuration(durationInput) {
   if (!durationInput || !durationInput.trim()) return 2.0;
@@ -953,9 +957,6 @@ export default function Dashboard() {
         } else {
           await api.ingestTask(payload.source_text, payload.source_type);
         }
-      } else if (source === 'voice' && extraData) {
-        const arrayBuffer = await extraData.arrayBuffer();
-        await window.electronAPI.ingestVoiceTask(arrayBuffer);
       }
 
       setTaskData({ title: '', duration: '', due: '', notes: '' });
@@ -973,6 +974,8 @@ export default function Dashboard() {
     }
   };
 
+  const recordingStartTime = useRef(0);
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -986,10 +989,12 @@ export default function Dashboard() {
         }
       };
 
+      recordingStartTime.current = Date.now();
       recorder.start();
       setIsRecording(true);
       // Keep showing the options menu, the button will change to a red recording dot
       setAddTaskView('options');
+      console.log('[Voice] Recording started at', recordingStartTime.current);
     } catch (err) {
       console.error("Error accessing microphone:", err);
       pushToast('Microphone access denied or error occurred.', 'error');
@@ -999,6 +1004,23 @@ export default function Dashboard() {
   const stopRecording = () => {
     if (mediaRecorder.current && isRecording) {
       mediaRecorder.current.onstop = async () => {
+        const duration = Date.now() - recordingStartTime.current;
+        const totalBytes = audioChunks.current.reduce((sum, c) => sum + c.size, 0);
+        console.log('[Voice] Recording stopped. Duration:', duration, 'ms | Chunks:', audioChunks.current.length, '| Total bytes:', totalBytes);
+        
+        if (audioChunks.current.length === 0) {
+          console.warn('[Voice] No audio chunks recorded');
+          setIsRecording(false);
+          setIsSubmittingTask(false);
+          return;
+        }
+        if (duration < 500) {
+          console.warn('[Voice] Recording too short:', duration, 'ms');
+          setIsRecording(false);
+          setIsSubmittingTask(false);
+          pushToast('Recording too short — please hold the button longer.', 'error');
+          return;
+        }
         const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
         
         // Show loading state while processing voice
@@ -1010,18 +1032,50 @@ export default function Dashboard() {
         
         // Submit the audio blob
         try {
-          await submitNewTask('voice', audioBlob);
+          await submitVoiceTask(audioBlob);
           dismissToast(toastId);
         } catch (error) {
           console.error("Voice task failed:", error);
           updateToast(toastId, 'Failed to analyze voice', 'error');
           dismissToast(toastId, 3000);
+        } finally {
           setIsSubmittingTask(false);
+          audioChunks.current = [];
         }
       };
       
       mediaRecorder.current.stop();
       setIsRecording(false);
+    }
+  };
+
+  const submitVoiceTask = async (audioBlob) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'voice_recording.webm');
+      formData.append('source_type', 'voice');
+
+      const response = await fetch(`${API_BASE_URL}/tasks/ingest-voice`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('[Voice] Ingestion successful:', result);
+      
+      // Reset forms and refresh
+      setTaskData({ title: '', duration: '', due: '', notes: '' });
+      setAiText('');
+      setIsVoiceTask(false);
+      await fetchTasksAndBubble();
+    } catch (e) {
+      console.error("Failed to submit voice task:", e);
+      throw e;
     }
   };
 

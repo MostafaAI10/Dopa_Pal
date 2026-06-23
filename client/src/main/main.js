@@ -83,7 +83,20 @@ const createDashboard = () => {
   });
 };
 
-/* ── IPC: Move window by delta (drag) ──────────────────── */
+/* ── IPC: Get current window position (used at drag start) ── */
+ipcMain.handle('get-window-position', () => {
+  if (!bubbleWin) return { x: 0, y: 0 };
+  const [x, y] = bubbleWin.getPosition();
+  return { x, y };
+});
+
+/* ── IPC: Set window position (drag) ───────────────────── */
+ipcMain.on('set-window-position', (_e, x, y) => {
+  if (!bubbleWin) return;
+  bubbleWin.setPosition(Math.round(x), Math.round(y));
+});
+
+/* ── IPC: Move window by delta (legacy) ───────────────── */
 ipcMain.on('move-window', (_e, dx, dy) => {
   if (!bubbleWin) return;
   const [x, y] = bubbleWin.getPosition();
@@ -196,17 +209,22 @@ ipcMain.handle('update-task', async (_e, id, payload) => {
 
 ipcMain.handle('ingest-voice-task', async (_e, audioBuffer) => {
   try {
-    // Convert audioBuffer to base64 string for transmission
-    const audioData = Buffer.from(audioBuffer).toString('base64');
+    // Create multipart form data for streaming upload
+    const FormData = (await import('form-data')).default;
+    const formData = new FormData();
     
-    // Send to backend voice ingestion endpoint
-    const response = await fetch(apiUrl('/tasks/ingest'), {
+    // Append the audio buffer as a file
+    formData.append('file', Buffer.from(audioBuffer), {
+      filename: 'voice_recording.webm',
+      contentType: 'audio/webm'
+    });
+    formData.append('source_type', 'voice');
+    
+    // Send to backend voice ingestion endpoint using multipart/form-data
+    const response = await fetch(apiUrl('/tasks/ingest-voice'), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        source_text: audioData,  // Backend should decode this
-        source_type: 'voice'
-      })
+      body: formData,
+      // Don't set Content-Type header - fetch will set it with the boundary
     });
     
     if (!response.ok) {

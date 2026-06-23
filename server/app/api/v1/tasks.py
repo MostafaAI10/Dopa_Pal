@@ -6,7 +6,7 @@ These routes handle HTTP concerns only: request validation, response
 shaping, WebSocket broadcasting, and error mapping.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from datetime import datetime, date
@@ -16,9 +16,13 @@ from app.models.user import User
 from app.models.task import Task, SubBlock
 from app.models.state import StateLog
 from app.services import task_service, reward_service, focus_mode, enhanced_notification
+from app.services.speech_to_text import speech_to_text_service
 from app.services.websocket_manager import manager as ws_manager
 from app.services.duration_parser import parse_duration, format_duration
 from app.services.ai.schemas import SegmentationInput, SegmentationOutput
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -96,20 +100,40 @@ def get_or_create_default_user(db: Session) -> User:
 
 # ---------- Task Endpoints ----------
 
+from app.services.speech_to_text import convert_audio_to_text  # Make sure this is imported
+
 @router.post("/tasks/ingest", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 async def api_ingest_task(payload: TaskIngestRequest, db: Session = Depends(get_db)):
     """
-    NLP-powered task ingestion: parses raw text through the AI pipeline
-    (date extraction, effort estimation, interest tagging, chunking, PINCH scoring),
-    then persists the structured result.
+    NLP-powered task ingestion: parses raw text through the AI pipeline.
+    If the source_type is voice, it transcribes the base64 audio payload first.
     """
+    # DEBUG TRACE: Raw payload inspection before any parsing
+    source_text = payload.source_text
+    total_len = len(source_text)
+    first_100 = source_text[:100]
+    last_100 = source_text[-100:] if total_len > 100 else source_text
+    print(f"[INGEST-TRACE] source_text length={total_len} first_100={first_100!r} last_100={last_100!r}", flush=True)
+    logger.info(f"[INGEST-TRACE] source_text length={total_len} first_100={first_100!r} last_100={last_100!r}")
+
     user = get_or_create_default_user(db)
+    
+    text_to_parse = payload.source_text
+
+    # If it's a voice note, intercept and run the speech-to-text pipeline
+    if payload.source_type == "voice":
+        try:
+            logger.info("Voice ingestion detected. Routing payload to Speech-to-Text Service...")
+            text_to_parse = convert_audio_to_text(payload.source_text, source_type="voice")
+        except ValueError as e:
+            # Catch transcription failures (like UnknownValueError) and map to 422
+            raise HTTPException(status_code=422, detail=str(e))
 
     try:
         task = task_service.ingest_from_raw_text(
             db=db,
             user_id=user.id,
-            raw_text=payload.source_text,
+            raw_text=text_to_parse,  # Passes the clean transcription string to NLP!
             source_type=payload.source_type,
         )
     except ValueError as e:
@@ -125,6 +149,56 @@ async def api_ingest_task(payload: TaskIngestRequest, db: Session = Depends(get_
 
     return task
 
+
+@router.post("/tasks/ingest-voice", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
+async def api_ingest_voice_task(
+    file: UploadFile = File(..., description="Raw binary voice recording file"),
+    source_type: str = Form("voice"),
+    db: Session = Depends(get_db)
+):
+    """
+    Production-ready voice task ingestion endpoint.
+    Streams raw binary media data directly, transcribes it, and routes to the NLP pipeline.
+    """
+    user = get_or_create_default_user(db)
+    
+    try:
+        # Read the binary stream data directly out of the incoming file payload
+        audio_bytes = await file.read()
+        logger.info(f"📥 Received streaming multipart file. Size: {len(audio_bytes)} bytes")
+        
+        if not audio_bytes:
+            raise HTTPException(status_code=422, detail="Uploaded file is empty.")
+
+        # Pass the raw bytes straight to our updated speech-to-text logic
+        transcribed_text = speech_to_text_service.audio_bytes_to_text(audio_bytes)
+        
+    except ValueError as val_err:
+        raise HTTPException(status_code=422, detail=str(val_err))
+    except Exception as err:
+        logger.error(f"Failed to handle voice file stream processing: {str(err)}")
+        raise HTTPException(status_code=500, detail="Internal server error handling media block.")
+
+    # Route the transcribed clean string directly into your existing NLP service engine
+    try:
+        task = task_service.ingest_from_raw_text(
+            db=db,
+            user_id=user.id,
+            raw_text=transcribed_text,
+            source_type=source_type,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    # Broadcast task creation updates over websockets
+    await ws_manager.publish(user.id, "task_ingested", {
+        "task_id": task.id,
+        "title": task.title,
+        "pinch_score": task.pinch_score,
+        "sub_block_count": len(task.sub_blocks),
+    })
+
+    return task
 
 # ---------- Task Segmentation Endpoint ----------
 

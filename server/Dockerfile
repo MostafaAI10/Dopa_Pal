@@ -1,25 +1,36 @@
 FROM python:3.12-slim
 
-# Install uv binary
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# Install uv binary (pin version to avoid cache invalidations from `latest` tag drift)
+COPY --from=ghcr.io/astral-sh/uv:0.5.0 /uv /uvx /bin/
 
-# Set work directory inside container
+# --- FAST FFMPEG INJECTION ---
+COPY --from=mwader/static-ffmpeg:7.0 /ffmpeg /ffprobe /usr/local/bin/
+# ----------------------------------------------------------------------------
+
 WORKDIR /server
 
 # Enable bytecode compilation and unbuffered logging
 ENV UV_COMPILE_BYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Copy dependency files first for caching
-COPY pyproject.toml uv.lock* ./
+# Force uv to build the virtual environment in an isolated path
+# so your local volume mounts don't destroy it.
+ENV UV_PROJECT_ENVIRONMENT=/venv
 
-# Install dependencies
-RUN uv sync --frozen
+# Copy dependency files first for explicit layer caching
+COPY pyproject.toml uv.lock ./
+
+# Cache mount persists uv's package downloads across build invocations,
+# so even when pyproject.toml/uv.lock changes (invalidating this layer),
+# already-downloaded wheels are reused instead of fetched again.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project
 
 # Copy all source code
 COPY . .
 
-ENV PATH="/server/.venv/bin:$PATH"
+# Update path targets to look at the isolated virtual environment location
+ENV PATH="/venv/bin:$PATH"
 ENV PYTHONPATH="/server"
 
 EXPOSE 8000

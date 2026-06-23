@@ -1,6 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  getWindowPosition: ()  => ipcRenderer.invoke('get-window-position'),
+  setWindowPosition: (x, y) => ipcRenderer.send('set-window-position', x, y),
   moveWindow     : (dx, dy) => ipcRenderer.send('move-window', dx, dy),
   resizeBubble   : (w, h)   => ipcRenderer.send('resize-bubble', w, h),
   openDashboard  : ()       => ipcRenderer.send('open-dashboard'),

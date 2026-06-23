@@ -6,6 +6,10 @@ import { useLanguage } from '../../contexts/LanguageContext';
 /* ─── Detect Electron ───────────────────────────────────── */
 const IS_ELECTRON = typeof window !== 'undefined' && !!window.electronAPI;
 
+/* ─── API base URL for direct fetch calls (voice upload) ── */
+const API_BASE_URL = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL : 'http://localhost:8000/api/v1';
+
 /* ─── Window sizes per view ─────────────────────────────── */
 const SIZES = {
   icon: [80, 80],
@@ -75,7 +79,7 @@ export default function Bubble() {
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
 
-  const drag = useRef({ on: false, sx: 0, sy: 0, lx: 0, ly: 0, moved: false });
+  const drag = useRef({ on: false, sx: 0, sy: 0, wx: 0, wy: 0, moved: false });
   const exitTmr = useRef(null);
   const dragStarted = useRef(false);
 
@@ -152,6 +156,9 @@ export default function Bubble() {
   useEffect(() => {
     if (!IS_ELECTRON) return;
     const handleMouseMove = (e) => {
+      // Never interfere while a window drag is in progress
+      if (drag.current.on) return;
+
       if (view !== 'icon') {
         window.electronAPI.setIgnoreMouse(false);
         return;
@@ -348,29 +355,29 @@ export default function Bubble() {
     e.preventDefault();
     e.stopPropagation();
 
-    drag.current = { on: true, sx: e.screenX, sy: e.screenY, lx: e.screenX, ly: e.screenY, moved: false };
+    // Mark drag active immediately (suppresses click-through) but window
+    // position will arrive asynchronously via IPC invoke.
+    drag.current = { on: true, sx: e.screenX, sy: e.screenY, moved: false };
     dragStarted.current = false;
 
     const onMove = (mv) => {
       const d = drag.current;
       if (!d.on) return;
+      // Wait until the main process has returned the real window position
+      if (d.wx === undefined) return;
 
       if (!d.moved && Math.hypot(mv.screenX - d.sx, mv.screenY - d.sy) > DRAG_PX) {
         d.moved = true;
         dragStarted.current = true;
-        if (window.electronAPI.startBubbleDrag) {
-          window.electronAPI.startBubbleDrag();
-        }
       }
 
       if (d.moved) {
-        if (window.electronAPI.moveWindow) {
-          const dx = mv.screenX - d.lx;
-          const dy = mv.screenY - d.ly;
-          window.electronAPI.moveWindow(dx, dy);
+        if (window.electronAPI.setWindowPosition) {
+          const scale = window.devicePixelRatio || 1;
+          const x = d.wx + (mv.screenX - d.sx) / scale;
+          const y = d.wy + (mv.screenY - d.sy) / scale;
+          window.electronAPI.setWindowPosition(x, y);
         }
-        d.lx = mv.screenX;
-        d.ly = mv.screenY;
 
         const screenLeft = window.screen.availLeft || 0;
         setPanelSide((mv.screenX - screenLeft) > (window.screen.width / 2) ? 'left' : 'right');
@@ -402,6 +409,15 @@ export default function Bubble() {
 
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
+
+    // Fetch the real window position from the main process (avoids stale
+    // window.screenX/Y in the renderer).  wx/wy are set once the response
+    // arrives; until then onMove returns early.
+    window.electronAPI.getWindowPosition().then(({ x, y }) => {
+      const d = drag.current;
+      d.wx = x;
+      d.wy = y;
+    });
   }, [view, goTo, playSession]);
 
   /* ── Task submit ─────────────────────────────────────── */
@@ -446,9 +462,6 @@ export default function Bubble() {
           source_text: aiText,
           source_type: 'highlight'
         });
-      } else if (source === 'voice' && extraData) {
-        const arrayBuffer = await extraData.arrayBuffer();
-        await window.electronAPI.ingestVoiceTask(arrayBuffer);
       }
 
       // Reset forms
@@ -479,6 +492,8 @@ export default function Bubble() {
   };
 
   /* ── Voice Recording Logic ───────────────────────────── */
+  const recordingStartTime = useRef(0);
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -487,8 +502,10 @@ export default function Bubble() {
       mediaRecorder.current.ondataavailable = (e) => {
         if (e.data.size > 0) audioChunks.current.push(e.data);
       };
+      recordingStartTime.current = Date.now();
       mediaRecorder.current.start();
       setRecording(true);
+      console.log('[Voice] Recording started at', recordingStartTime.current);
     } catch (e) {
       console.error("Microphone error:", e);
       alert("Could not access microphone.");
@@ -498,12 +515,60 @@ export default function Bubble() {
   const stopRecording = () => {
     if (!mediaRecorder.current) return;
     mediaRecorder.current.onstop = async () => {
+      const duration = Date.now() - recordingStartTime.current;
+      const totalBytes = audioChunks.current.reduce((sum, c) => sum + c.size, 0);
+      console.log('[Voice] Recording stopped. Duration:', duration, 'ms | Chunks:', audioChunks.current.length, '| Total bytes:', totalBytes);
+      
+      if (audioChunks.current.length === 0) {
+        console.warn('[Voice] No audio chunks recorded');
+        setRecording(false);
+        return;
+      }
+      if (duration < 500) {
+        console.warn('[Voice] Recording too short:', duration, 'ms');
+        setRecording(false);
+        alert('Recording too short — please hold the button longer.');
+        return;
+      }
       const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
-      await submitTask('voice', audioBlob);
+      await submitVoiceTask(audioBlob);
       mediaRecorder.current.stream.getTracks().forEach(track => track.stop());
+      audioChunks.current = [];
     };
     mediaRecorder.current.stop();
     setRecording(false);
+  };
+
+  const submitVoiceTask = async (audioBlob) => {
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'voice_recording.webm');
+      formData.append('source_type', 'voice');
+
+      const response = await fetch(`${API_BASE_URL}/tasks/ingest-voice`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('[Voice] Ingestion successful:', result);
+      
+      // Reset forms and navigate back
+      setTask({ title: '', duration: '', due: '', notes: '' });
+      setAiText('');
+      goTo('icon');
+    } catch (e) {
+      console.error("Failed to submit voice task:", e);
+      alert("Error saving voice task: " + e.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   /* ── Priority from due date ──────────────────────────── */

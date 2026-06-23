@@ -70,13 +70,6 @@ def ingest_from_raw_text(
     then persist the resulting task and sub-blocks to the database.
     """
     ai = get_ai_service()
-    
-    # For voice source_type, convert audio data to text first
-    if source_type == 'voice':
-        # raw_text is expected to be base64 encoded audio data
-        from app.services.speech_to_text import convert_audio_to_text
-        raw_text = convert_audio_to_text(raw_text, source_type)
-        
     ingest_result = ai.ingest(raw_text=raw_text, source_type=source_type)
     return persist_ingested_task(
         db=db,

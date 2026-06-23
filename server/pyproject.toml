@@ -18,6 +18,8 @@ dependencies = [
     "redis>=5.0.0",
     "sqlalchemy>=2.0.0",
     "openai>=1.0.0",
+    "speechrecognition>=3.10.4",
+    "pydub>=0.25.1",
 ]
 
 [project.scripts]
