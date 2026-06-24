@@ -1548,7 +1548,7 @@ export default function Dashboard() {
             {[
               { id: 'home', label: t('dashboard.home'), Icon: IconHome },
               { id: 'tasks', label: t('dashboard.allTasks'), Icon: IconTask },
-              { id: 'assistant', label: 'Assistant', Icon: IconSparkle },
+              { id: 'assistant', label: t('dashboard.assistant'), Icon: IconSparkle },
             ].map(({ id, label, Icon }) => (
               <button
                 key={id}
@@ -1866,15 +1866,15 @@ export default function Dashboard() {
               {/* ── Category grid (when no page selected) ── */}
               {!settingsPage && (
                 <>
-                  <h1 className="d-h1">Settings</h1>
-                  <p className="d-sub">Pick a category to adjust.</p>
+                  <h1 className="d-h1">{t('dashboard.settings')}</h1>
+                  <p className="d-sub">{t('dashboard.settingsDesc')}</p>
                   <div className="d-settings-category-grid">
                     {[
-                      { id: 'account', title: 'Account', icon: <IconUser />, desc: 'Name, wake time, and profile details.' },
-                      { id: 'language', title: 'Language', icon: <IconGlobe />, desc: 'Locale, formatting, and text behavior.' },
-                      { id: 'notifications', title: 'Notifications', icon: <IconBell />, desc: 'Delivery, intensity, and quiet hours.' },
-                      { id: 'sync', title: 'Sync', icon: <IconSync />, desc: 'Connected services and provider settings.' },
-                      { id: 'privacy', title: 'Privacy', icon: <IconShield />, desc: 'Storage and data-sharing preferences.' },
+                      { id: 'account', title: t('dashboard.catAccount'), icon: <IconUser />, desc: t('dashboard.catAccountDesc') },
+                      { id: 'language', title: t('dashboard.catLanguage'), icon: <IconGlobe />, desc: t('dashboard.catLanguageDesc') },
+                      { id: 'notifications', title: t('dashboard.catNotifications'), icon: <IconBell />, desc: t('dashboard.catNotificationsDesc') },
+                      { id: 'sync', title: t('dashboard.catSync'), icon: <IconSync />, desc: t('dashboard.catSyncDesc') },
+                      { id: 'privacy', title: t('dashboard.catPrivacy'), icon: <IconShield />, desc: t('dashboard.catPrivacyDesc') },
                     ].map(section => (
                       <button key={section.id} className="d-settings-category" onClick={() => setSettingsPage(section.id)}>
                         <div className="d-settings-category-icon">{section.icon}</div>
@@ -1920,10 +1920,10 @@ export default function Dashboard() {
               {settingsPage === 'language' && (
                 <div className="d-card">
                   <div className="d-card-header"><span>🌐</span><span>{t('dashboard.language')}</span></div>
-                  <p className="d-field-help">Choose how the interface reads, formats dates and numbers, and handles mixed-language content.</p>
+                  <p className="d-field-help">{t('dashboard.catLanguageDesc')}</p>
                   <div className="d-field-block">
-                    <span className="d-field-label">Primary language</span>
-                    <p className="d-field-help">This is the app language used for menus, labels, and helper text.</p>
+                    <span className="d-field-label">{t('dashboard.langPrimary')}</span>
+                    <p className="d-field-help">{t('dashboard.langPrimaryDesc')}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))', gap: 10 }}>
                       {LANGUAGE_OPTIONS.map(option => (
                         <button
@@ -1953,42 +1953,42 @@ export default function Dashboard() {
                   </div>
                   <div className="d-settings-grid">
                     <label>
-                      <span className="d-field-label">Secondary language</span>
-                      <p className="d-field-help">Use this as the fallback language for bilingual prompts and overlays.</p>
+                      <span className="d-field-label">{t('dashboard.langSecondary')}</span>
+                      <p className="d-field-help">{t('dashboard.langSecondaryDesc')}</p>
                       <select className="d-input" value={languageDraft.secondary} onChange={e => setLanguageDraft({ ...languageDraft, secondary: e.target.value })}>
                         {LANGUAGE_OPTIONS.filter(option => option.code !== languageDraft.primary).map(option => <option key={option.code} value={option.code}>{option.label}</option>)}
                       </select>
                     </label>
                     <label>
-                      <span className="d-field-label">Content mode</span>
-                      <p className="d-field-help">Controls whether the app keeps one language, blends two, or auto-detects content.</p>
+                      <span className="d-field-label">{t('dashboard.langContentMode')}</span>
+                      <p className="d-field-help">{t('dashboard.langContentModeDesc')}</p>
                       <select className="d-input" value={languageDraft.contentMode} onChange={e => setLanguageDraft({ ...languageDraft, contentMode: e.target.value })}>
-                        <option value="auto">Auto detect content</option>
-                        <option value="primary">Primary language only</option>
-                        <option value="bilingual">Bilingual mode</option>
+                        <option value="auto">{t('dashboard.langAutoDetect')}</option>
+                        <option value="primary">{t('dashboard.langPrimaryOnly')}</option>
+                        <option value="bilingual">{t('dashboard.langBilingual')}</option>
                       </select>
                     </label>
                     <label>
-                      <span className="d-field-label">Date format</span>
-                      <p className="d-field-help">Affects how deadlines and reminders are displayed everywhere in the app.</p>
+                      <span className="d-field-label">{t('dashboard.langDateFormat')}</span>
+                      <p className="d-field-help">{t('dashboard.langDateFormatDesc')}</p>
                       <select className="d-input" value={languageDraft.dateFormat} onChange={e => setLanguageDraft({ ...languageDraft, dateFormat: e.target.value })}>
-                        <option value="locale">Locale dates</option>
-                        <option value="iso">ISO dates</option>
+                        <option value="locale">{t('dashboard.langLocaleDates')}</option>
+                        <option value="iso">{t('dashboard.langIsoDates')}</option>
                       </select>
                     </label>
                     <label>
-                      <span className="d-field-label">Number format</span>
-                      <p className="d-field-help">Controls whether values are shown plainly or in compact human-friendly form.</p>
+                      <span className="d-field-label">{t('dashboard.langNumberFormat')}</span>
+                      <p className="d-field-help">{t('dashboard.langNumberFormatDesc')}</p>
                       <select className="d-input" value={languageDraft.numberFormat} onChange={e => setLanguageDraft({ ...languageDraft, numberFormat: e.target.value })}>
-                        <option value="locale">Locale numbers</option>
-                        <option value="compact">Compact numbers</option>
-                        <option value="plain">Plain numbers</option>
+                        <option value="locale">{t('dashboard.langLocaleNumbers')}</option>
+                        <option value="compact">{t('dashboard.langCompactNumbers')}</option>
+                        <option value="plain">{t('dashboard.langPlainNumbers')}</option>
                       </select>
                     </label>
                   </div>
-                  <label className="d-toggle-row"><span>Transliterate borrowed content</span><input type="checkbox" checked={languageDraft.transliteration} onChange={e => setLanguageDraft({ ...languageDraft, transliteration: e.target.checked })} /></label>
+                  <label className="d-toggle-row"><span>{t('dashboard.langTransliterate')}</span><input type="checkbox" checked={languageDraft.transliteration} onChange={e => setLanguageDraft({ ...languageDraft, transliteration: e.target.checked })} /></label>
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <button className="d-btn d-btn--primary" onClick={saveLanguageSettings} disabled={settingsSaving}>{settingsSaving ? 'Saving...' : 'Save Language'}</button>
+                    <button className="d-btn d-btn--primary" onClick={saveLanguageSettings} disabled={settingsSaving}>{settingsSaving ? t('dashboard.saving') : t('dashboard.saveLanguage')}</button>
                   </div>
                 </div>
               )}
@@ -2156,7 +2156,7 @@ export default function Dashboard() {
           )}
           {tab === 'settings' && false && (
             <div className="d-section fade-in">
-              <h1 className="d-h1">Settings</h1>
+              <h1 className="d-h1">{t('dashboard.settings')}</h1>
 
               {/* Language Selector */}
               <div className="d-card" style={{ marginBottom: 16 }}>

@@ -609,8 +609,8 @@ export default function Bubble() {
           <button className="b-back" onClick={() => goTo('panel')}><BackIcon /></button>
           <button className="b-close" onClick={() => goTo('icon')}><CloseIcon /></button>
 
-          <div className="b-menu-title">Add a Task</div>
-          <div className="b-menu-sub">How do you want to capture it?</div>
+          <div className="b-menu-title">{t('bubble.newTask')}</div>
+          <div className="b-menu-sub">{t('bubble.captureSub')}</div>
 
           <div className="b-menu-options">
             {/* Voice */}
