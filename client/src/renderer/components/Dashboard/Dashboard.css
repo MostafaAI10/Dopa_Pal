@@ -721,7 +721,7 @@
   width: 100%;
   min-height: 44px;
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
@@ -747,10 +747,17 @@
   white-space: nowrap;
 }
 
-.d-integration-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.d-integration-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.d-integration-logo--lg {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
 }
 
 .d-integration-status {
@@ -1223,6 +1230,7 @@
   overflow: hidden;
   padding: 0;
   padding-left: 14px;
+  padding-bottom: 8px;
 }
 .d-task--card:hover { transform: none; border-color: var(--border); }
 
@@ -1274,22 +1282,24 @@
 .d-task-meta-tag::before { content: none !important; }
 
 .d-task-source {
-  position: absolute;
-  bottom: 6px;
-  right: 10px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: transparent;
+  gap: 5px;
+  padding: 3px 8px 3px 6px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   color: var(--text3);
-  opacity: .6;
+  font-size: 10.5px;
+  font-weight: 500;
+  opacity: .75;
   transition: opacity .15s;
   cursor: help;
+  margin-top: 6px;
+  width: fit-content;
 }
-.d-task-source:hover { opacity: 1; color: var(--accent); background: var(--accent-dim); }
+.d-task-source:hover { opacity: 1; color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+.d-task-source svg { flex-shrink: 0; }
 
 .d-task-actions {
   display: flex;
@@ -1338,14 +1348,13 @@
   color: var(--text);
   font-family: inherit;
   text-align: left;
-  cursor: pointer;
   transition: border-color .16s, background .16s, transform .12s;
 }
-.d-submod:hover:not(:disabled) {
+.d-submod:hover:not(.d-submod--done) {
   border-color: var(--cat, var(--accent));
   transform: translateY(-1px);
+  cursor: pointer;
 }
-.d-submod:disabled { cursor: default; }
 .d-submod--done { opacity: .6; }
 
 .d-submod-check {
@@ -1378,12 +1387,41 @@
 .d-submod-title {
   font-size: 12.5px;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
+  line-height: 1.35;
 }
 .d-submod--done .d-submod-title { text-decoration: line-through; }
 .d-submod-meta { font-size: 10.5px; color: var(--text3); }
+
+/* Sub-mod undo button */
+.d-submod-undo {
+  margin-left: auto;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-size: 10.5px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.d-submod-undo:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+
+/* Sub-mod inline edit input */
+.d-submod-edit {
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 2px 6px;
+  width: 100%;
+  outline: none;
+}
 
 /* ── Delete exit animation ────────────────────────────────── */
 .d-task--deleting {
@@ -1492,6 +1530,7 @@
 [dir="rtl"] .d-task-cat-bar { left: auto; right: 0; border-radius: 0 4px 4px 0; }
 [dir="rtl"] .d-task-actions { margin-left: 0; margin-right: auto; }
 [dir="rtl"] .d-submod { text-align: right; }
+[dir="rtl"] .d-submod-undo { margin-left: 0; margin-right: auto; }
 [dir="rtl"] .d-toast-stack { right: auto; left: 20px; }
 
 /* ── Chat Messages ────────────────────────────────────────── */

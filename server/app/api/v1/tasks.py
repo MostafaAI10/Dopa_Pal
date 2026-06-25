@@ -327,6 +327,72 @@ async def api_complete_sub_block(sub_block_id: int, db: Session = Depends(get_db
     return result
 
 
+class SubBlockUpdateRequest(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    duration_minutes: Optional[int] = Field(None, gt=0, le=480)
+    scheduled_date: Optional[date] = None
+
+
+@router.patch("/sub-blocks/{sub_block_id}", response_model=SubBlockResponse)
+def api_update_sub_block(sub_block_id: int, payload: SubBlockUpdateRequest, db: Session = Depends(get_db)):
+    """Update a sub-block's title, duration, or scheduled date."""
+    user = get_or_create_default_user(db)
+    sub_block = (
+        db.query(SubBlock)
+        .join(Task)
+        .filter(SubBlock.id == sub_block_id, Task.user_id == user.id)
+        .first()
+    )
+    if not sub_block:
+        raise HTTPException(status_code=404, detail="Sub-block not found")
+
+    if payload.title is not None:
+        sub_block.title = payload.title
+    if payload.duration_minutes is not None:
+        sub_block.duration_minutes = payload.duration_minutes
+    if payload.scheduled_date is not None:
+        sub_block.scheduled_date = payload.scheduled_date
+
+    db.commit()
+    db.refresh(sub_block)
+    return sub_block
+
+
+@router.post("/sub-blocks/{sub_block_id}/undo")
+async def api_undo_sub_block(sub_block_id: int, db: Session = Depends(get_db)):
+    """Undo a completed sub-block, reverting it to pending."""
+    user = get_or_create_default_user(db)
+    sub_block = (
+        db.query(SubBlock)
+        .join(Task)
+        .filter(SubBlock.id == sub_block_id, Task.user_id == user.id)
+        .first()
+    )
+    if not sub_block:
+        raise HTTPException(status_code=404, detail="Sub-block not found")
+
+    if sub_block.status != "completed":
+        raise HTTPException(status_code=400, detail="Sub-block is not completed")
+
+    sub_block.status = "pending"
+    sub_block.completed_at = None
+
+    # If parent task was marked completed, revert it to pending
+    task = db.query(Task).filter(Task.id == sub_block.task_id).first()
+    if task and task.status == "completed":
+        task.status = "pending"
+
+    db.commit()
+    db.refresh(sub_block)
+
+    await ws_manager.publish(user.id, "block_undone", {
+        "sub_block_id": sub_block_id,
+        "task_id": sub_block.task_id,
+    })
+
+    return {"status": "success", "sub_block_id": sub_block_id, "task_reverted": task.status == "pending" if task else False}
+
+
 # ---------- Bubble Endpoint ----------
 
 @router.get("/bubble/next")

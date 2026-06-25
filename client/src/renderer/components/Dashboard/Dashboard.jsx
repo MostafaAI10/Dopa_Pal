@@ -201,6 +201,26 @@ const TaskListLogo = ({ size = 20 }) => (
   </svg>
 );
 
+const SchemaSelect = ({ label, schema, types, value, onChange, placeholder, help }) => {
+  const filtered = (schema || []).filter(p => types.includes(p.type));
+  return (
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <span style={{ fontSize: 13, color: 'var(--text2)' }}>{label}</span>
+      {help && <p className="d-field-help" style={{ margin: 0 }}>{help}</p>}
+      {filtered.length > 0 ? (
+        <select className="d-input" style={{ appearance: 'auto' }} value={value} onChange={e => onChange(e.target.value)}>
+          <option value="">{placeholder || '— Select —'}</option>
+          {filtered.map(p => (
+            <option key={p.name} value={p.name}>{p.name} ({p.type})</option>
+          ))}
+        </select>
+      ) : (
+        <input className="d-input" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || 'Type column name'} />
+      )}
+    </label>
+  );
+};
+
 /* ─── Themes Store (imported from themes.js) ─────────────── */
 
 const SHOP_ITEMS = [
@@ -255,10 +275,10 @@ const NOTIFICATION_DIGESTS = [
 ];
 
 const INTEGRATION_PROVIDERS = [
-  { id: 'google', name: 'Google', accent: '#38bdf8', apps: ['Tasks', 'Calendar', 'Gmail'], tokenLabel: 'OAuth access token', settingLabel: 'Account email', settingKey: 'email' },
-  { id: 'notion', name: 'Notion', accent: '#f8fafc', apps: ['Databases', 'Tasks'], tokenLabel: 'Integration token', settingLabel: 'Database ID', settingKey: 'database_id' },
-  { id: 'jira', name: 'Jira', accent: '#60a5fa', apps: ['Issues', 'Projects'], tokenLabel: 'API token', settingLabel: 'Project key', settingKey: 'project_key' },
-  { id: 'canvas', name: 'Canvas LMS', accent: '#fb7185', apps: ['Assignments', 'Courses'], tokenLabel: 'Access token', settingLabel: 'Course ID', settingKey: 'course_id' },
+  { id: 'google', name: 'Google', accent: '#38bdf8', logo: '/integrations/google.svg', apps: ['Tasks', 'Calendar', 'Gmail'], tokenLabel: 'OAuth access token', settingLabel: 'Account email', settingKey: 'email' },
+  { id: 'notion', name: 'Notion', accent: '#f8fafc', logo: '/integrations/notion.svg', apps: ['Databases', 'Tasks'], tokenLabel: 'Integration token', settingLabel: 'Database ID', settingKey: 'database_id' },
+  { id: 'jira', name: 'Jira', accent: '#60a5fa', logo: '/integrations/jira.svg', apps: ['Issues', 'Projects'], tokenLabel: 'API token', settingLabel: 'Project key', settingKey: 'project_key' },
+  { id: 'canvas', name: 'Canvas LMS', accent: '#fb7185', logo: '/integrations/canvas.svg', apps: ['Assignments', 'Courses'], tokenLabel: 'Access token', settingLabel: 'Course ID', settingKey: 'course_id' },
 ];
 
 /* ─── PINCH categories — single source of truth (no emojis) ── */
@@ -339,7 +359,7 @@ const PriorityBadge = ({ level }) => (
 );
 
 /* ─── Task row ──────────────────────────────────────────── */
-const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleting }) => {
+const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, onUndoSub, onUpdateSub, isDeleting }) => {
   const category = getPinchCategory(task);
   const catColor = PINCH_BY_ID[category].color;
   const [isEditing, setIsEditing] = useState(false);
@@ -349,6 +369,8 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
     task.deadlineRaw ? new Date(task.deadlineRaw).toISOString().slice(0, 16) : ''
   );
   const [editDuration, setEditDuration] = useState(task.estimatedHours ?? '');
+  const [editingSubId, setEditingSubId] = useState(null);
+  const [editSubTitle, setEditSubTitle] = useState('');
 
   const handleSave = () => {
     onUpdateTask(task.id, {
@@ -479,22 +501,64 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
         <div className="d-submods">
           {subs.map((block) => {
             const done = block.status === 'completed';
+            const isSubEditing = editingSubId === block.id;
             return (
-              <button
+              <div
                 key={block.id ?? block.sequence}
                 className={`d-submod${done ? ' d-submod--done' : ''}`}
-                onClick={() => !done && onToggleSub && onToggleSub(task.id, block)}
-                disabled={done}
-                title={done ? 'Completed' : 'Mark step complete'}
+                style={{ cursor: done ? 'default' : 'pointer' }}
               >
-                <span className="d-submod-check">{done ? <IconCheck /> : block.sequence}</span>
-                <span className="d-submod-body">
-                  <span className="d-submod-title">{block.title || `Step ${block.sequence}`}</span>
+                <button
+                  className="d-submod-check"
+                  onClick={() => done
+                    ? onUndoSub && onUndoSub(task.id, block)
+                    : onToggleSub && onToggleSub(task.id, block)
+                  }
+                  title={done ? 'Undo completion' : 'Mark step complete'}
+                  style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  {done ? <IconCheck /> : block.sequence}
+                </button>
+                <span className="d-submod-body" onDoubleClick={() => {
+                  if (!done) {
+                    setEditingSubId(block.id);
+                    setEditSubTitle(block.title || '');
+                  }
+                }}>
+                  {isSubEditing ? (
+                    <input
+                      className="d-submod-edit"
+                      value={editSubTitle}
+                      onChange={e => setEditSubTitle(e.target.value)}
+                      onBlur={() => {
+                        if (editSubTitle.trim() && editSubTitle !== block.title) {
+                          onUpdateSub && onUpdateSub(block.id, { title: editSubTitle.trim() });
+                        }
+                        setEditingSubId(null);
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') e.target.blur();
+                        if (e.key === 'Escape') { setEditingSubId(null); }
+                      }}
+                      autoFocus
+                    />
+                  ) : (
+                    <span className="d-submod-title">{block.title || `Step ${block.sequence}`}</span>
+                  )}
                   <span className="d-submod-meta">
                     {block.duration_minutes}m · {new Date(block.scheduled_date).toLocaleDateString()}
                   </span>
                 </span>
-              </button>
+                {done && (
+                  <button
+                    className="d-submod-undo"
+                    onClick={() => onUndoSub && onUndoSub(task.id, block)}
+                    title="Undo completion"
+                  >
+                    Undo
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
@@ -503,12 +567,14 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdateTask, onToggleSub, isDeleti
       {/* ── Source badge ── */}
       {task.sourceType && (
         <div className="d-task-source" title={task.rawSourceText ? task.rawSourceText : task.sourceType}>
-          {task.sourceType === 'manual' && <IconKeyboard />}
-          {task.sourceType === 'voice' && <IconMic />}
-          {task.sourceType === 'ai' && <IconSparkle />}
-          {task.sourceType === 'calendar' && <CalendarLogo size={13} />}
-          {task.sourceType === 'google_tasks' && <IconChecklist />}
-          {task.sourceType === 'gmail' && <IconMail />}
+          {task.sourceType === 'manual' && <><IconKeyboard /><span>Manual</span></>}
+          {task.sourceType === 'voice' && <><IconMic /><span>Voice</span></>}
+          {task.sourceType === 'ai' && <><IconSparkle /><span>AI</span></>}
+          {task.sourceType === 'calendar' && <><CalendarLogo size={12} /><span>Google Calendar</span></>}
+          {task.sourceType === 'google_tasks' && <><IconChecklist /><span>Google Tasks</span></>}
+          {task.sourceType === 'gmail' && <><IconMail /><span>Gmail</span></>}
+          {task.sourceType === 'notion' && <><NotionLogo size={12} /><span>Notion</span></>}
+          {task.sourceType === 'highlight' && <><IconSparkle /><span>Highlight</span></>}
         </div>
       )}
     </div>
@@ -706,7 +772,7 @@ export default function Dashboard() {
     expiresInSeconds: 3600,
     settingValue: '',
   });
-  const [integrationSaving, setIntegrationSaving] = useState(false);
+  const [integrationSaving, setIntegrationSaving] = useState(null); // provider id string or null
   const [integrationMessage, setIntegrationMessage] = useState('');
   const [syncSettingsModal, setSyncSettingsModal] = useState(null);
   const [syncSettingsClosing, setSyncSettingsClosing] = useState(false);
@@ -714,6 +780,10 @@ export default function Dashboard() {
   const [syncSettingsDraft, setSyncSettingsDraft] = useState({});
   const [syncSettingsLoading, setSyncSettingsLoading] = useState(false);
   const [syncSettingsSaving, setSyncSettingsSaving] = useState(false);
+  const [availableDatabases, setAvailableDatabases] = useState([]);
+  const [notionDatabasesLoading, setNotionDatabasesLoading] = useState(false);
+  const [notionSchema, setNotionSchema] = useState(null);
+  const [notionSchemaLoading, setNotionSchemaLoading] = useState(false);
 
   // Settings state
   const [languageDraft, setLanguageDraft] = useState({
@@ -964,7 +1034,7 @@ export default function Dashboard() {
     const provider = INTEGRATION_PROVIDERS.find(p => p.id === selectedProvider);
     if (!provider || !integrationForm.accessToken.trim()) return;
 
-    setIntegrationSaving(true);
+    setIntegrationSaving(provider.id);
     setIntegrationMessage('');
     try {
       await api.configureIntegration({
@@ -983,13 +1053,13 @@ export default function Dashboard() {
       console.error('Error saving integration:', err);
       setIntegrationMessage('Could not save integration. Check the token fields and backend logs.');
     } finally {
-      setIntegrationSaving(false);
+      setIntegrationSaving(null);
     }
   };
 
   const connectGoogle = async () => {
     if (IS_ELECTRON && window.electronAPI.startGoogleOAuth) {
-      setIntegrationSaving(true);
+      setIntegrationSaving('google');
       setIntegrationMessage('');
       try {
         const result = await window.electronAPI.startGoogleOAuth();
@@ -1003,7 +1073,7 @@ export default function Dashboard() {
         console.error('Google OAuth error:', err);
         setIntegrationMessage('Could not connect Google. Check the backend logs.');
       } finally {
-        setIntegrationSaving(false);
+        setIntegrationSaving(null);
       }
     } else {
       setIntegrationMessage('Google OAuth is only available in the desktop app.');
@@ -1011,7 +1081,7 @@ export default function Dashboard() {
   };
 
   const disconnectGoogle = async () => {
-    setIntegrationSaving(true);
+    setIntegrationSaving('google');
     try {
       await api.delete('/integrations/config/google');
       pushToast('Google disconnected', 'success');
@@ -1020,17 +1090,102 @@ export default function Dashboard() {
       console.error('Disconnect error:', err);
       pushToast('Failed to disconnect', 'error');
     } finally {
-      setIntegrationSaving(false);
+      setIntegrationSaving(null);
     }
   };
 
-  const loadSyncSettings = async () => {
+  // ── Notion connection (OAuth popup, same UX as Google) ───────────
+  const connectNotion = async () => {
+    if (IS_ELECTRON && window.electronAPI.startNotionOAuth) {
+      setIntegrationSaving('notion');
+      setIntegrationMessage('');
+      try {
+        const result = await window.electronAPI.startNotionOAuth();
+        if (result.success) {
+          pushToast('Notion connected!', 'success');
+          await fetchIntegrations();
+          openSyncSettings('notion');
+        } else {
+          setIntegrationMessage(result.error || 'Connection failed.');
+        }
+      } catch (err) {
+        console.error('Notion OAuth error:', err);
+        setIntegrationMessage('Could not connect Notion. Check the backend logs.');
+      } finally {
+        setIntegrationSaving(null);
+      }
+    } else {
+      // Browser fallback: open OAuth URL in a new tab
+      try {
+        const { url } = await api.get('/auth/notion/url');
+        if (url) {
+          window.open(url, '_blank', 'width=600,height=700');
+          setIntegrationMessage('Complete authorization in the opened tab, then refresh.');
+        } else {
+          setIntegrationMessage('Notion OAuth is not configured on the server.');
+        }
+      } catch (err) {
+        console.error('Notion OAuth error:', err);
+        setIntegrationMessage('Could not start Notion authorization.');
+      }
+    }
+  };
+
+  const disconnectNotion = async () => {
+    setIntegrationSaving('notion');
+    try {
+      await api.delete('/integrations/config/notion');
+      pushToast('Notion disconnected', 'success');
+      setSyncSettingsData({});
+      await fetchIntegrations();
+    } catch (err) {
+      console.error('Disconnect error:', err);
+      pushToast('Failed to disconnect', 'error');
+    } finally {
+      setIntegrationSaving(null);
+    }
+  };
+
+  // ── Sync settings (Google + Notion) ──────────────────────────────
+
+  const loadSyncSettings = async (provider) => {
     setSyncSettingsLoading(true);
     try {
-      const res = await api.get('/sync/google/settings');
-      const s = res.settings || {};
-      setSyncSettingsData(s);
-      setSyncSettingsDraft(JSON.parse(JSON.stringify(s)));
+      if (provider === 'notion') {
+        const res = await api.get('/sync/notion/settings');
+        const s = res.settings || {};
+        setSyncSettingsData(s);
+        setSyncSettingsDraft(JSON.parse(JSON.stringify(s)));
+        // fetch available databases for the picker
+        setNotionDatabasesLoading(true);
+        try {
+          const dbRes = await api.get('/sync/notion/databases');
+          setAvailableDatabases(dbRes.databases || []);
+        } catch (e) {
+          console.warn('Could not fetch Notion databases', e);
+          setAvailableDatabases([]);
+        } finally {
+          setNotionDatabasesLoading(false);
+        }
+        // fetch schema for the saved database ID
+        if (s.notion_database_id) {
+          setNotionSchemaLoading(true);
+          try {
+            const schemaRes = await api.get(`/sync/notion/database-schema?database_id=${s.notion_database_id}`);
+            setNotionSchema(schemaRes.properties || []);
+          } catch (e) {
+            console.warn('Could not fetch Notion database schema', e);
+            setNotionSchema(null);
+          } finally {
+            setNotionSchemaLoading(false);
+          }
+        }
+      } else {
+        const res = await api.get('/sync/google/settings');
+        const s = res.settings || {};
+        setSyncSettingsData(s);
+        setSyncSettingsDraft(JSON.parse(JSON.stringify(s)));
+      }
     } catch (e) {
       console.error('Failed to load sync settings', e);
     } finally {
@@ -1041,8 +1196,14 @@ export default function Dashboard() {
   const saveSyncSettings = async () => {
     setSyncSettingsSaving(true);
     try {
-      await api.put('/sync/google/settings', { settings: syncSettingsDraft });
+      const provider = syncSettingsModal;
+      if (provider === 'notion') {
+        await api.put('/sync/notion/settings', { settings: syncSettingsDraft });
+      } else {
+        await api.put('/sync/google/settings', { settings: syncSettingsDraft });
+      }
       setSyncSettingsData(JSON.parse(JSON.stringify(syncSettingsDraft)));
+      await fetchIntegrations();
       closeSyncSettings();
     } catch (e) {
       console.error('Failed to save sync settings', e);
@@ -1056,11 +1217,13 @@ export default function Dashboard() {
     setTimeout(() => {
       setSyncSettingsModal(null);
       setSyncSettingsClosing(false);
+      setAvailableDatabases([]);
+      setNotionSchema(null);
     }, 180);
   };
 
   const openSyncSettings = (provider) => {
-    if (!syncSettingsData.tasks) loadSyncSettings();
+    loadSyncSettings(provider);
     setSyncSettingsModal(provider);
   };
 
@@ -1103,19 +1266,22 @@ export default function Dashboard() {
 
   // ── Poll background sync status ──
   useEffect(() => {
+    const lastSyncRefs = { google: null, notion: null };
     const check = async () => {
-      try {
-        const status = await api.get('/sync/google/status');
-        if (status.connected && status.last_synced_at) {
-          const prev = lastSyncAtRef.current;
-          lastSyncAtRef.current = status.last_synced_at;
-          if (prev && prev !== status.last_synced_at) {
-            pushToast('Google data synced', 'success');
-            fetchTasksAndBubble();
+      for (const provider of ['google', 'notion']) {
+        try {
+          const status = await api.get(`/sync/${provider}/status`);
+          if (status.connected && status.last_synced_at) {
+            const prev = lastSyncRefs[provider];
+            lastSyncRefs[provider] = status.last_synced_at;
+            if (prev && prev !== status.last_synced_at) {
+              pushToast(`${provider.charAt(0).toUpperCase() + provider.slice(1)} data synced`, 'success');
+              fetchTasksAndBubble();
+            }
           }
+        } catch {
+          // not connected or offline — ignore
         }
-      } catch {
-        // not connected or offline — ignore
       }
     };
     check();
@@ -1417,6 +1583,44 @@ export default function Dashboard() {
     }
   };
 
+  const undoSubBlock = async (taskId, block) => {
+    if (!block || block.status !== 'completed') return;
+    const key = block.id ?? block.sequence;
+    const revert = (status) => setTasks(ts => ts.map(t => {
+      if (t.id !== taskId) return t;
+      return {
+        ...t,
+        done: false,
+        subBlocks: (t.subBlocks || []).map(b =>
+          (b.id ?? b.sequence) === key ? { ...b, status, completedAt: null } : b),
+      };
+    }));
+
+    revert('pending');
+    try {
+      if (block.id != null) await api.undoSubBlock(block.id);
+    } catch (e) {
+      console.error('Failed to undo sub-block:', e);
+      revert('completed');
+      pushToast('Could not undo step', 'error', 3000);
+    }
+  };
+
+  const updateSubBlockTitle = async (subBlockId, updates) => {
+    setTasks(ts => ts.map(t => ({
+      ...t,
+      subBlocks: (t.subBlocks || []).map(b =>
+        b.id === subBlockId ? { ...b, ...updates } : b),
+    })));
+
+    try {
+      await api.updateSubBlock(subBlockId, updates);
+    } catch (e) {
+      console.error('Failed to update sub-block:', e);
+      pushToast('Could not update step', 'error', 3000);
+    }
+  };
+
   const updateTaskDetails = async (id, updates) => {
     const current = tasks.find(t => t.id === id);
     const payload = {};
@@ -1654,6 +1858,7 @@ export default function Dashboard() {
                   ) : visibleAll.map(t => (
                     <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={requestDelete}
                       onUpdateTask={updateTaskDetails} onToggleSub={toggleSubBlock}
+                      onUndoSub={undoSubBlock} onUpdateSub={updateSubBlockTitle}
                       isDeleting={deletingIds.has(t.id)} />
                   ))}
                 </div>
@@ -1685,6 +1890,7 @@ export default function Dashboard() {
                     ) : visiblePending.map(t => (
                       <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={requestDelete}
                         onUpdateTask={updateTaskDetails} onToggleSub={toggleSubBlock}
+                        onUndoSub={undoSubBlock} onUpdateSub={updateSubBlockTitle}
                         isDeleting={deletingIds.has(t.id)} />
                     ))}
                   </div>
@@ -1700,6 +1906,7 @@ export default function Dashboard() {
                     ) : visibleDone.map(t => (
                       <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={requestDelete}
                         onUpdateTask={updateTaskDetails} onToggleSub={toggleSubBlock}
+                        onUndoSub={undoSubBlock} onUpdateSub={updateSubBlockTitle}
                         isDeleting={deletingIds.has(t.id)} />
                     ))}
                   </div>
@@ -2084,18 +2291,53 @@ export default function Dashboard() {
                   <div className="d-provider-grid">
                     {INTEGRATION_PROVIDERS.map(provider => {
                       const status = getIntegrationStatus(provider.id);
-                      const connected = status.connected && !status.is_expired;
+                      const rawConnected = status.connected;
+                      const expired = status.is_expired;
+                      const connectedAndGood = rawConnected && !expired;
+
+                      // Provider-specific health checks
+                      const notionMissingDb = provider.id === 'notion' && rawConnected && !status.settings?.notion_database_id;
+                      const needsReconnect = (rawConnected && expired) || notionMissingDb;
+
+                      const connected = connectedAndGood && !needsReconnect;
+
+                      let btnLabel = 'Connect';
+                      let btnAction = null;
+                      if (provider.id === 'google') {
+                        if (needsReconnect) { btnLabel = 'Reconnect'; btnAction = connectGoogle; }
+                        else if (connected) { btnLabel = 'Disconnect'; btnAction = disconnectGoogle; }
+                        else { btnLabel = 'Connect'; btnAction = connectGoogle; }
+                      } else if (provider.id === 'notion') {
+                        if (expired) { btnLabel = 'Reconnect'; btnAction = connectNotion; }
+                        else if (notionMissingDb) { btnLabel = 'Configure'; btnAction = () => openSyncSettings('notion'); }
+                        else if (connected) { btnLabel = 'Disconnect'; btnAction = disconnectNotion; }
+                        else { btnLabel = 'Connect'; btnAction = connectNotion; }
+                      }
+
+                      let bg = 'var(--accent)';
+                      let txt = 'var(--text-white)';
+                      let bdr = 'none';
+                      if (provider.id === 'notion' && expired) {
+                        bg = '#ef4444'; txt = '#fff'; bdr = 'none';
+                      } else if (provider.id === 'notion' && notionMissingDb) {
+                        bg = '#f59e0b'; txt = '#fff'; bdr = 'none';
+                      } else if (expired) {
+                        bg = '#ef4444'; txt = '#fff'; bdr = 'none';
+                      } else if (connected) {
+                        bg = 'var(--accent-dim)'; txt = 'var(--accent)'; bdr = '1px solid var(--accent)';
+                      }
+
                       const LOGO_SIZE = 200;
-                      const logoEl = provider.id === 'google' ? <GoogleLogo size={LOGO_SIZE} /> :
-                        provider.id === 'notion' ? <NotionLogo size={LOGO_SIZE} /> : null;
+                      const logoEl = <img src={provider.logo} alt={provider.name} style={{ width: LOGO_SIZE, height: LOGO_SIZE, objectFit: 'contain' }} />;
                       const appIcons = {
                         'Tasks': <TaskListLogo size={13} />,
                         'Calendar': <CalendarLogo size={13} />,
                         'Gmail': <GmailLogo size={13} />,
+                        'Databases': <NotionLogo size={13} />,
                       };
-                      const available = provider.id === 'google';
+                      const available = provider.id === 'google' || provider.id === 'notion';
                       return (
-                        <div key={provider.id} className="d-provider-card">
+                        <div key={provider.id} className="d-provider-card" style={{ position: 'relative' }}>
                           <div className="d-provider-card-header">
                             <span className="d-provider-name">{provider.name}</span>
                             {available && (
@@ -2104,6 +2346,11 @@ export default function Dashboard() {
                               </button>
                             )}
                           </div>
+                          {needsReconnect && (
+                            <div style={{ position: 'absolute', top: 10, right: 44, fontSize: 11, background: expired ? '#ef4444' : '#f59e0b', color: '#fff', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>
+                              {expired ? 'Expired' : 'Not configured'}
+                            </div>
+                          )}
                           <div className="d-provider-card-middle">
                             <div className="d-provider-logo">{logoEl}</div>
                           </div>
@@ -2116,14 +2363,14 @@ export default function Dashboard() {
                             ))}
                           </div>
                           <div className="d-provider-card-footer">
-                            {available ? (
-                              <button className="d-btn d-btn--primary" onClick={connected ? disconnectGoogle : connectGoogle} disabled={integrationSaving} style={{
+                            {btnAction ? (
+                              <button className="d-btn d-btn--primary" onClick={btnAction} disabled={integrationSaving === provider.id} style={{
                                 width: '100%',
-                                background: connected ? 'var(--accent-dim)' : 'var(--accent)',
-                                color: connected ? 'var(--accent)' : 'var(--text-white)',
-                                border: connected ? '1px solid var(--accent)' : 'none'
+                                background: bg,
+                                color: txt,
+                                border: bdr
                               }}>
-                                {integrationSaving ? (connected ? 'Disconnecting...' : 'Connecting...') : (connected ? 'Disconnect' : 'Connect')}
+                                {integrationSaving === provider.id ? 'Working...' : btnLabel}
                               </button>
                             ) : (
                               <button className="d-btn" disabled style={{ width: '100%', opacity: 0.4, background: 'var(--surface)', color: 'var(--text3)', border: '1px solid var(--accent-dim)' }}>
@@ -2297,7 +2544,7 @@ export default function Dashboard() {
                   {INTEGRATION_PROVIDERS.map(provider => {
                     const status = getIntegrationStatus(provider.id);
                     return (
-                      <button
+                       <button
                         key={provider.id}
                         className={`d-integration-provider${selectedProvider === provider.id ? ' active' : ''}`}
                         onClick={() => {
@@ -2305,7 +2552,7 @@ export default function Dashboard() {
                           setIntegrationMessage('');
                         }}
                       >
-                        <span className="d-integration-dot" style={{ background: status.connected ? 'var(--success)' : 'var(--text3)' }} />
+                        <img src={provider.logo} alt="" className="d-integration-logo" />
                         <span>{provider.name}</span>
                         <span className={`d-integration-status ${status.connected ? 'connected' : ''}`}>
                           {status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Off'}
@@ -2323,7 +2570,7 @@ export default function Dashboard() {
                     return (
                       <>
                         <div className="d-card-header">
-                          <IconLink />
+                          <img src={provider.logo} alt="" className="d-integration-logo d-integration-logo--lg" />
                           <span>{provider.name}</span>
                           <span className={`d-chip ${status.connected ? '' : 'd-chip--muted'}`}>
                             {status.connected ? (status.is_expired ? 'Expired' : 'Connected') : 'Disconnected'}
@@ -2344,8 +2591,8 @@ export default function Dashboard() {
                         {provider.id === 'google' ? (
                           <div className="d-modal-form">
                             <p className="d-field-help">Connect your Google account to sync Calendar events and scan Gmail for tasks.</p>
-                            <button className="d-btn d-btn--primary" onClick={connectGoogle} disabled={integrationSaving} style={{ alignSelf: 'stretch' }}>
-                              {integrationSaving ? 'Connecting...' : (status.connected ? 'Reconnect Google' : 'Connect with Google')}
+                            <button className="d-btn d-btn--primary" onClick={connectGoogle} disabled={!!integrationSaving} style={{ alignSelf: 'stretch' }}>
+                              {integrationSaving === 'google' ? 'Connecting...' : (status.connected ? 'Reconnect Google' : 'Connect with Google')}
                             </button>
                           </div>
                         ) : (
@@ -2381,8 +2628,8 @@ export default function Dashboard() {
                                 title="Token lifetime in seconds"
                               />
                             </div>
-                            <button className="d-btn d-btn--primary" disabled={integrationSaving || !integrationForm.accessToken.trim()} style={{ alignSelf: 'stretch' }}>
-                              {integrationSaving ? 'Saving...' : `Connect ${provider.name}`}
+                            <button className="d-btn d-btn--primary" disabled={!!integrationSaving || !integrationForm.accessToken.trim()} style={{ alignSelf: 'stretch' }}>
+                              {!!integrationSaving ? 'Saving...' : `Connect ${provider.name}`}
                             </button>
                           </form>
                         )}
@@ -2659,14 +2906,175 @@ export default function Dashboard() {
       {/* ── Sync settings modal ── */}
       {(syncSettingsModal || syncSettingsClosing) && (
         <div className={`d-modal-overlay${syncSettingsClosing ? ' closing' : ''}`} onClick={closeSyncSettings}>
-          <div className={`d-modal-content${syncSettingsClosing ? ' closing' : ''}`} onClick={e => e.stopPropagation()} style={{ maxWidth: 540, maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+          <div className={`d-modal-content${syncSettingsClosing ? ' closing' : ''}`} onClick={e => e.stopPropagation()} style={{ maxWidth: syncSettingsModal === 'notion' ? 500 : 540, maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
             <div className="d-modal-header">
-              <span style={{ fontWeight: 600, fontSize: 16 }}>Google Sync Settings</span>
+              <span style={{ fontWeight: 600, fontSize: 16 }}>
+                {syncSettingsModal === 'notion' ? 'Notion Sync Settings' : 'Google Sync Settings'}
+              </span>
               <button className="d-modal-close" onClick={closeSyncSettings}>×</button>
             </div>
             <div className="d-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 0, padding: 0, overflowY: 'auto', flex: 1 }}>
               {syncSettingsLoading ? (
                 <div style={{ padding: '40px 24px', color: 'var(--text2)', textAlign: 'center' }}>Loading...</div>
+              ) : syncSettingsModal === 'notion' ? (
+                (() => {
+                  const set = (path, val) => {
+                    setSyncSettingsDraft(prev => {
+                      const copy = JSON.parse(JSON.stringify(prev));
+                      const parts = path.split('.');
+                      let cur = copy;
+                      for (let i = 0; i < parts.length - 1; i++) {
+                        if (!cur[parts[i]]) cur[parts[i]] = {};
+                        cur = cur[parts[i]];
+                      }
+                      cur[parts[parts.length - 1]] = val;
+                      return copy;
+                    });
+                  };
+                  const d = syncSettingsDraft;
+                  return (
+                    <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <span className="d-field-label">Database</span>
+                        <p className="d-field-help" style={{ margin: 0 }}>Select which Notion database to sync tasks from.</p>
+                        {notionDatabasesLoading ? (
+                          <div style={{ color: 'var(--text2)', fontSize: 13, padding: '8px 0' }}>Loading databases...</div>
+                        ) : availableDatabases.length > 0 ? (
+                          <select
+                            className="d-input"
+                            style={{ appearance: 'auto' }}
+                            value={d.notion_database_id || ''}
+                            onChange={async e => {
+                              const dbId = e.target.value;
+                              set('notion_database_id', dbId);
+                              if (dbId) {
+                                const picked = availableDatabases.find(db => db.id === dbId);
+                                if (picked) pushToast(`Selected: ${picked.title}`, 'success');
+                                setNotionSchemaLoading(true);
+                                try {
+                                  const res = await api.get(`/sync/notion/database-schema?database_id=${dbId}`);
+                                  setNotionSchema(res.properties || []);
+                                } catch (err) {
+                                  console.warn('Could not fetch schema', err);
+                                  setNotionSchema(null);
+                                } finally {
+                                  setNotionSchemaLoading(false);
+                                }
+                              } else {
+                                setNotionSchema(null);
+                              }
+                            }}
+                          >
+                            <option value="">— Pick a database —</option>
+                            {availableDatabases.map(db => (
+                              <option key={db.id} value={db.id}>{db.title}</option>
+                            ))}
+                          </select>
+                        ) : d.notion_database_id ? (
+                          <input className="d-input" value={d.notion_database_id} readOnly style={{ background: 'var(--bg-dim)', cursor: 'not-allowed' }} />
+                        ) : (
+                          <p style={{ fontSize: 13, color: 'var(--text-warning)' }}>No databases found. Make sure you've shared them with your integration in Notion.</p>
+                        )}
+                      </label>
+
+                      {notionSchemaLoading ? (
+                        <div style={{ padding: '16px 0', color: 'var(--text2)', fontSize: 13 }}>Loading column schema...</div>
+                      ) : notionSchema && notionSchema.length > 0 ? (
+                        <>
+                          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                            <span className="d-field-label" style={{ display: 'block', marginBottom: 8 }}>Property Mapping</span>
+                            <p className="d-field-help" style={{ margin: '0 0 12px 0' }}>Map your Notion column names to dopaPal task fields.</p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                              <SchemaSelect
+                                label="Title column"
+                                schema={notionSchema}
+                                types={['title']}
+                                value={(d.property_mapping || {}).title || ''}
+                                onChange={v => set('property_mapping.title', v)}
+                                placeholder="Pick title column"
+                              />
+                              <SchemaSelect
+                                label="Deadline column"
+                                schema={notionSchema}
+                                types={['date']}
+                                value={(d.property_mapping || {}).deadline || ''}
+                                onChange={v => set('property_mapping.deadline', v)}
+                                placeholder="Pick date column"
+                              />
+                              <SchemaSelect
+                                label="Interest tag column"
+                                schema={notionSchema}
+                                types={['select', 'status', 'multi_select']}
+                                value={(d.property_mapping || {}).interest_tag || ''}
+                                onChange={v => set('property_mapping.interest_tag', v)}
+                                placeholder="Pick tag column"
+                                help="Select, status, or multi-select property."
+                              />
+                            </div>
+                          </div>
+
+                          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                            <span className="d-field-label" style={{ display: 'block', marginBottom: 8 }}>Completion Status</span>
+                            <p className="d-field-help" style={{ margin: '0 0 12px 0' }}>Select which column tracks completion and what value means "done".</p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                              <SchemaSelect
+                                label="Status column"
+                                schema={notionSchema}
+                                types={['status', 'select', 'checkbox']}
+                                value={d.status_field || ''}
+                                onChange={v => set('status_field', v)}
+                                placeholder="Pick status column (optional)"
+                                help="If set, only this column is checked for completion."
+                              />
+                              {(() => {
+                                const statusFieldSchema = d.status_field
+                                  ? notionSchema.find(p => p.name === d.status_field)
+                                  : null;
+                                const statusType = statusFieldSchema?.type;
+                                const options = statusFieldSchema?.options;
+                                if (statusType === 'checkbox') {
+                                  return (
+                                    <p style={{ fontSize: 13, color: 'var(--text2)', margin: 0 }}>
+                                      When this checkbox is checked, the page is marked done.
+                                    </p>
+                                  );
+                                }
+                                return (
+                                  <>
+                                    <label className="d-toggle-row" style={{ marginBottom: 0 }}>
+                                      <span style={{ fontSize: 13 }}>Skip completed pages</span>
+                                      <input type="checkbox" checked={(d.sync_filters || {}).ignore_completed !== false} onChange={e => set('sync_filters.ignore_completed', e.target.checked)} />
+                                    </label>
+                                    <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                      <span style={{ fontSize: 13, color: 'var(--text2)' }}>Completed value</span>
+                                      {options && options.length > 0 ? (
+                                        <select
+                                          className="d-input"
+                                          style={{ appearance: 'auto', width: 200 }}
+                                          value={(d.sync_filters || {}).completed_status_value || 'Done'}
+                                          onChange={e => set('sync_filters.completed_status_value', e.target.value)}
+                                        >
+                                          <option value="">— Pick value —</option>
+                                          {options.map(opt => (
+                                            <option key={opt.name} value={opt.name}>{opt.name}</option>
+                                          ))}
+                                        </select>
+                                      ) : (
+                                        <input className="d-input" value={(d.sync_filters || {}).completed_status_value || 'Done'} onChange={e => set('sync_filters.completed_status_value', e.target.value)} placeholder="Done" style={{ width: 180 }} />
+                                      )}
+                                    </label>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        </>
+                      ) : d.notion_database_id && !notionSchemaLoading ? (
+                        <p style={{ fontSize: 13, color: 'var(--text-warning)', padding: '8px 0' }}>Could not load database schema. Make sure the integration has access to the database.</p>
+                      ) : null}
+                    </div>
+                  );
+                })()
               ) : (
                 (() => {
                   const set = (path, val) => {
