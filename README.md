@@ -1,5 +1,7 @@
 # DopaPal 
 
+![image alt](https://github.com/MostafaAI10/Heart-Stroke-Prediction/blob/d50113195aafdb103ab8f90145cdfeadbb4cbd67/Banner.png)
+
 ### The Ambient Cognitive Translation Layer for the ADHD Brain
 
 dopaPal is an omnipresent, non-intrusive cognitive companion designed to align rigid work and study environments with the Interest-Based Nervous System. Instead of forcing neurodivergent users into linear, high-friction productivity workflows that fuel task paralysis and decision fatigue, dopaPal functions as an invisible, supportive secretary. It silently captures chaos via low-friction input vectors, algorithmically slices overwhelming projects into daily blocks, and paces execution based on real-time cognitive energy.
