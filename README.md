@@ -1,4 +1,4 @@
-# dopaPal 
+# DopaPal 
 
 ### The Ambient Cognitive Translation Layer for the ADHD Brain
 
