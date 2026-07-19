@@ -83,7 +83,7 @@ dopapal_system/
 
 ---
 
-## 📖 Table of Contents
+## Table of Contents
 1. [Core Philosophy & Design Rules](#-core-philosophy--design-rules)
 2. [System Architecture](#-system-architecture)
 3. [Comprehensive Feature Set](#-comprehensive-feature-set)
