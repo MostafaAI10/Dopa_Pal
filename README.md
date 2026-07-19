@@ -517,7 +517,7 @@ def compute_state_score(startup_delta_mins: int, mood_score: int, completion_rat
 
 ---
 
-## 🧠 PINCH Priority & Scoring Engine
+## PINCH Priority & Scoring Engine
 
 Standard productivity algorithms rank tasks strictly by deadline proximity (`Hurry`). This layout triggers procrastination-avoidance cycles for ADHD brains. `dopaPal` ranks tasks based on their **engageability** using the Interest-Based Nervous System framework:
 
@@ -539,7 +539,7 @@ On low-energy days, the weights dynamically shift to prioritize low-friction, hi
 
 ---
 
-## 🛠️ Tech Stack Matrix
+## Tech Stack Matrix
 
 | Component | Technical Selection | Implementation Reasoning |
 | --- | --- | --- |
@@ -566,7 +566,7 @@ On low-energy days, the weights dynamically shift to prioritize low-friction, hi
 
 ---
 
-## 📂 Project Directory Layout
+## Project Directory Layout
 
 ```text
 dopapal_system/
@@ -669,7 +669,7 @@ dopapal_system/
 
 ---
 
-## ⚙️ Environment Configuration
+## Environment Configuration
 
 Copy the template below to create your local `.env` configuration in the root directory:
 
@@ -699,15 +699,15 @@ NVIDIA_MODEL=nvidia/nemotron-3-super-120b-a12b
 
 ---
 
-## 🚀 Getting Started & Local Setup
+## Getting Started & Local Setup
 
-### 📋 Prerequisites
+### Prerequisites
 - **Node.js** (v18+) & **npm**
 - **Astral `uv`** (Python package installer)
 - **PostgreSQL** & **Redis** (or use Docker Compose)
 - **Docker Desktop** (optional, for containerized setup)
 
-### 💻 Local Setup Instructions
+### Local Setup Instructions
 
 #### 1. Setup Backend Stack (using `uv`)
 1. Sync and build the python environment:
@@ -751,7 +751,7 @@ If you have Docker Desktop installed, you can launch the backend, postgres, and 
 
 ---
 
-## 📅 4-Day Team Implementation Plan
+## 4-Day Team Implementation Plan
 
 ### Day 1: System Baseline & Base Handshakes
 
@@ -783,7 +783,7 @@ If you have Docker Desktop installed, you can launch the backend, postgres, and 
 
 ---
 
-## 📝 API Contract Specifications
+## API Contract Specifications
 
 ### 1. Ingest Task Payload
 
