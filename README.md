@@ -101,7 +101,7 @@ dopapal_system/
 
 ---
 
-## 🎯 Core Philosophy & Design Rules
+## Core Philosophy & Design Rules
 
 Standard productivity tools fail the neurodivergent brain by introducing high maintenance overhead, forcing blank-canvas layout building, and weaponizing overdue indicators that trigger avoidant shame spirals. dopaPal handles the organizational burden entirely in the background, governed by three architectural rules:
 
@@ -111,7 +111,7 @@ Standard productivity tools fail the neurodivergent brain by introducing high ma
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 dopaPal uses a desktop runtime client to register system-level interactions and display an unfenced, ambient UI overlay, connected asynchronously to a containerized backend execution stack.
 
@@ -182,7 +182,7 @@ graph TB
 
 ---
 
-## ⚡ Comprehensive Feature Set
+## Comprehensive Feature Set
 
 ### 1. Zero-Friction Task Intake
 * **API Integration:** Live, asynchronous OAuth synchronization loops pull deadlines and ticket allocations from Google Calendar, Gmail, and Google Tasks, ensuring the user never manually inputs baseline schedules.
@@ -232,7 +232,7 @@ graph TB
 
 ---
 
-## 📊 Data Model
+## Data Model
 
 ```sql
 -- Core PostgreSQL Relational Schema (SQLAlchemy ORM)
@@ -300,7 +300,7 @@ CREATE TABLE integration_tokens (
 
 ---
 
-## 🔄 Core Runtime Workflows
+## Core Runtime Workflows
 
 ### 1. Ingestion & Splitting Engine
 
